@@ -1,0 +1,589 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>BUAA-CO P0上机 | Rigelius Blog</title><meta name="author" content="Rigelius"><meta name="copyright" content="Rigelius"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="本节考查内容为 Logisim，一般是一道组合逻辑和两道时序逻辑，时序逻辑中一个是有限状态机。 课上题目 T1 起伏数列 任务描述 我们需要在 Logisim 中设计一个 Moore 型有限状态机，用于实时监测输入数列的波动趋势。输入 \(a\) 为 5 位无符号整数。 数列的初始值默认为 \(a_0 &#x3D; 7\)。即复位后，读入的第一个数据 \(a_1\) 将与 7 进行比较。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BUAA-CO P0上机">
+<meta property="og:url" content="https://rigelius.github.io/2025/10/13/BUAA-CO%20P0%E4%B8%8A%E6%9C%BA/index.html">
+<meta property="og:site_name" content="Rigelius Blog">
+<meta property="og:description" content="本节考查内容为 Logisim，一般是一道组合逻辑和两道时序逻辑，时序逻辑中一个是有限状态机。 课上题目 T1 起伏数列 任务描述 我们需要在 Logisim 中设计一个 Moore 型有限状态机，用于实时监测输入数列的波动趋势。输入 \(a\) 为 5 位无符号整数。 数列的初始值默认为 \(a_0 &#x3D; 7\)。即复位后，读入的第一个数据 \(a_1\) 将与 7 进行比较。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://rigelius.github.io/img/background.jpg">
+<meta property="article:published_time" content="2025-10-13T14:00:00.000Z">
+<meta property="article:modified_time" content="2026-02-12T16:15:20.245Z">
+<meta property="article:author" content="Rigelius">
+<meta property="article:tag" content="CO">
+<meta property="article:tag" content="Logisim">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://rigelius.github.io/img/background.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "BUAA-CO P0上机",
+  "url": "https://rigelius.github.io/2025/10/13/BUAA-CO%20P0%E4%B8%8A%E6%9C%BA/",
+  "image": "https://rigelius.github.io/img/background.jpg",
+  "datePublished": "2025-10-13T14:00:00.000Z",
+  "dateModified": "2026-02-12T16:15:20.245Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Rigelius",
+      "url": "https://Rigelius.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://rigelius.github.io/2025/10/13/BUAA-CO%20P0%E4%B8%8A%E6%9C%BA/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'BUAA-CO P0上机',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.1"></head><body><div class="bg-animation" id="web_bg" style="background-color: #f0f0f0;"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">13</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 目录</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/background.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Rigelius Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">BUAA-CO P0上机</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><span class="site-page custom-search-btn"><i class="fa-fw fas fa-search"></i><span> Search</span></span></div><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 目录</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><span class="site-page custom-theme-toggle"><i class="fa-fw fas fa-moon"></i></span></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">BUAA-CO P0上机</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-10-13T14:00:00.000Z" title="发表于 2025-10-13 22:00:00">2025-10-13</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-02-12T16:15:20.245Z" title="更新于 2026-02-13 00:15:20">2026-02-13</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90/">计算机组成</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>本节考查内容为
+Logisim，一般是一道组合逻辑和两道时序逻辑，时序逻辑中一个是有限状态机。</p>
+<h2 id="课上题目">课上题目</h2>
+<h3 id="t1-起伏数列">T1 起伏数列</h3>
+<h4 id="任务描述">任务描述</h4>
+<p>我们需要在 Logisim 中设计一个 <strong>Moore
+型</strong>有限状态机，用于实时监测输入数列的波动趋势。输入 <span
+class="math inline">\(a\)</span> 为 5
+位<strong>无符号整数</strong>。</p>
+<p>数列的<strong>初始值</strong>默认为 <span class="math inline">\(a_0 =
+7\)</span>。即复位后，读入的第一个数据 <span
+class="math inline">\(a_1\)</span> 将与 7 进行比较。</p>
+<h4 id="判定逻辑">判定逻辑</h4>
+<p>设当前输入为 <span
+class="math inline">\(a_{m}\)</span>，上一周期输入为 <span
+class="math inline">\(a_{m-1}\)</span>（题目保证相邻输入不相等）：</p>
+<ul>
+<li>若 <span class="math inline">\(a_{m} &gt;
+a_{m-1}\)</span>，记为“起”；</li>
+<li>若 <span class="math inline">\(a_{m} &lt;
+a_{m-1}\)</span>，记为“伏”。</li>
+</ul>
+<p>我们需要检测的目标模式是 <strong>“起 <span
+class="math inline">\(\rightarrow\)</span> 起 <span
+class="math inline">\(\rightarrow\)</span> 伏 <span
+class="math inline">\(\rightarrow\)</span> 起”</strong>。</p>
+<p>状态机支持<strong>循环检测</strong>，即当前成功匹配序列的最后一个“起”，可以作为下一个序列的开头。</p>
+<p>当且仅当最近四个周期的变化趋势严格满足“起起伏起”时，输出
+<code>output</code> 为 1，其他情况 <code>output</code> 默认为 0。</p>
+<h4 id="样例">样例</h4>
+<p>串行输入串为：(7)8901215，则状态机输出为：(0)0001001。</p>
+<h4 id="接口列表">接口列表</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;"><strong>端口名</strong></th>
+<th style="text-align: left;"><strong>位宽</strong></th>
+<th style="text-align: left;"><strong>方向</strong></th>
+<th style="text-align: left;"><strong>功能描述</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">a</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">I</td>
+<td style="text-align: left;">输入</td>
+</tr>
+<tr>
+<td style="text-align: left;">clk</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">I</td>
+<td style="text-align: left;">时钟信号</td>
+</tr>
+<tr>
+<td style="text-align: left;">reset</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">I</td>
+<td style="text-align: left;">异步复位信号</td>
+</tr>
+<tr>
+<td style="text-align: left;">output</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">O</td>
+<td style="text-align: left;">结果</td>
+</tr>
+</tbody>
+</table>
+<h3 id="t2-二进制移位计算器">T2 二进制移位计算器</h3>
+<h4 id="任务描述-1">任务描述</h4>
+<p>我们需要在 Logisim 中设计一个 <strong>Mealy
+型</strong>有限状态机，实现一个支持特定移位运算的二进制计算器。</p>
+<p>系统基于 <strong>8 位无符号整数</strong>
+进行运算。在每个时钟周期，系统接收 2 位的操作码 <code>op</code> 和 8
+位的操作数
+<code>operand</code>，根据当前内部寄存器的值进行“左移一位”后，再与输入操作数进行运算，并更新寄存器状态。</p>
+<h4 id="运算逻辑">运算逻辑</h4>
+<p>设当前寄存器内的值为 <span
+class="math inline">\(Reg\)</span>，输入的操作数为 <span
+class="math inline">\(Val\)</span>，运算结果记为 <span
+class="math inline">\(Result\)</span>。</p>
+<p>所有运算均在 <strong>8 位</strong>
+宽度下进行，计算结果若溢出则自动截断（保留低 8 位）。</p>
+<table>
+<colgroup>
+<col style="width: 8%" />
+<col style="width: 48%" />
+<col style="width: 44%" />
+</colgroup>
+<thead>
+<tr>
+<th><strong>op</strong></th>
+<th><strong>功能描述</strong></th>
+<th><strong>逻辑表达式</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>00</strong></td>
+<td><strong>复位</strong>：将寄存器清零</td>
+<td><span class="math inline">\(Result = 0\)</span></td>
+</tr>
+<tr>
+<td><strong>01</strong></td>
+<td><strong>移位加</strong>：左移一位后加上操作数</td>
+<td><span class="math inline">\(Result = (Reg \ll 1) + Val\)</span></td>
+</tr>
+<tr>
+<td><strong>10</strong></td>
+<td><strong>移位减</strong>：左移一位后减去操作数</td>
+<td><span class="math inline">\(Result = (Reg \ll 1) - Val\)</span></td>
+</tr>
+<tr>
+<td><strong>11</strong></td>
+<td><strong>移位异或</strong>：左移一位后与操作数异或</td>
+<td><span class="math inline">\(Result = (Reg \ll 1) \oplus
+Val\)</span></td>
+</tr>
+</tbody>
+</table>
+<h4 id="约束条件">约束条件</h4>
+<ul>
+<li><strong>初始状态</strong>：计算器初始状态寄存器值为
+<code>8'h00</code>。</li>
+<li><strong>复位控制</strong>：本模块<strong>不设置</strong>独立的
+<code>reset</code> 引脚，复位功能完全通过输入 <code>op = 00</code>
+实现。</li>
+<li><strong>状态机类型</strong>：要求使用 <strong>Mealy
+型</strong>状态机。</li>
+</ul>
+<h4 id="接口列表-1">接口列表</h4>
+<table>
+<thead>
+<tr>
+<th><strong>端口名</strong></th>
+<th><strong>位宽</strong></th>
+<th><strong>方向</strong></th>
+<th><strong>功能描述</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>op</strong></td>
+<td>2</td>
+<td>Input</td>
+<td>操作码</td>
+</tr>
+<tr>
+<td><strong>operand</strong></td>
+<td>8</td>
+<td>Input</td>
+<td>操作数</td>
+</tr>
+<tr>
+<td><strong>clk</strong></td>
+<td>1</td>
+<td>Input</td>
+<td>时钟信号</td>
+</tr>
+<tr>
+<td><strong>result</strong></td>
+<td>8</td>
+<td>Output</td>
+<td>当前周期的计算结果</td>
+</tr>
+</tbody>
+</table>
+<h3 id="t3-智能电梯">T3 智能电梯</h3>
+<h4 id="任务描述-2">任务描述</h4>
+<p>我们需要在 Logisim
+中设计一个<strong>组合电路</strong>，用于计算智能电梯在特定乘客分布下的总运行距离。</p>
+<p>系统共有 4 个楼层（第 0、1、2、3
+层）。输入包含电梯的初始位置和各层当前的乘客数量。电路需模拟电梯的贪心调度策略，计算出清空所有乘客所需的总移动楼层数。</p>
+<h4 id="调度逻辑">调度逻辑</h4>
+<ol type="1">
+<li><strong>初始状态</strong>：电梯起始楼层由输入信号 <code>from</code>
+指定。起始楼层的乘客被视为立即进入电梯，因此在计算后续路径时，<strong>起始层的剩余乘客数视为
+0</strong>。</li>
+<li><strong>目标选择</strong>：电梯总是优先前往当前<strong>剩余乘客最多</strong>（且不为
+0）的楼层。</li>
+<li><strong>运行过程</strong>：
+<ul>
+<li>从当前层移动至目标层，累加移动距离：<span
+class="math inline">\(Distance = |Target - Current|\)</span>。</li>
+<li>到达后，该层乘客全部上梯，该层剩余乘客数变为 0。</li>
+<li>重复上述过程，直到所有楼层的乘客都被接走（所有 num 均为 0）。</li>
+</ul></li>
+<li><strong>数据保证</strong>：输入的各层乘客数 <code>num0</code> ~
+<code>num3</code> 互不相同，且初始值均大于 0。</li>
+</ol>
+<h4 id="编码约定">编码约定</h4>
+<ul>
+<li><strong>楼层距离</strong>：从第 <span
+class="math inline">\(n\)</span> 层移动到第 <span
+class="math inline">\(m\)</span> 层，距离为 <span
+class="math inline">\(|m - n|\)</span>。</li>
+<li><strong>初始位置</strong>：输入 <code>from</code> 采用 <strong>4
+位独热码</strong> 格式：
+<ul>
+<li><code>0001</code> <span class="math inline">\(\rightarrow\)</span>
+第 0 层</li>
+<li><code>0010</code> <span class="math inline">\(\rightarrow\)</span>
+第 1 层</li>
+<li><code>0100</code> <span class="math inline">\(\rightarrow\)</span>
+第 2 层</li>
+<li><code>1000</code> <span class="math inline">\(\rightarrow\)</span>
+第 3 层</li>
+</ul></li>
+</ul>
+<h4 id="接口列表-2">接口列表</h4>
+<table>
+<thead>
+<tr>
+<th><strong>端口名</strong></th>
+<th><strong>位宽</strong></th>
+<th><strong>方向</strong></th>
+<th><strong>功能描述</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>from</strong></td>
+<td>4</td>
+<td>Input</td>
+<td>初始楼层 (One-Hot)</td>
+</tr>
+<tr>
+<td><strong>num0</strong></td>
+<td>8</td>
+<td>Input</td>
+<td>第 0 层乘客数</td>
+</tr>
+<tr>
+<td><strong>num1</strong></td>
+<td>8</td>
+<td>Input</td>
+<td>第 1 层乘客数</td>
+</tr>
+<tr>
+<td><strong>num2</strong></td>
+<td>8</td>
+<td>Input</td>
+<td>第 2 层乘客数</td>
+</tr>
+<tr>
+<td><strong>num3</strong></td>
+<td>8</td>
+<td>Input</td>
+<td>第 3 层乘客数</td>
+</tr>
+<tr>
+<td><strong>output</strong></td>
+<td>8</td>
+<td>Output</td>
+<td>电梯移动总楼层数</td>
+</tr>
+</tbody>
+</table>
+<h2 id="题目分析">题目分析</h2>
+<p>T1
+就是常规的状态机，可能的难点是寄存器赋初值，我用的两个异或门，还有一些其他的方式，好像还有人直接将输入减
+7，反正都可以。T2 没什么难度，一般而言这种组合逻辑都是最简单的。</p>
+<p>T3 这道题，我用的方法很复杂，设从小到大排序后各层人数是 <span
+class="math inline">\(num_{a_0},num_{a_1},num_{a_2},num_{a_3}\)</span>
+，那么结果就是 <span
+class="math inline">\(|a_3-a_0|+|a_3-a_2|+|a_2-a_1|\)</span>
+，我卡在了根据排序后的值对应到其数组下标上，注意到题干说每层人数不同，我就将排序后的四个值与排序前的四个值相比较，如果某两个相等，那就找到其下标了，然后用这个思路构造了一系列复杂的模块，最终也AC了。结束后看到群里八仙过海，各显神通，有一个做法很巧妙：就是直接将
+<span class="math inline">\(i\)</span> 拼接到 <span
+class="math inline">\(num_i\)</span>
+的后面，变成一个10位的数，但排序时只比前8位，这样排序后就能直接得到其原数组下标，类似于
+C 语言中的结构体排序吧。</p>
+<h2 id="笔者的话">笔者的话</h2>
+<p>有一个细节一定要注意，就是 <code>Comparator</code> 的
+<code>Numeric Type</code> 属性，一定要改成 <code>Unsigned</code> 而不是
+<code>2's Complement</code>，T1 和 T3 我都因为这一个点而 WA
+过。课前准备的话，可以多看看 Logisim 里面的元件，<code>Bit Finder</code>
+等冷门元件也是考到过的。还有建议将电路模块化，我的习惯是专门弄两个子电路来负责次态逻辑和输出逻辑，这两个都是组合逻辑，这样顶层只有状态转移逻辑，简洁而不容易错。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://Rigelius.github.io">Rigelius</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://rigelius.github.io/2025/10/13/BUAA-CO%20P0%E4%B8%8A%E6%9C%BA/">https://rigelius.github.io/2025/10/13/BUAA-CO%20P0%E4%B8%8A%E6%9C%BA/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://Rigelius.github.io" target="_blank">Rigelius Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Logisim/">Logisim</a><a class="post-meta__tags" href="/tags/CO/">CO</a></div><div class="post-share"><div class="social-share" data-image="/img/background.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/10/20/BUAA-CO%20P1%E4%B8%8A%E6%9C%BA/" title="BUAA-CO P1上机"><img class="cover" src="/img/background.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">BUAA-CO P1上机</div></div><div class="info-2"><div class="info-item-1">本节考查内容为 Verilog，一般是一道组合逻辑和两道时序逻辑，时序逻辑中一个是有限状态机。 课上题目 T1 异或卷积 任务描述 我们需要设计一个 Verilog 模块，模拟卷积神经网络中的卷积操作。 给定一个 \(6 \times 6\) 的输入矩阵 \(a\) 和一个 \(3 \times 3\) 的卷积核 \(b\)，计算输出一个 \(4 \times 4\) 的特征图 \(ans\)。 数据映射 输入和输出均以一维向量形式给出，需按照“行优先”原则映射为二维矩阵。 数据转换规则为：从低位到高位依次填入矩阵，先填满第 0 行，再填满第 1 行，以此类推。 矩阵第 \(i\) 行、第 \(j\) 列的元素 \(M[i][j]\)（行列均从 0 开始计数）的值，等于向量 \(a\) 的第 \(i \times n + j\) 位。数学公式表达为： \[M[i][j] = a_{i \times n + j}\]  输入 \(a\)：位宽 36，对应 \(6 \times 6\) 矩阵。 输入 \(b\)：位宽 9，对应 \(3 \t...</div></div></div></a><a class="pagination-related" href="/2025/09/29/BUAA-CO%20Pre%E4%B8%8A%E6%9C%BA/" title="BUAA-CO Pre上机"><img class="cover" src="/img/background.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">BUAA-CO Pre上机</div></div><div class="info-2"><div class="info-item-1">本节主要是掌握三个工具，三道题目依次为 Logisim、Verilog、MIPS。 课上题目 T1 推箱子 任务描述 我们需要在 Logisim 中设计一个软电路来模拟简易的推箱子游戏。游戏地图构建在一个二维平面直角坐标系中，范围是 \(0 \le x, y \le 5\) 的正方形区域（共 \(6 \times 6\) 个点）。 箱子的起始位置（包括 Reset 后）固定在 \((0,0)\)，目标位置固定在 \((5,5)\)。 地图中包含 6 个固定的障碍点，分别为：\((1,1)\)、\((1,2)\)、\((2,1)\)、\((3,4)\)、\((4,3)\)、\((4,4)\)。 控制逻辑 系统输入 \((dx, dy)\) 表示箱子的移动变化量，且保证只会出现 \((0,0)\)、\((1,0)\) 或 \((0,1)\) 这三种情况。 设当前坐标为 \((x, y)\)，则预期坐标为 \((x+dx, y+dy)\)：  如果预期坐标合法（即在地图边界内且不是障碍），则在下一周期将箱子移动到该位置； 如果预期坐标非法（越界或撞...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/11/03/BUAA-CO%20P3%E4%B8%8A%E6%9C%BA/" title="BUAA-CO P3上机"><img class="cover" src="/img/background.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-11-03</div><div class="info-item-2">BUAA-CO P3上机</div></div><div class="info-2"><div class="info-item-1">本节考查内容为 Logisim 实现单周期 CPU。 课上题目 T1 revi revi-rs-rt-imm16 RTL 123temp &lt;- GPR[rs]result &lt;- temp[31-imm16:0]||reverse(temp[31:32-imm16])GPR[rt] &lt;- result T2 blz blz-rs-rt-offset RTL 12345678910temp1 &lt;- count_leading_zeros(GPR[rs])temp2 &lt;- count_leading_zeros(GPR[rt])if (temp1 == temp2)     PC &lt;- PC + 4 + sign_ext(offset||00)else if (temp1 &gt; temp2)    PC &lt;- PC + 4    GPR[rs] &lt;- temp1else    PC &lt;- PC + 4    GPR[rs] &lt;- temp2 T3 lwf lwf-base-rt-offset RTL...</div></div></div></a><a class="pagination-related" href="/2025/09/29/BUAA-CO%20Pre%E4%B8%8A%E6%9C%BA/" title="BUAA-CO Pre上机"><img class="cover" src="/img/background.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-09-29</div><div class="info-item-2">BUAA-CO Pre上机</div></div><div class="info-2"><div class="info-item-1">本节主要是掌握三个工具，三道题目依次为 Logisim、Verilog、MIPS。 课上题目 T1 推箱子 任务描述 我们需要在 Logisim 中设计一个软电路来模拟简易的推箱子游戏。游戏地图构建在一个二维平面直角坐标系中，范围是 \(0 \le x, y \le 5\) 的正方形区域（共 \(6 \times 6\) 个点）。 箱子的起始位置（包括 Reset 后）固定在 \((0,0)\)，目标位置固定在 \((5,5)\)。 地图中包含 6 个固定的障碍点，分别为：\((1,1)\)、\((1,2)\)、\((2,1)\)、\((3,4)\)、\((4,3)\)、\((4,4)\)。 控制逻辑 系统输入 \((dx, dy)\) 表示箱子的移动变化量，且保证只会出现 \((0,0)\)、\((1,0)\) 或 \((0,1)\) 这三种情况。 设当前坐标为 \((x, y)\)，则预期坐标为 \((x+dx, y+dy)\)：  如果预期坐标合法（即在地图边界内且不是障碍），则在下一周期将箱子移动到该位置； 如果预期坐标非法（越界或撞...</div></div></div></a><a class="pagination-related" href="/2025/11/10/BUAA-CO%20P4%E4%B8%8A%E6%9C%BA/" title="BUAA-CO P4上机"><img class="cover" src="/img/background.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-11-10</div><div class="info-item-2">BUAA-CO P4上机</div></div><div class="info-2"><div class="info-item-1">本节考查内容为 Verilog 实现单周期 CPU。 课上题目 T1 brc brc-rs-rt-rd RTL 12345temp &lt;- GPR[rs][4:0]if (temp &lt; 25 &amp;&amp; count_ones(GPR[rt][temp+7:temp]) % 2 == 0)    GPR[rd] &lt;- reverse(GPR[rt])else    GPR[rd] &lt;- GPR[rt] T2 cabc cabc-rs-rt-offset RTL 123456789cross1 &lt;- GPR[rs][23:16]||GPR[rt][7:0]||GPR[rs][31:24]||GPR[rt][15:8]cross2 &lt;- GPR[rt][7:0]||GPR[rs][23:16]||GPR[rt][31:24]||GPR[rs][15:8]xor_result &lt;- cross1 ^ cross2cnt1 &lt;- count_zeros(xor_result[31:16])cnt2 &lt;- cou...</div></div></div></a><a class="pagination-related" href="/2025/12/08/BUAA-CO%20P7%E4%B8%8A%E6%9C%BA/" title="BUAA-CO P7上机"><img class="cover" src="/img/background.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-12-08</div><div class="info-item-2">BUAA-CO P7上机</div></div><div class="info-2"><div class="info-item-1">本节考查内容为 Verilog 实现 MIPS 微系统，支持中断和异常。 课上题目 T1~T4 都是课下强测，分别是功能强测、异常强测、中断强测、冲突强测。 T5 Monitor 在 P7 系统中（DM 范围 0x0000 ~ 0x2fff），新增一套内存监视控制机制。需在 CP0 中扩展三个专用寄存器，并增加一条专用配置指令 monitor，配合 sw 指令实现对特定内存区间的写入保护。 1. 新增 CP0 寄存器 系统复位后，以下三个寄存器均置为 0。          编号 寄存器名 功能描述 读写权限     18 DMBoundaryHI 监视区间上界 mfc0 可读；仅 monitor 可写   19 DMBoundaryLO 监视区间下界 mfc0 可读；仅 monitor 可写   20 DMEnable 监视使能控制字 mfc0 可读；仅 monitor 可写     mtc0：仅能写入原有的 12-15 号寄存器（SR, Cause, EPC, PrID ），写入...</div></div></div></a><a class="pagination-related" href="/2025/10/20/BUAA-CO%20P1%E4%B8%8A%E6%9C%BA/" title="BUAA-CO P1上机"><img class="cover" src="/img/background.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-20</div><div class="info-item-2">BUAA-CO P1上机</div></div><div class="info-2"><div class="info-item-1">本节考查内容为 Verilog，一般是一道组合逻辑和两道时序逻辑，时序逻辑中一个是有限状态机。 课上题目 T1 异或卷积 任务描述 我们需要设计一个 Verilog 模块，模拟卷积神经网络中的卷积操作。 给定一个 \(6 \times 6\) 的输入矩阵 \(a\) 和一个 \(3 \times 3\) 的卷积核 \(b\)，计算输出一个 \(4 \times 4\) 的特征图 \(ans\)。 数据映射 输入和输出均以一维向量形式给出，需按照“行优先”原则映射为二维矩阵。 数据转换规则为：从低位到高位依次填入矩阵，先填满第 0 行，再填满第 1 行，以此类推。 矩阵第 \(i\) 行、第 \(j\) 列的元素 \(M[i][j]\)（行列均从 0 开始计数）的值，等于向量 \(a\) 的第 \(i \times n + j\) 位。数学公式表达为： \[M[i][j] = a_{i \times n + j}\]  输入 \(a\)：位宽 36，对应 \(6 \times 6\) 矩阵。 输入 \(b\)：位宽 9，对应 \(3 \t...</div></div></div></a><a class="pagination-related" href="/2025/12/01/BUAA-CO%20P6%E4%B8%8A%E6%9C%BA/" title="BUAA-CO P6上机"><img class="cover" src="/img/background.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-12-01</div><div class="info-item-2">BUAA-CO P6上机</div></div><div class="info-2"><div class="info-item-1">本节考查内容为 Verilog 实现流水线 CPU。 第一次课上题目 T1 mygo mygo-rs-rt RTL 123456789101112131415161718192021222324function pattern_value(g):    return count_leading_zeros(g) * 2 + count_ones(g)function characteristic_code(A):    sum &lt;- 0    for i in 0..7:        g &lt;- A[4*i+3 : 4*i]        sum &lt;- sum + pattern_value(g) * (i + 1)    return sum    MDU_Start(Busy_Cycles = 5)temp1 &lt;- characteristic_code(GPR[rs])temp2 &lt;- characteristic_code(GPR[rt])if (temp1 &gt; temp2)    HI &lt;- GPR[rs]    LO...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Rigelius</div><div class="author-info-description">A blog about technology and life.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">13</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Rigelius"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BE%E4%B8%8A%E9%A2%98%E7%9B%AE"><span class="toc-number">1.</span> <span class="toc-text">课上题目</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#t1-%E8%B5%B7%E4%BC%8F%E6%95%B0%E5%88%97"><span class="toc-number">1.1.</span> <span class="toc-text">T1 起伏数列</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E6%8F%8F%E8%BF%B0"><span class="toc-number">1.1.1.</span> <span class="toc-text">任务描述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A4%E5%AE%9A%E9%80%BB%E8%BE%91"><span class="toc-number">1.1.2.</span> <span class="toc-text">判定逻辑</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%B7%E4%BE%8B"><span class="toc-number">1.1.3.</span> <span class="toc-text">样例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3%E5%88%97%E8%A1%A8"><span class="toc-number">1.1.4.</span> <span class="toc-text">接口列表</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#t2-%E4%BA%8C%E8%BF%9B%E5%88%B6%E7%A7%BB%E4%BD%8D%E8%AE%A1%E7%AE%97%E5%99%A8"><span class="toc-number">1.2.</span> <span class="toc-text">T2 二进制移位计算器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E6%8F%8F%E8%BF%B0-1"><span class="toc-number">1.2.1.</span> <span class="toc-text">任务描述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%90%E7%AE%97%E9%80%BB%E8%BE%91"><span class="toc-number">1.2.2.</span> <span class="toc-text">运算逻辑</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%A6%E6%9D%9F%E6%9D%A1%E4%BB%B6"><span class="toc-number">1.2.3.</span> <span class="toc-text">约束条件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3%E5%88%97%E8%A1%A8-1"><span class="toc-number">1.2.4.</span> <span class="toc-text">接口列表</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#t3-%E6%99%BA%E8%83%BD%E7%94%B5%E6%A2%AF"><span class="toc-number">1.3.</span> <span class="toc-text">T3 智能电梯</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E6%8F%8F%E8%BF%B0-2"><span class="toc-number">1.3.1.</span> <span class="toc-text">任务描述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%B0%83%E5%BA%A6%E9%80%BB%E8%BE%91"><span class="toc-number">1.3.2.</span> <span class="toc-text">调度逻辑</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%96%E7%A0%81%E7%BA%A6%E5%AE%9A"><span class="toc-number">1.3.3.</span> <span class="toc-text">编码约定</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3%E5%88%97%E8%A1%A8-2"><span class="toc-number">1.3.4.</span> <span class="toc-text">接口列表</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text">题目分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%94%E8%80%85%E7%9A%84%E8%AF%9D"><span class="toc-number">3.</span> <span class="toc-text">笔者的话</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/01/16/Math-Test/" title="Math-Test"><img src="/img/background.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Math-Test"/></a><div class="content"><a class="title" href="/2026/01/16/Math-Test/" title="Math-Test">Math-Test</a><time datetime="2026-01-16T11:49:08.000Z" title="发表于 2026-01-16 19:49:08">2026-01-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/01/16/hello-world/" title="Hello World"><img src="/img/background.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hello World"/></a><div class="content"><a class="title" href="/2026/01/16/hello-world/" title="Hello World">Hello World</a><time datetime="2026-01-16T11:23:16.668Z" title="发表于 2026-01-16 19:23:16">2026-01-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/12/09/BUAA-CO%20%E6%8E%A8%E8%8D%90%E9%A2%98%E7%9B%AE%E6%B1%87%E6%80%BB/" title="BUAA-CO 推荐题目汇总"><img src="/img/background.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="BUAA-CO 推荐题目汇总"/></a><div class="content"><a class="title" href="/2025/12/09/BUAA-CO%20%E6%8E%A8%E8%8D%90%E9%A2%98%E7%9B%AE%E6%B1%87%E6%80%BB/" title="BUAA-CO 推荐题目汇总">BUAA-CO 推荐题目汇总</a><time datetime="2025-12-09T14:00:00.000Z" title="发表于 2025-12-09 22:00:00">2025-12-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/12/08/BUAA-CO%20P7%E4%B8%8A%E6%9C%BA/" title="BUAA-CO P7上机"><img src="/img/background.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="BUAA-CO P7上机"/></a><div class="content"><a class="title" href="/2025/12/08/BUAA-CO%20P7%E4%B8%8A%E6%9C%BA/" title="BUAA-CO P7上机">BUAA-CO P7上机</a><time datetime="2025-12-08T14:00:00.000Z" title="发表于 2025-12-08 22:00:00">2025-12-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/12/01/BUAA-CO%20P6%E4%B8%8A%E6%9C%BA/" title="BUAA-CO P6上机"><img src="/img/background.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="BUAA-CO P6上机"/></a><div class="content"><a class="title" href="/2025/12/01/BUAA-CO%20P6%E4%B8%8A%E6%9C%BA/" title="BUAA-CO P6上机">BUAA-CO P6上机</a><time datetime="2025-12-01T14:00:00.000Z" title="发表于 2025-12-01 22:00:00">2025-12-01</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Rigelius</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.3</a></span></div></div></footer></div><div class="search-dialog" id="search-modal"><div class="search-dialog-wrapper"><div class="search-dialog-header"><h3 class="search-dialog-title">搜索</h3><button id="search-close" type="button">×</button></div><div class="search-dialog-input-wrap"><label class="search-input-label" for="search-input">关键词</label><input id="search-input" type="text" autocomplete="off"></div><div class="search-results" id="search-results"></div></div></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.3"></script><script src="/js/main.js?v=5.5.3"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.0.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'Rigelius/Rigelius.github.io',
+      'data-repo-id': 'R_kgDOQ6-aAw',
+      'data-category-id': 'DIC_kwDOQ6-aA84C1ESp',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script src="/js/custom.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
