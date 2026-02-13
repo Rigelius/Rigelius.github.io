@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
   // 搜索功能 - 基于 search.xml
   const initSearch = () => {
-    const searchButton = document.querySelector('#nav .custom-search-btn')
+    const searchButtons = document.querySelectorAll('.custom-search-btn')
     const searchModal = document.getElementById('search-modal')
     const searchClose = document.getElementById('search-close')
     const searchInput = document.getElementById('search-input')
     const searchResults = document.getElementById('search-results')
 
-    if (!searchButton || !searchModal) return
+    if (!searchButtons.length || !searchModal) return
 
     let postsData = []
     let dataLoaded = false
@@ -102,9 +102,11 @@ document.addEventListener('DOMContentLoaded', () => {
       searchResults.innerHTML = resultsHTML
     }
 
-    searchButton.addEventListener('click', async () => {
-      await fetchPostsData()
-      openSearch()
+    searchButtons.forEach(btn => {
+      btn.addEventListener('click', async () => {
+        await fetchPostsData()
+        openSearch()
+      })
     })
 
     searchClose.addEventListener('click', closeSearch)
@@ -126,17 +128,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 主题切换功能
   const initThemeToggle = () => {
-    const themeToggleNav = document.querySelector('#nav .custom-theme-toggle')
-    if (!themeToggleNav) return
+    const themeToggles = document.querySelectorAll('.custom-theme-toggle')
+    if (!themeToggles.length) return
 
-    const updateIcon = () => {
+    const updateIcons = () => {
       const currentTheme = document.documentElement.getAttribute('data-theme')
-      const icon = themeToggleNav.querySelector('i')
-      if (currentTheme === 'dark') {
-        icon.className = 'fa-fw fas fa-sun'
-      } else {
-        icon.className = 'fa-fw fas fa-moon'
-      }
+      themeToggles.forEach(toggle => {
+        const icon = toggle.querySelector('i')
+        if (currentTheme === 'dark') {
+          icon.className = 'fa-fw fas fa-sun'
+        } else {
+          icon.className = 'fa-fw fas fa-moon'
+        }
+      })
     }
 
     const toggleTheme = () => {
@@ -151,11 +155,11 @@ document.addEventListener('DOMContentLoaded', () => {
         btf.saveToLocal.set('theme', 'light', 2)
       }
 
-      updateIcon()
+      updateIcons()
     }
 
-    themeToggleNav.addEventListener('click', toggleTheme)
-    updateIcon()
+    themeToggles.forEach(toggle => toggle.addEventListener('click', toggleTheme))
+    updateIcons()
 
     const observer = new MutationObserver(updateIcon)
     observer.observe(document.documentElement, {
