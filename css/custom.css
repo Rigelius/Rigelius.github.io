@@ -3,6 +3,11 @@
   font-size: 1.05rem;
   line-height: 1.8;
 }
+/* 代码块 Tab 宽度改为 4 空格 */
+pre,
+code {
+  tab-size: 4;
+}
 /* 修复行内公式下方横线 */
 mjx-container:not([display]) {
   overflow: visible !important;
@@ -282,6 +287,12 @@ mjx-container:not([display]) {
 }
 .category-lists .category-posts {
   border-top-color: rgba(255,255,255,0.1);
+}
+/* 标签/分类/归档页文章列表图片改为正方形 */
+.article-sort-item-img {
+  width: 80px !important;
+  height: 80px !important;
+maxWidth768()
 }
 @-moz-keyframes searchSlideIn {
   from {

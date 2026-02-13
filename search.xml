@@ -1,6 +1,1013 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>BUAA-CO P0上机</title>
+    <url>/2025/10/13/BUAA-CO%20P0%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为
+Logisim，一般是一道组合逻辑和两道时序逻辑，时序逻辑中一个是有限状态机。
+课上题目
+T1 起伏数列
+任务描述
+我们需要在 Logisim 中设计一个 Moore
+型有限状态机，用于实时监测输入数列的波动趋势。输入 \(a\) 为 5
+位无符号整数。
+数列的初始值默认为 \(a_0 =
+7\)。即复位后，读入的第一个数据 \(a_1\) 将与 7 进行比较。
+判定逻辑
+设当前输入为 \(a_{m}\)，上一周期输入为 \(a_{m-1}\)（题目保证相邻输入不相等）：
+
+若 \(a_{m} &gt;
+a_{m-1}\)，记为“起”；
+若 \(a_{m} &lt;
+a_{m-1}\)，记为“伏”。
+
+我们需要检测的目标模式是 “起 \(\rightarrow\) 起 \(\rightarrow\) 伏 \(\rightarrow\) 起”。
+状态机支持循环检测，即当前成功匹配序列的最后一个“起”，可以作为下一个序列的开头。
+当且仅当最近四个周期的变化趋势严格满足“起起伏起”时，输出
+output 为 1，其他情况 output 默认为 0。
+样例
+串行输入串为：(7)8901215，则状态机输出为：(0)0001001。
+接口列表
+
+
+
+端口名
+位宽
+方向
+功能描述
+
+
+
+
+a
+5
+I
+输入
+
+
+clk
+1
+I
+时钟信号
+
+
+reset
+1
+I
+异步复位信号
+
+
+output
+1
+O
+结果
+
+
+
+T2 二进制移位计算器
+任务描述
+我们需要在 Logisim 中设计一个 Mealy
+型有限状态机，实现一个支持特定移位运算的二进制计算器。
+系统基于 8 位无符号整数
+进行运算。在每个时钟周期，系统接收 2 位的操作码 op 和 8
+位的操作数
+operand，根据当前内部寄存器的值进行“左移一位”后，再与输入操作数进行运算，并更新寄存器状态。
+运算逻辑
+设当前寄存器内的值为 \(Reg\)，输入的操作数为 \(Val\)，运算结果记为 \(Result\)。
+所有运算均在 8 位
+宽度下进行，计算结果若溢出则自动截断（保留低 8 位）。
+
+
+
+
+
+
+
+
+op
+功能描述
+逻辑表达式
+
+
+
+
+00
+复位：将寄存器清零
+\(Result = 0\)
+
+
+01
+移位加：左移一位后加上操作数
+\(Result = (Reg \ll 1) + Val\)
+
+
+10
+移位减：左移一位后减去操作数
+\(Result = (Reg \ll 1) - Val\)
+
+
+11
+移位异或：左移一位后与操作数异或
+\(Result = (Reg \ll 1) \oplus
+Val\)
+
+
+
+约束条件
+
+初始状态：计算器初始状态寄存器值为
+8'h00。
+复位控制：本模块不设置独立的
+reset 引脚，复位功能完全通过输入 op = 00
+实现。
+状态机类型：要求使用 Mealy
+型状态机。
+
+接口列表
+
+
+
+端口名
+位宽
+方向
+功能描述
+
+
+
+
+op
+2
+Input
+操作码
+
+
+operand
+8
+Input
+操作数
+
+
+clk
+1
+Input
+时钟信号
+
+
+result
+8
+Output
+当前周期的计算结果
+
+
+
+T3 智能电梯
+任务描述
+我们需要在 Logisim
+中设计一个组合电路，用于计算智能电梯在特定乘客分布下的总运行距离。
+系统共有 4 个楼层（第 0、1、2、3
+层）。输入包含电梯的初始位置和各层当前的乘客数量。电路需模拟电梯的贪心调度策略，计算出清空所有乘客所需的总移动楼层数。
+调度逻辑
+
+初始状态：电梯起始楼层由输入信号 from
+指定。起始楼层的乘客被视为立即进入电梯，因此在计算后续路径时，起始层的剩余乘客数视为
+0。
+目标选择：电梯总是优先前往当前剩余乘客最多（且不为
+0）的楼层。
+运行过程：
+
+从当前层移动至目标层，累加移动距离：\(Distance = |Target - Current|\)。
+到达后，该层乘客全部上梯，该层剩余乘客数变为 0。
+重复上述过程，直到所有楼层的乘客都被接走（所有 num 均为 0）。
+
+数据保证：输入的各层乘客数 num0 ~
+num3 互不相同，且初始值均大于 0。
+
+编码约定
+
+楼层距离：从第 \(n\) 层移动到第 \(m\) 层，距离为 \(|m - n|\)。
+初始位置：输入 from 采用 4
+位独热码 格式：
+
+0001 \(\rightarrow\)
+第 0 层
+0010 \(\rightarrow\)
+第 1 层
+0100 \(\rightarrow\)
+第 2 层
+1000 \(\rightarrow\)
+第 3 层
+
+
+接口列表
+
+
+
+端口名
+位宽
+方向
+功能描述
+
+
+
+
+from
+4
+Input
+初始楼层 (One-Hot)
+
+
+num0
+8
+Input
+第 0 层乘客数
+
+
+num1
+8
+Input
+第 1 层乘客数
+
+
+num2
+8
+Input
+第 2 层乘客数
+
+
+num3
+8
+Input
+第 3 层乘客数
+
+
+output
+8
+Output
+电梯移动总楼层数
+
+
+
+题目分析
+T1
+就是常规的状态机，可能的难点是寄存器赋初值，我用的两个异或门，还有一些其他的方式，好像还有人直接将输入减
+7，反正都可以。T2 没什么难度，一般而言这种组合逻辑都是最简单的。
+T3 这道题，我用的方法很复杂，设从小到大排序后各层人数是 \(num_{a_0},num_{a_1},num_{a_2},num_{a_3}\)
+，那么结果就是 \(|a_3-a_0|+|a_3-a_2|+|a_2-a_1|\)
+，我卡在了根据排序后的值对应到其数组下标上，注意到题干说每层人数不同，我就将排序后的四个值与排序前的四个值相比较，如果某两个相等，那就找到其下标了，然后用这个思路构造了一系列复杂的模块，最终也AC了。结束后看到群里八仙过海，各显神通，有一个做法很巧妙：就是直接将
+\(i\) 拼接到 \(num_i\)
+的后面，变成一个10位的数，但排序时只比前8位，这样排序后就能直接得到其原数组下标，类似于
+C 语言中的结构体排序吧。
+笔者的话
+有一个细节一定要注意，就是 Comparator 的
+Numeric Type 属性，一定要改成 Unsigned 而不是
+2's Complement，T1 和 T3 我都因为这一个点而 WA
+过。课前准备的话，可以多看看 Logisim 里面的元件，Bit Finder
+等冷门元件也是考到过的。还有建议将电路模块化，我的习惯是专门弄两个子电路来负责次态逻辑和输出逻辑，这两个都是组合逻辑，这样顶层只有状态转移逻辑，简洁而不容易错。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>Logisim</tag>
+        <tag>CO</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO P2上机</title>
+    <url>/2025/10/27/BUAA-CO%20P2%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 MIPS 汇编语言，三道题目一般至少两道会给参考 C
+代码，考验 MIPS 代码的编写能力。
+课上题目
+T1 工厂选址
+任务描述
+假设你正在编写城市规划核心功能。需要在给定的 \(n\) 个候选坐标点 \((x, y)\)
+中，筛选出一个符合特定条件的点用于建造工厂。
+筛选条件：
+
+象限限制：候选点必须位于平面直角坐标系的
+第二象限 或
+第四象限（不包含坐标轴）。
+面积最大化：该点向两坐标轴作垂线，与原点 \((0,0)\)
+所围成的矩形面积必须是所有满足条件点中最大的。
+
+你需要编写 MIPS 汇编程序实现该逻辑，输出选定点的坐标。
+判定逻辑
+有效性判定：
+对于输入坐标 \((x,
+y)\)，该点有效当且仅当满足以下二者之一：
+
+第二象限：\(x &lt; 0\) 且 \(y &gt; 0\)
+第四象限：\(x &gt; 0\) 且 \(y &lt; 0\)
+注：位于第一、三象限或坐标轴上的点应直接忽略。
+
+优化目标：
+计算矩形面积 \(Area = |x| \times
+|y|\)。
+
+若存在多个点的面积同为最大值，输出 输入顺序最靠前
+的那一组坐标。
+题目保证输入中至少存在一个满足条件的点。
+
+数据规模：
+
+\(n \le 1000\)
+\(0 \le |x|, |y| \le 10^9\)
+
+输入输出格式
+输入格式：
+
+第 1 行：输入一个整数 \(n\)，代表坐标总数。
+随后的 \(2n\)
+行：依次输入每个点的坐标信息。对于第 \(i\) 个点（\(0 \le
+i &lt; n\)），先输入 \(x_i\)，再输入 \(y_i\)
+
+输出格式：
+
+输出一行，包含两个整数 \(x\) 和
+\(y\)（即选定点的坐标），中间用一个空格分隔。
+
+输入样例：
+416-47-9-118-8
+输出样例：
+16 -4
+参考代码 (C语言)
+#include &lt;stdio.h&gt;int main(void) &#123;    int n;    scanf(&quot;%d&quot;, &amp;n);    long long best_area = 0;    int best_x = 0, best_y = 0;    for (int i = 0; i &lt; n; i++) &#123;        int x, y;        scanf(&quot;%d%d&quot;, &amp;x, &amp;y);        if (x == 0 || y == 0) continue;        if ((x &gt; 0 &amp;&amp; y &gt; 0) || (x &lt; 0 &amp;&amp; y &lt; 0)) continue;        int ax = x &gt;= 0 ? x : -x;        int ay = y &gt;= 0 ? y : -y;                long long area = (long long) ax * ay;        if (area &gt; best_area) &#123;            best_area = area;            best_x = x;            best_y = y;        &#125;    &#125;    printf(&quot;%d %d\n&quot;, best_x, best_y);    return 0;&#125;
+T2 K 递增
+任务描述
+使用 MIPS 汇编语言编写程序，计算将给定数组转换为 K
+递增数组 所需的最少操作次数。
+K 递增定义：
+给定一个下标从 0 开始、包含 \(n\)
+个正整数的数组 \(arr\)，以及一个正整数
+\(k\)。
+如果对于每个满足 \(k \le i \le n-1\)
+的下标 \(i\)，都有 \(arr[i-k] \le arr[i]\)，那么称 \(arr\) 是 K 递增的。
+输入输出格式
+输入格式：
+
+第 1 行：输入一个整数 \(n\)，表示数组大小 (\(1 \le n \le 20\))。
+第 2 行 至 第 \(n+1\)
+行：每行输入一个整数，依次为数组 \(arr\) 的元素。
+第 \(n+2\) 行：输入一个整数 \(k\)，表示 K 递增的参数 (\(1 \le k \le n-1\))。
+
+输出格式：
+
+输出一个整数，表示使数组成为 K 递增数组所需的最少操作次数。
+
+输入样例 1：
+5543211
+输出样例 1：
+4
+输入样例 2：
+65342612
+输出样例 2：
+3
+参考代码 (C语言)
+#include &lt;stdio.h&gt;#define MAX_N 20int computeLIS(int *subseq, int m) &#123;    if (m == 0) return 0;    int dp[MAX_N];    int maxLen = 1;    for (int i = 0; i &lt; m; i++) &#123;        dp[i] = 1;    &#125;    for (int i = 1; i &lt; m; i++) &#123;        for (int j = 0; j &lt; i; j++) &#123;            if (subseq[i] &gt;= subseq[j]) &#123;                if (dp[j] + 1 &gt; dp[i]) &#123;                    dp[i] = dp[j] + 1;                &#125;            &#125;        &#125;        maxLen = maxLen &gt; dp[i] ? maxLen : dp[i];    &#125;    return maxLen;&#125;int kIncreasing(int* arr, int arrSize, int k) &#123;    int ans = 0;    for (int i = 0; i &lt; k; i++) &#123;        int subseq[MAX_N];        int m = 0;        for (int j = i; j &lt; arrSize; j += k) &#123;            subseq[m++] = arr[j];        &#125;        int lisLen = computeLIS(subseq, m);        ans += (m - lisLen);    &#125;    return ans;&#125;int main() &#123;    int n, k;    scanf(&quot;%d&quot;, &amp;n);    int arr[MAX_N];    for (int i = 0; i &lt; n; i++) &#123;        scanf(&quot;%d&quot;, &amp;arr[i]);    &#125;    scanf(&quot;%d&quot;, &amp;k);    printf(&quot;%d&quot;, kIncreasing(arr, n, k));        return 0; &#125;
+T3 文件夹大小
+任务描述
+给定一个项目的目录树结构，树中的每个节点要么是文件，要么是文件夹。请实现一个
+MIPS 汇编程序，支持对文件系统的多次查询。
+对于每次查询给定的节点编号，你需要计算并输出该节点的
+“子树总大小”：
+
+若该节点为文件，则输出其自身大小。
+若该节点为文件夹，则输出该文件夹内所有内容（包含直接子文件、子文件夹及其递归包含的所有文件）的大小之和。
+注：文件夹本身的大小视为 0。
+
+输入输出格式
+输入格式：
+
+第 1 行：一个整数 \(n\)，表示节点总数（编号 \(1 \sim n\)）。
+节点描述部分：接下来按编号从小到大（先描述节点
+1，再描述节点 2…）依次输入 \(n\)
+个节点的详细信息。对于每个节点：
+
+先输入一行整数 \(type\)（0 或
+1）。
+若 \(type = 0\)
+(文件)：
+
+下一行输入一个整数 \(size\)，表示文件大小。
+
+若 \(type = 1\)
+(文件夹)：
+
+下一行输入一个整数 \(k\)，表示子节点数量。
+再接下来输入 \(k\)
+个整数，依次代表子节点的编号。
+
+
+查询部分：
+
+输入一个整数 \(q\)，表示查询次数。
+接下来 \(q\) 行，每行一个整数 \(id\)，表示要查询的节点编号（保证 \(id\) 合法）。
+
+
+输出格式：
+
+对每个查询输出一行整数，表示该节点对应的子树总大小。
+
+约束与样例
+约束条件：
+
+\(1 \le n \le 150\)
+文件大小 \(0 \le size \le
+10^6\)
+所有文件大小总和 \(\le 10^9\)
+总边数 \(\le 800\)
+查询次数 \(q \le 60\)
+
+输入样例：
+5122 30100114020013135
+输出样例：
+120201
+参考代码 (C语言)
+#include &lt;stdio.h&gt;#define MAXN 155#define MAXE 805int n;int nodeType[MAXN];     // 0: 文件, 1: 文件夹int fileSizeVal[MAXN];  // 文件大小(文件夹为0)int headAdj[MAXN];      // 邻接表头int toEdge[MAXE], nextEdge[MAXE];int edgeCnt;void add_edge(int u, int v) &#123;    toEdge[edgeCnt] = v;    nextEdge[edgeCnt] = headAdj[u];    headAdj[u] = edgeCnt++;&#125;int dfs_sum(int u) &#123;    if (nodeType[u] == 0) &#123;        return fileSizeVal[u];    &#125;    int size = 0;    for (int e = headAdj[u]; e != -1; e = nextEdge[e]) &#123;        int v = toEdge[e];        size += dfs_sum(v);    &#125;    return size;&#125;int main() &#123;    for(int i=0; i&lt;MAXN; i++) headAdj[i] = -1;         edgeCnt = 0;    scanf(&quot;%d&quot;, &amp;n);        for (int i = 1; i &lt;= n; i++) &#123;        int t, x;        scanf(&quot;%d&quot;, &amp;t);                 if (t == 0) &#123;            nodeType[i] = 0;            scanf(&quot;%d&quot;, &amp;x);             fileSizeVal[i] = x;        &#125; else &#123;            nodeType[i] = 1;            int k;            scanf(&quot;%d&quot;, &amp;k);             for (int j = 0; j &lt; k; j++) &#123;                int v;                scanf(&quot;%d&quot;, &amp;v);                add_edge(i, v);            &#125;        &#125;    &#125;    int q;    scanf(&quot;%d&quot;, &amp;q);    while (q--) &#123;        int id;        scanf(&quot;%d&quot;, &amp;id);        int ans = dfs_sum(id);        printf(&quot;%d\n&quot;, ans);    &#125;    return 0;&#125;
+题目分析
+T1 唯一可能卡住的点是代码中的
+long long，要用两个寄存器来表示一个 long long
+型变量，那么如何比较两个 long long
+变量的大小呢？设两个数分别是\(a=\{a1,a0\}\),\(b=\{b1,b0\}\)，那么 \(a&gt;b\) 不是 \(a1&gt;b1 \&amp;\&amp; a0&gt;b0\)，而应该是
+\(a1&gt;b1||a1==b1\&amp;\&amp;a0&gt;b0\)，和字典序类似。
+T3 的话，while
+循环见的次数不太多，我一开始写错了，其它的地方都是直接翻译就行。
+助教问答
+以下为部分问题：
+
+MIPS 编程中宏的作用
+我是否采用直接翻译 C 代码的方法？
+一些寄存器的含义，$ra、HI、LO、PC
+等
+
+笔者的话
+编写 MIPS
+代码，每个人都有自己的方法，我比较习惯于一字不差的翻译，将每一行 C
+代码都直接翻译成
+MIPS，而不会加一些优化之类的，这样的好处是一般不会出错。由于 MIPS
+语言可读性太差，因此我一般会使用 .eqv
+来重命名某些寄存器，比如 T1 中 C 代码出现了 n, x, y
+等变量，那么我就会直接
+.eqv n,$s0，.eqv x,$s1，.eqv y,$s2
+等，这样的话不必书写复杂的寄存器名，而是直接用其对应的变量名就好了。宏也是一个提高代码可读性的方法，下面是我用的宏，上机开始前可以先将这些模版默写出来：
+.macro readInt(%int)	li $v0,5	syscall	move %int,$v0.end_macro.macro printInt(%int)	move $a0,%int	li $v0,1	syscall.end_macro.macro printStr(%str)	move $a0,%str	li $v0,4	syscall.end_macro.macro index(%ans,%i,%j,%n)	mult %i,%n	mflo %ans	add %ans,%ans,%j	sll %ans,%ans,2.end_macro.macro return0	li $v0,10	syscall.end_macro.macro for(%reg,%begin,%end,%for,%for_end)	move %reg,%begin	%for:		slt $t7,%reg,%end		beq $t7,$0,%for_end.end_macro.macro for_end(%reg,%for,%for_end)		add %reg,%reg,1		j %for	%for_end:.end_macro.macro push(%r)	add $sp,$sp,-4	sw %r,($sp).end_macro.macro pop(%r)	lw %r,($sp)	add $sp,$sp,4.end_macro
+P2
+的一个重难点就是递归函数的编写，关于寄存器保护有一套原则，但是鉴于人们经常出错，有人选择直接将
+32
+个寄存器全部保护起来，总之如果始终不知道应该保护哪些，就只能采用这种方法了。
+另外写汇编代码时有很多细节，稍不注意就错了，且 debug 难度也很大，所以
+P2 很多人都没有过，不过也问题不大，P3 之前对分数影响微乎其微。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+        <tag>MIPS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO P4上机</title>
+    <url>/2025/11/10/BUAA-CO%20P4%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Verilog 实现单周期 CPU。
+课上题目
+T1 brc
+brc-rs-rt-rd
+RTL
+temp &lt;- GPR[rs][4:0]if (temp &lt; 25 &amp;&amp; count_ones(GPR[rt][temp+7:temp]) % 2 == 0)    GPR[rd] &lt;- reverse(GPR[rt])else    GPR[rd] &lt;- GPR[rt]
+T2 cabc
+cabc-rs-rt-offset
+RTL
+cross1 &lt;- GPR[rs][23:16]||GPR[rt][7:0]||GPR[rs][31:24]||GPR[rt][15:8]cross2 &lt;- GPR[rt][7:0]||GPR[rs][23:16]||GPR[rt][31:24]||GPR[rs][15:8]xor_result &lt;- cross1 ^ cross2cnt1 &lt;- count_zeros(xor_result[31:16])cnt2 &lt;- count_zeros(xor_result[15:0])if (cnt1 == cnt2)    PC &lt;- PC + 4 + sign_ext(offset||00)else    GPR[rt] &lt;- xor_result
+T3 lhboc
+lhboc-base-rt-offset
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]temp1 &lt;- count_ones(memword[15:0])temp2 &lt;- count_ones(memword[31:16])if (temp1 &gt;= temp2)    GPR[rt] &lt;- sign_ext(memword[15:0])else    GPR[rt] &lt;- sign_ext(memword[31:16])
+题目分析
+T1 是运算类指令，新加一个 ALUOp 的取值，然后在 ALU
+中加入对应的计算逻辑。T2 是跳转类指令的变体，可以仿照 beq
+来添加，但注意不跳转时还要写寄存器。T3 是访存类指令，仿照
+lw 来做，本质就是对 lw
+回写寄存器的数据加了一些处理而已。
+助教问答
+以下为部分问题：
+
+看看测试程序和设计文档
+CTRL 模块的实现思路，EXT 输入的来源是什么，beq 指令的数据通路
+Verilog 中使用什么函数读取机器码
+我的评测机是不是全自动的？评测机生成的汇编程序是否有效？如何保证
+sw 和 lw 指令的地址偏移量是合法的？
+
+笔者的话
+从 P4 开始就要迭代开发 Verilog CPU 了，P4 课下就是直接将 P3
+的电路转化成 Verilog 代码，难度不大。还是可以自己加一些额外的指令，比如
+j、jalr
+等。另外可以提前预留出接口，比如将新加的指令提前命名成 new0
+变量，新加的信号命名成 newSign
+并连接到对应的模块等等，上机时直接修改就行了。
+添加每一个新指令，我一般都是从
+CTRL（控制模块）开始，每设置一个控制信号的值，就在对应的模块中增加新逻辑，如
+NPCOp 对应 NPC 模块，DMWr 对应
+DM，这样不容易漏。另外也有学长建议过使用 git
+来管理版本，学有余力也可以尝试。上机时间紧，且我对 git
+的掌握尚不熟练，所以我没有尝试过。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+        <tag>Verilog</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO P3上机</title>
+    <url>/2025/11/03/BUAA-CO%20P3%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Logisim 实现单周期 CPU。
+课上题目
+T1 revi
+revi-rs-rt-imm16
+RTL
+temp &lt;- GPR[rs]result &lt;- temp[31-imm16:0]||reverse(temp[31:32-imm16])GPR[rt] &lt;- result
+T2 blz
+blz-rs-rt-offset
+RTL
+temp1 &lt;- count_leading_zeros(GPR[rs])temp2 &lt;- count_leading_zeros(GPR[rt])if (temp1 == temp2)     PC &lt;- PC + 4 + sign_ext(offset||00)else if (temp1 &gt; temp2)    PC &lt;- PC + 4    GPR[rs] &lt;- temp1else    PC &lt;- PC + 4    GPR[rs] &lt;- temp2
+T3 lwf
+lwf-base-rt-offset
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]filter &lt;- memword &amp; GPR[rt]ones &lt;- count_ones(filter)if (ones % 2 == 0)    GPR[rt] &lt;- memwordelse    GPR[(rt+1) % 32] &lt;- memword
+题目分析
+总的来说难度都不大，只要考前充分理解了 CPU 的数据通路，理解单周期 CPU
+是怎么跑那几条指令的，那么应该就能通过了。
+T1 需要将一个数翻转，我是用两个 Splitter
+反向拼接，就是手动修改每个端口的值有点繁琐。T2
+需要求前导零的个数，应该用 Bit Adder
+元件，如果想不到这个元件那难度就大了。有一个 Logisim
+的易错点，一个模块加了新的输出端口后，那么原端口的位置可能都会发生变化，这就导致在顶层连好的线实际上都断开了。这次上机时我们机房延长到了
+21:30 结束，从 P4 开始就只有两小时了。并注意，在 P3
+及之后，每个题目都要写测试程序（用新指令写一些汇编程序），虽然大部分人都是做完之后才写测试程序吧。
+助教问答
+以下为部分问题：
+
+看看测试程序和设计文档
+我评测机的设计思路，编写过程中出现了哪些错误，如何得到 Logisim
+的结果，评测机中代码生成的逻辑是什么，评测机是否测出我 CPU
+的问题，数据强度如何
+我 CPU 中 CTRL 模块的设计思路，0 号寄存器恒等于 0 是如何实现的
+
+笔者的话
+从 P3 开始就该开发 CPU
+了，每次上机的题目基本上都是运算类、跳转类、访存类各一道。上机之前一定要对
+CPU
+进行充分的测试，学有余力可以自己写评测机，往届学长也搞了一些评测机，可以直接拿来用，比如
+COT
+等。上机时可以先裸交一发，如果能过一些点就说明课下的设计基本是没问题的，否则就要先改课下的
+bug（虽然上机两小时内独立发现并修复 bug 非常难）。
+P3 仍然是使用 Logisim，建议适当利用
+Tunnel，用的太少，导线会太乱；用太多就不容易理清接线关系。另外在
+CTRL（控制模块）中，由 Instr
+生成对应的指令独热码时，不要用与门阵列，可以直接用
+Comparator 的，很简洁。另外可以提前给 CPU
+加一些要求之外的指令，比如
+j、jal、jr、jalr，加上这几个后，对跳转类指令的理解就更加深入了。还有学长加过
+lh、lb、sh、sb
+等指令，不过加这几个指令的工作量比较大，建议量力而行。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>Logisim</tag>
+        <tag>CO</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO P5上机</title>
+    <url>/2025/11/17/BUAA-CO%20P5%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Verilog 实现流水线 CPU。
+课上题目
+T1 ccc
+ccc-rs-rt-rd
+RTL
+temp1 &lt;- count_leading_zeros(GPR[rs])temp2 &lt;- count_leading_ones(GPR[rt])if (temp1 &gt; temp2)    GPR[rd] &lt;- GPR[rs][31:16] || GPR[rt][15:0]else    GPR[rd] &lt;- GPR[rt][31:16] || GPR[rs][15:0]
+T2 cjoc
+cjoc-rs-rt-offset
+RTL
+ext_offset &lt;- sign_ext(offset||00)id &lt;- ext_offset[4:2]temp &lt;- GPR[rs][id + 7 : id]condition &lt;- (temp &gt; 8&#x27;d21)if (condition)    GPR[rt] &lt;- PC + 8    PC &lt;- PC + 4 + ext_offsetelse     NullifyCurrentInstruction()
+T3 ccs
+ccs-base-rt-offset
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]high_ones &lt;- count_ones(memword[31:16])low_ones &lt;- count_ones(memword[15:0])if (high_ones &gt; low_ones)    dest_reg &lt;- 31    GPR[dest_reg] &lt;- memword ^ GPR[rt]else     dest_reg &lt;- high_ones    GPR[dest_reg] &lt;- memword ^ GPR[rt]
+题目分析
+T1 是运算类指令，经历了 P3 和 P4，应该对这种题目很熟悉了。T2 是
+bltzal（条件跳转并链接）的变体，可能的难点是清空延迟槽如何表示，具体可以参考往届博客，其等价于让
+FD 级流水线寄存器将原指令替换成 nop，即
+REG_D_flush = newSign &amp;&amp; !D_b_jump &amp;&amp; !stall，式中
+newSign 是我从 D_CTRL
+中新接出来的输出端口，当且仅当是该 ccc 指令时置 1。
+T3 是条件访存题，主要的难点是不能无脑阻塞，而是要分析可能的 GRF
+写地址。ccs 的写寄存器地址只可能是 1~16 和 31，所以如果 D
+级是读寄存器的指令，而且读的寄存器在上面的范围，而且 E 和 M 级是
+ccs 指令时，就要阻塞了。但这道题我到最后还是有两个点
+TLE，经过课后反思，因为我是在 W 级才将 dest_reg
+修改正确，其实在 M 级读出 data 后就完全可以了，因此是这里导致了
+TLE。
+助教问答
+以下为部分问题：
+
+看看测试程序和设计文档
+我清空延迟槽是如何学会的
+为什么要设计延迟槽
+讲一下第二题的解题思路
+
+笔者的话
+从 P4 到 P5
+可谓一座高山，从单周期到流水线，有太多的模块需要修改和完善，即使写完了，那么通过课下测试也是一个难点。建议多用评测机对拍，可以和
+MARS 对拍，也可以和同学甚至往届的 CPU 对拍。对 CPU
+的控制单元，指令分类我认为是一个好的做法，我将指令分成了这几类：load、store、calcR、calcI、branch、jumpR、jumpI、jumpLink、branchLink
+这几类（命名不太规范，见谅），每一类指令的相关控制信号和阻塞逻辑都大致是相同的。上机时将新指令归入相应的类会节省很多时间，比如是
+I 型计算类指令，就归入 calcI
+类，那么阻塞模块中基本就不用再修改了。不过对于一些特殊的指令，需要将其归入多个类，具体细节还需要自己研究透彻。
+P5
+的题目也有一些新变化，比如跳转题会有清空延迟槽，访存题会有条件访存。建议自己尝试添加一下
+bltzal
+指令，这个和考试的跳转题目比较类似。课程网站上也有推荐题目，一些经典题，比如
+bonall、blztal、lhogez
+等，上机前还是多做一做，确保理解了各个指令的数据通路。如果看不到推荐题（少数人有这种情况），可以用脚本爬一下
+cscore
+平台（爬虫的方法和结果见我另一篇帖子）。清空延迟槽可以将正确的代码先放到注释中，有备无患。然后多给
+CPU 预留一些接口，比如条件访存题，写入的寄存器值或地址直到 M
+级才知道，我一般是在顶层的 M 级直接修正，我在 CTRL
+模块中直接引出了一个新信号
+Use_Dynamic_A3，对于条件访存指令，这个控制信号的输出值就是
+1。同时也可以发现，题目中经常有求前导 0 的个数、前导 1
+的个数等函数，因此课下就准备好相关函数模板，上机时直接用，避免重复造轮子。以下是我的函数模板：
+//注意：一定先把位宽改成你所需要的位宽再使用这些函数！// 计算前导0个数function [31:0] lead0;input [31:0] x;integer i;begin    lead0=0;    for(i=31;i&gt;=0;i=i-1)begin        if(x[i]==0) lead0=lead0+1;        else i=-1;    endendendfunction// 计算前导1个数function [31:0] lead1;input [31:0] x;integer i;begin    lead1=0;    for(i=31;i&gt;=0;i=i-1)begin        if(x[i]==1) lead1=lead1+1;        else i=-1;    endendendfunction// 计算后导0个数function [31:0] trail0;input [31:0] x;integer i;begin    trail0=0;    for(i=0;i&lt;=31;i=i+1)begin        if(x[i]==0) trail0=trail0+1;        else i=32;    endendendfunction// 计算后导1个数function [31:0] trail1;input [31:0] x;integer i;begin    trail1=0;    for(i=0;i&lt;=31;i=i+1)begin        if(x[i]==1) trail1=trail1+1;        else i=32;    endendendfunction// 统计0的个数function [31:0] cnt0;input [31:0] x;integer i;begin    cnt0=0;    for(i=0;i&lt;=31;i=i+1)begin        cnt0=cnt0+!x[i];    endendendfunction// 统计1的个数function [31:0] cnt1;input [31:0] x;integer i;begin    cnt1=0;    for(i=0;i&lt;=31;i=i+1)begin        cnt1=cnt1+x[i];    endendendfunction// 最高位1的位置function [31:0] highbit1;input [31:0] x;integer i;begin    highbit1=32;    for(i=31;i&gt;=0;i=i-1)begin        if(x[i]==1)begin            highbit1=i;            i=-1;        end    endendendfunction// 最高位0的位置function [31:0] highbit0;input [31:0] x;integer i;begin    highbit0=32;    for(i=31;i&gt;=0;i=i-1)begin        if(x[i]==0)begin            highbit0=i;            i=-1;        end    endendendfunction// 最低位1的位置function [31:0] lowbit1;input [31:0] x;integer i;begin    lowbit1=32;    for(i=0;i&lt;=31;i=i+1)begin        if(x[i]==1)begin            lowbit1=i;            i=32;        end    endendendfunction// 最低位0的位置function [31:0] lowbit0;input [31:0] x;integer i;begin    lowbit0=32;    for(i=0;i&lt;=31;i=i+1)begin        if(x[i]==0)begin            lowbit0=i;            i=32;        end    endendendfunction// 判断是否为完全平方数function is_square;input [31:0] x;integer i;begin    is_square=0;    for(i=0;i*i&lt;=x;i=i+1)begin        if(i*i==x)begin            is_square=1;            i=x+1;        end    endendendfunction// 不大于该数的最大完全平方数function [31:0] max_square;input [31:0] x;integer i;begin    max_square=0;    for(i=0; i*i&lt;=x &amp;&amp; i&lt;=46340; i=i+1)begin        max_square=i*i;    endendendfunction// 判断是否为质数function is_prime;input [31:0] x;integer i;begin    if(x &lt; 2) is_prime = 0;    else begin        is_prime = 1;        for(i=2; i*i&lt;=x; i=i+1) begin            if(x%i==0) begin                is_prime = 0;                i = x;            end        end    endendendfunction// 不大于该数的最大质数function [31:0] max_prime;input [31:0] x;integer i, j;reg is_p;begin    max_prime=0;    for(i=x; i&gt;=2; i=i-1)begin        is_p=1;        for(j=2; j*j&lt;=i; j=j+1)begin            if(i%j==0)begin                is_p=0;                j=i;            end        end        if(is_p)begin            max_prime=i;            i=0;        end    endendendfunction
+关于上机时的 debug，我的建议是将魔改版
+MARS也打包交上去，如果某题 WA 了，自己编写一段测试程序，先用
+testbench 仿真得到相应输出，再用魔改版 MARS
+得到正确的输出（注意：上机时提供的课程组 MARS 和上面这个也不同，上面的
+MARS 对每条写 GRF 或者 DM
+的指令都会输出结果，而课程组提供的不能），再直接将两个输出对比，尽量不要看复杂的波形图了。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+        <tag>Verilog</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO P6上机</title>
+    <url>/2025/12/01/BUAA-CO%20P6%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Verilog 实现流水线 CPU。
+第一次课上题目
+T1 mygo
+mygo-rs-rt
+RTL
+function pattern_value(g):    return count_leading_zeros(g) * 2 + count_ones(g)function characteristic_code(A):    sum &lt;- 0    for i in 0..7:        g &lt;- A[4*i+3 : 4*i]        sum &lt;- sum + pattern_value(g) * (i + 1)    return sum    MDU_Start(Busy_Cycles = 5)temp1 &lt;- characteristic_code(GPR[rs])temp2 &lt;- characteristic_code(GPR[rt])if (temp1 &gt; temp2)    HI &lt;- GPR[rs]    LO &lt;- GPR[rt]else if (temp1 &lt; temp2)    HI &lt;- GPR[rt]    LO &lt;- GPR[rs]else    HI &lt;- GPR[rs] ^ GPR[rt]    LO &lt;- GPR[rs] ^ GPR[rt]
+T2 jalx
+jalx-rs-rt-offset
+RTL
+temp &lt;- GPR[rs] ^ GPR[rt]x &lt;- temp[4:0]// Find the largest perfect square less than or equal to xwhile (!is_perfect_square(x))    x &lt;- x - 1GPR[x] &lt;- PC + 8PC &lt;- PC + 4 + sign_ext(offset||00)
+T3 lbo
+lbo-base-rt-offset
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]byte &lt;- vAddr[1:0]temp &lt;- memword[8*byte+7 : 8*byte]for i in 0..3:    temp1 &lt;- GPR[rt][8*i+7 : 8*i]    if (temp != temp1)        if (count_ones(temp) &gt; count_ones(temp1))            GPR[rt][8*i+7 : 8*i] &lt;- temp
+第二次课上题目
+T1 mujica
+mujica-rs-rt-imm16
+RTL
+ext32 &lt;- sign_ext(imm16)cnt1 &lt;- count_ones(imm16)if (cnt1 % 2 == 0)    temp &lt;- GPR[rs] &amp; ext32    GPR[rt] &lt;- temp + GPR[rt]else    temp &lt;- GPR[rs] | ext32    GPR[rt] &lt;- temp ^ GPR[rt]
+T2 botto
+botto-rs-rt-offset
+RTL
+function hamming_distance(x, y):    return count_ones(x ^ y)    hd &lt;- hamming_distance(GPR[rs], GPR[rt])if (hd &lt; 8)    PC &lt;- PC + 4 + sign_ext(offset||00)    GPR[rt] &lt;- hdelse if (hd &lt;= 24)    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rt] &gt;&gt;&gt; hdelse    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rs] | GPR[rt]
+T3 lwcm
+lwcm-base-rt-offset
+本题要求在 M 级维护一个 32 位寄存器 WD，复位值为
+32'h0。
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]if (memword == WD)    GPR[rt] &lt;- memwordelse    GPR[26] &lt;- memwordWD &lt;- memword
+题目分析
+第一次上机的 T1
+是乘除指令的变体，在乘除槽中添加相关运算，难度应该不算大，但是笔者最终也没有通过，可能是当时现场写的
+count_leading_zeros
+等函数，比较着急导致细节写错了吧。因此可以提前把这些函数都加到 CPU
+中，具体模板在上篇文章末。
+T2 做起来比较棘手，当时我看名字是 jalx，就一直当成
+jalr 的变体做的，但事后发现其实更像是 bltzal
+的变体，只不过无条件跳转而已，最终我很多点都 TLE 了，没有通过。T3
+比较简单。
+第二次上机明显比第一次简单，T1
+不涉及乘除槽，还是普通的运算类，需要注意这个题同时涉及了
+GPR[rs]、GPR[rt] 和 ext32，因此可以在 ALU 中再加一个输入端口。
+T2 有一个细节就是写入的寄存器地址可能是 rs 或者
+rt，而写入寄存器地址只有得到寄存器值之后才能确定，因此可以在 E
+级刚开始加一个特判，将正确的地址修正回来，本题阻塞逻辑我没有改，仅仅将新指令分到
+branch 类，然后自动采用的 b 类阻塞方式。T3
+是常见的条件访存类型，关于阻塞，我是判断如果 D 级需要用 rt 或者 26
+号寄存器值，才考虑阻塞。
+助教问答
+以下为部分问题：
+
+看看测试程序和设计文档
+讲解第二题的思路
+讲解乘除槽的实现思路
+我的评测机是如何写的
+
+笔者的话
+P6 相对 P5，CPU
+主要的修改点是增加了几条新指令、乘除槽、存储器外置，总体难度不大。上机的题型只有运算类题目可能出乘除相关的，其余两道和
+P5 差不多，一般而言简单一些。到了 P5、P6
+挂的人肯定就多了起来，不过也不用担心，每人有 3 次挂 P 的机会，只要通关
+P7，实验部分成绩就都差不多。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+        <tag>Verilog</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO Pre上机</title>
+    <url>/2025/09/29/BUAA-CO%20Pre%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节主要是掌握三个工具，三道题目依次为 Logisim、Verilog、MIPS。
+课上题目
+T1 推箱子
+任务描述
+我们需要在 Logisim
+中设计一个软电路来模拟简易的推箱子游戏。游戏地图构建在一个二维平面直角坐标系中，范围是
+\(0 \le x, y \le 5\) 的正方形区域（共
+\(6 \times 6\) 个点）。
+箱子的起始位置（包括 Reset 后）固定在 \((0,0)\)，目标位置固定在
+\((5,5)\)。
+地图中包含 6 个固定的障碍点，分别为：\((1,1)\)、\((1,2)\)、\((2,1)\)、\((3,4)\)、\((4,3)\)、\((4,4)\)。
+控制逻辑
+系统输入 \((dx, dy)\)
+表示箱子的移动变化量，且保证只会出现 \((0,0)\)、\((1,0)\) 或 \((0,1)\) 这三种情况。
+设当前坐标为 \((x,
+y)\)，则预期坐标为 \((x+dx,
+y+dy)\)：
+
+如果预期坐标合法（即在地图边界内且不是障碍），则在下一周期将箱子移动到该位置；
+如果预期坐标非法（越界或撞墙），则箱子保持原地不动，并将报错信号
+flag 置为 1（持续一个周期）。
+
+输出判定
+
+当箱子成功到达目标点 \((5,5)\)
+时，输出信号 out 为 1，否则为 0。
+flag 信号默认为 0，仅在尝试非法移动时置为 1。
+
+接口列表
+
+输入：clk (时钟), reset
+(复位), dx (x位移), dy (y位移)
+输出：out (到达目标),
+flag (非法移动报错)
+
+T2 翻涌数字
+题目描述
+将 32 位输入 \(a\) 视为 8 个 4
+位宽的数，分别命名为 \(a_0, a_1, \dots,
+a_7\)（其中\(a_i = a[(i + 1) \cdot 4 -
+1 : i \cdot 4]\)）。
+对每一个 \(a_i\)
+进行前缀和计算，公式如下：
+\[a_i = \sum_{j=0}^{i} a_j\]
+计算规则
+
+溢出处理：若累加结果超过 4 位，仅保留低 4 位（即对
+16 取模）。
+输出格式：将计算后的 \(a_i\) 按原顺序拼接，作为 32 位输出
+out。
+
+样例
+
+输入：32'h11111111
+输出：32'h87654321
+
+接口列表
+
+输入：a[31:0]
+输出：out[31:0]
+
+T3 子矩阵提取
+题目描述
+编写 MIPS 汇编程序，从一个 \(4 \times
+4\) 的大矩阵 \(A\) 中，提取以
+\((i, j)\) 为左上角、大小为 \(m \times n\) 的子矩阵。
+输入格式
+输入共 20 行，均通过 syscall 读取整数：
+
+第 1-16 行：依次输入大矩阵 \(A\) 的元素 \(t\)（按行优先顺序，即第 0 行第 0 列、第 0
+行第 1 列……）。
+第 17 行：子矩阵行数 \(m\) (\(1 \le m
+\le 4\))。
+第 18 行：子矩阵列数 \(n\) (\(1 \le n
+\le 4\))。
+第 19 行：起始行坐标 \(i\) (\(0 \le i
+\le 3\))。
+第 20 行：起始列坐标 \(j\) (\(0 \le j
+\le 3\))。
+
+输出格式
+
+合法提取：输出 \(m \times
+n\) 的子矩阵。共 \(m\) 行，每行
+\(n\) 个元素，元素间用空格分隔。
+越界报错：若子矩阵超出大矩阵边界，仅输出字符串
+Out of bounds。
+
+约定与约束
+
+矩阵索引从 0 开始。
+请勿使用 .globl main。
+程序结束时必须使用以下代码：
+li $v0, 10syscall
+
+测试样例
+
+样例 1
+
+Input:
+123456789101112131415162211
+Output:
+6 710 11
+
+样例 2
+
+Input:
+432187651211109131415163222
+Output:
+Out of bounds
+
+
+题目分析
+T1
+是状态机问题，题干可能看上去比较新颖。一定不要自己搭组合电路，而是用
+Logisim 的 Analyze Circuit
+功能，输入真值表，自动产生对应的组合电路。还有可以多多利用 Logisim
+的子电路功能，将具体的组合逻辑放到子电路，从而使顶端模块清爽、简洁。还要注意
+flag 置 1 要持续一周期，因此在它前面还要加一个寄存器。
+T2 比较简单，使用 for 循环即可，但是 for
+循环似乎很多人都忘了怎么写了（也包括我在内），不用循环的话直接展开也不难。还有如果定义成
+4 位的变量，Verilog 似乎默认会自动取模，因此模 16 也可以不写。
+T3 中规中矩，一定要多利用宏，例如
+readInt、printInt、printStr
+等，for
+循环也可以封装成宏。但本题我犯了一个错误：我定义了一个
+printStr 宏函数，这个函数会在内部在 .data
+段中定义一个字符串，可能是由于字节不对齐的原因，使用这个函数后之后的地址可能不是
+4 的整数倍，因此程序不能正确运行，修改后就成功 AC
+了。因此尽量不要在函数内部定义字符串，而是在 .data
+里面定义好，并且先定义数组，再定义字符串，就可以尽量避免这种字节不对齐的问题。
+笔者的话
+Pre
+上机不占分，主要是熟悉一下形式，这次是只有做出三道才算通过，建议上机前再读一遍指导书，基本的知识点要牢记，比如状态机设计、Verilog
+中 for 循环的写法、MIPS 编程等等。还有，前几次上机 21:00
+后还可以继续做到 22:00，同时可以查看每道题的提示，因此不用太过担心。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>Logisim</tag>
+        <tag>CO</tag>
+        <tag>MIPS</tag>
+        <tag>Verilog</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO P7上机</title>
+    <url>/2025/12/08/BUAA-CO%20P7%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Verilog 实现 MIPS 微系统，支持中断和异常。
+课上题目
+T1~T4
+都是课下强测，分别是功能强测、异常强测、中断强测、冲突强测。
+T5 monitor
+在 P7 系统中（DM 范围 0x0000 ~
+0x2fff），新增一套内存监视控制机制。需在 CP0
+中扩展三个专用寄存器，并增加一条专用配置指令 monitor，配合
+sw 指令实现对特定内存区间的写入保护。
+1. 新增 CP0 寄存器
+系统复位后，以下三个寄存器均置为 0。
+
+
+
+
+
+
+
+
+
+编号
+寄存器名
+功能描述
+读写权限
+
+
+
+
+18
+DMBoundaryHI
+监视区间上界
+mfc0 可读；仅 monitor 可写
+
+
+19
+DMBoundaryLO
+监视区间下界
+mfc0 可读；仅 monitor 可写
+
+
+20
+DMEnable
+监视使能控制字
+mfc0 可读；仅 monitor 可写
+
+
+
+
+mtc0：仅能写入原有的 12-15 号寄存器（SR, Cause,
+EPC, PrID ），写入 18-20 号寄存器无效。
+monitor：仅能写入 18-20 号寄存器，写入 12-15
+号寄存器无效。
+mfc0：可读取上述所有寄存器。
+
+2. 逻辑定义
+使能信号生成
+DMEnable
+寄存器的值并不直接作为使能信号，需进行位统计比较：
+high_ones &lt;- count_ones(DMEnable[31:16])low_ones &lt;- count_ones(DMEnable[15:0])Monitor_Active &lt;- (high_ones &gt; low_ones)
+区间检查逻辑
+受监视的内存区间为 [DMBoundaryLO, DMBoundaryHI)。
+对于 sw
+指令，写入操作涉及的所有字节都必须位于该区间内才算合法。
+3. 指令与异常描述
+指令一：monitor
+monitor-rt-rd
+RTL：
+if (rd==18 &amp;&amp; GPR[rt] &gt;= DMBoundaryLO) ||(rd==19 &amp;&amp; GPR[rt] &lt;= DMBoundaryHI) || (rd==20）	CP0[rd] &lt;- GPR[rt]else if (rd==18 &amp;&amp; !GPR[rt] &gt;= DMBoundaryLO) ||(rd==19 &amp;&amp; !GPR[rt] &lt;= DMBoundaryHI)	SignalException(AdES)
+该指令用于更新 CP0
+的扩展寄存器。在写入时需进行合法性检查：更新后必须满足
+\(DMBoundaryLO \le
+DMBoundaryHI\)。如果写入操作导致该条件不满足，则不进行更新并触发异常。
+指令二：sw
+sw-base-rt-offset
+RTL：
+vAddr &lt;- GPR[base] + sign_ext(offset)high_ones &lt;- count_ones(DMEnable[31:16])low_ones &lt;- count_ones(DMEnable[15:0])Monitor_Active &lt;- (high_ones &gt; low_ones)is_in_range &lt;- (CP0[19] &lt;= vAddr) &amp;&amp; ((vAddr + 3) &lt; CP0[18])if (vAddr[1:0] != 00) || (Monitor_Active &amp;&amp; !is_in_range)    SignalException(AdES)else    memory[vAddr] &lt;- GPR[rt]
+当监视功能开启时，sw 指令需检查目标地址是否越界。
+题目分析
+T5 很复杂，但难度可能略低于去年的 withdraw。可能的一个难点是
+sw 的全部字节地址，其实就是 [vaddr, vaddr+3] 这个区间。我
+debug 许久才发现是一个条件中少加了括号，和 &amp;&amp; 和
+|| 的优先级有关，最终虚惊一场。
+助教问答
+以下为部分问题：
+
+看看测试程序和设计文档
+我是如何处理多个流水级、多条指令产生的异常的优先级的？
+如何判断一条指令是否处于延迟槽？
+我做这道题过程中遇到了什么问题
+我对计组课程有没有什么建议
+
+笔者的话
+P7 的课下可谓是最后一舞，笔者感觉比 P5
+还难。代码具体写法可以多参考一下 dalao
+的博客，此处只谈一些注意事项。通过 P7
+课下的弱测的难度就很大，每人刚写出来的代码往往都有数不清的
+bug，这时候就可以再次借助评测机了，不过 P7 和 MARS
+对拍就不合适了，只能找同学或者学长的 CPU
+来对拍，只有对拍几千轮都没有问题，那才敢比较放心。
+上机是 5 道做对 4
+道就算通过。开始后很拼手速，前四个题都是直接提交，如果有过不了的，那就需要现场
+debug。第五题一般是加新指令或者新异常，也可能两个都有，课下一定要充分理解每个异常是怎么产生和传递的，这样课上才能得心应手。另外
+P7 很多人会选择手动 gap，即只通过四道，会选择下周再试一次，因为 P7
+对成绩影响似乎大一点。还有一个细节，就是 handler.asm
+的代码也要打包提交（具体代码参考往届博客，反正这个自己写估计不太可能），不然用
+ISE 仿真时应该就没法处理异常的情况，也就很难 debug
+了（没错，我就忘交了）。
+P7
+结束了，那实验部分就告一段落，该开始理论部分的学习了。理论部分如果老师讲的浅，可以看其他老师班
+PPT，或者直接看王道书，王道上可以参考的主要就是存储系统，剩下的数制、流水线、总线、IO
+等也可以稍微参考，讲的都比较深，有些需要自己做取舍。另外 961
+的计组部分也可以做一做，仅有的两套往年题比较常规，去年的题量和难度感觉还是很大的，所以也做好心理准备（）
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+        <tag>Verilog</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>BUAA-CO P1上机</title>
     <url>/2025/10/20/BUAA-CO%20P1%E4%B8%8A%E6%9C%BA/</url>
     <content><![CDATA[本节考查内容为
@@ -299,960 +1306,8 @@ testbench，不要因为某题简单就不写，因为最后助教会一一检�
         <category>计算机组成</category>
       </categories>
       <tags>
+        <tag>CO</tag>
         <tag>Verilog</tag>
-        <tag>CO</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO P6上机</title>
-    <url>/2025/12/01/BUAA-CO%20P6%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Verilog 实现流水线 CPU。
-第一次课上题目
-T1 mygo
-mygo-rs-rt
-RTL
-function pattern_value(g):    return count_leading_zeros(g) * 2 + count_ones(g)function characteristic_code(A):    sum &lt;- 0    for i in 0..7:        g &lt;- A[4*i+3 : 4*i]        sum &lt;- sum + pattern_value(g) * (i + 1)    return sum    MDU_Start(Busy_Cycles = 5)temp1 &lt;- characteristic_code(GPR[rs])temp2 &lt;- characteristic_code(GPR[rt])if (temp1 &gt; temp2)    HI &lt;- GPR[rs]    LO &lt;- GPR[rt]else if (temp1 &lt; temp2)    HI &lt;- GPR[rt]    LO &lt;- GPR[rs]else    HI &lt;- GPR[rs] ^ GPR[rt]    LO &lt;- GPR[rs] ^ GPR[rt]
-T2 jalx
-jalx-rs-rt-offset
-RTL
-temp &lt;- GPR[rs] ^ GPR[rt]x &lt;- temp[4:0]// Find the largest perfect square less than or equal to xwhile (!is_perfect_square(x))    x &lt;- x - 1GPR[x] &lt;- PC + 8PC &lt;- PC + 4 + sign_ext(offset||00)
-T3 lbo
-lbo-base-rt-offset
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]byte &lt;- vAddr[1:0]temp &lt;- memword[8*byte+7 : 8*byte]for i in 0..3:    temp1 &lt;- GPR[rt][8*i+7 : 8*i]    if (temp != temp1)        if (count_ones(temp) &gt; count_ones(temp1))            GPR[rt][8*i+7 : 8*i] &lt;- temp
-第二次课上题目
-T1 mujica
-mujica-rs-rt-imm16
-RTL
-ext32 &lt;- sign_ext(imm16)cnt1 &lt;- count_ones(imm16)if (cnt1 % 2 == 0)    temp &lt;- GPR[rs] &amp; ext32    GPR[rt] &lt;- temp + GPR[rt]else    temp &lt;- GPR[rs] | ext32    GPR[rt] &lt;- temp ^ GPR[rt]
-T2 botto
-botto-rs-rt-offset
-RTL
-function hamming_distance(x, y):    return count_ones(x ^ y)    hd &lt;- hamming_distance(GPR[rs], GPR[rt])if (hd &lt; 8)    PC &lt;- PC + 4 + sign_ext(offset||00)    GPR[rt] &lt;- hdelse if (hd &lt;= 24)    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rt] &gt;&gt;&gt; hdelse    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rs] | GPR[rt]
-T3 lwcm
-lwcm-base-rt-offset
-本题要求在 M 级维护一个 32 位寄存器 WD，复位值为
-32'h0。
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]if (memword == WD)    GPR[rt] &lt;- memwordelse    GPR[26] &lt;- memwordWD &lt;- memword
-题目分析
-第一次上机的 T1
-是乘除指令的变体，在乘除槽中添加相关运算，难度应该不算大，但是笔者最终也没有通过，可能是当时现场写的
-count_leading_zeros
-等函数，比较着急导致细节写错了吧。因此可以提前把这些函数都加到 CPU
-中，具体模板在上篇文章末。
-T2 做起来比较棘手，当时我看名字是 jalx，就一直当成
-jalr 的变体做的，但事后发现其实更像是 bltzal
-的变体，只不过无条件跳转而已，最终我很多点都 TLE 了，没有通过。T3
-比较简单。
-第二次上机明显比第一次简单，T1
-不涉及乘除槽，还是普通的运算类，需要注意这个题同时涉及了
-GPR[rs]、GPR[rt] 和 ext32，因此可以在 ALU 中再加一个输入端口。
-T2 有一个细节就是写入的寄存器地址可能是 rs 或者
-rt，而写入寄存器地址只有得到寄存器值之后才能确定，因此可以在 E
-级刚开始加一个特判，将正确的地址修正回来，本题阻塞逻辑我没有改，仅仅将新指令分到
-branch 类，然后自动采用的 b 类阻塞方式。T3
-是常见的条件访存类型，关于阻塞，我是判断如果 D 级需要用 rt 或者 26
-号寄存器值，才考虑阻塞。
-助教问答
-以下为部分问题：
-
-看看测试程序和设计文档
-讲解第二题的思路
-讲解乘除槽的实现思路
-我的评测机是如何写的
-
-笔者的话
-P6 相对 P5，CPU
-主要的修改点是增加了几条新指令、乘除槽、存储器外置，总体难度不大。上机的题型只有运算类题目可能出乘除相关的，其余两道和
-P5 差不多，一般而言简单一些。到了 P5、P6
-挂的人肯定就多了起来，不过也不用担心，每人有 3 次挂 P 的机会，只要通关
-P7，实验部分成绩就都差不多。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>Verilog</tag>
-        <tag>CO</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO P0上机</title>
-    <url>/2025/10/13/BUAA-CO%20P0%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为
-Logisim，一般是一道组合逻辑和两道时序逻辑，时序逻辑中一个是有限状态机。
-课上题目
-T1 起伏数列
-任务描述
-我们需要在 Logisim 中设计一个 Moore
-型有限状态机，用于实时监测输入数列的波动趋势。输入 \(a\) 为 5
-位无符号整数。
-数列的初始值默认为 \(a_0 =
-7\)。即复位后，读入的第一个数据 \(a_1\) 将与 7 进行比较。
-判定逻辑
-设当前输入为 \(a_{m}\)，上一周期输入为 \(a_{m-1}\)（题目保证相邻输入不相等）：
-
-若 \(a_{m} &gt;
-a_{m-1}\)，记为“起”；
-若 \(a_{m} &lt;
-a_{m-1}\)，记为“伏”。
-
-我们需要检测的目标模式是 “起 \(\rightarrow\) 起 \(\rightarrow\) 伏 \(\rightarrow\) 起”。
-状态机支持循环检测，即当前成功匹配序列的最后一个“起”，可以作为下一个序列的开头。
-当且仅当最近四个周期的变化趋势严格满足“起起伏起”时，输出
-output 为 1，其他情况 output 默认为 0。
-样例
-串行输入串为：(7)8901215，则状态机输出为：(0)0001001。
-接口列表
-
-
-
-端口名
-位宽
-方向
-功能描述
-
-
-
-
-a
-5
-I
-输入
-
-
-clk
-1
-I
-时钟信号
-
-
-reset
-1
-I
-异步复位信号
-
-
-output
-1
-O
-结果
-
-
-
-T2 二进制移位计算器
-任务描述
-我们需要在 Logisim 中设计一个 Mealy
-型有限状态机，实现一个支持特定移位运算的二进制计算器。
-系统基于 8 位无符号整数
-进行运算。在每个时钟周期，系统接收 2 位的操作码 op 和 8
-位的操作数
-operand，根据当前内部寄存器的值进行“左移一位”后，再与输入操作数进行运算，并更新寄存器状态。
-运算逻辑
-设当前寄存器内的值为 \(Reg\)，输入的操作数为 \(Val\)，运算结果记为 \(Result\)。
-所有运算均在 8 位
-宽度下进行，计算结果若溢出则自动截断（保留低 8 位）。
-
-
-
-
-
-
-
-
-op
-功能描述
-逻辑表达式
-
-
-
-
-00
-复位：将寄存器清零
-\(Result = 0\)
-
-
-01
-移位加：左移一位后加上操作数
-\(Result = (Reg \ll 1) + Val\)
-
-
-10
-移位减：左移一位后减去操作数
-\(Result = (Reg \ll 1) - Val\)
-
-
-11
-移位异或：左移一位后与操作数异或
-\(Result = (Reg \ll 1) \oplus
-Val\)
-
-
-
-约束条件
-
-初始状态：计算器初始状态寄存器值为
-8'h00。
-复位控制：本模块不设置独立的
-reset 引脚，复位功能完全通过输入 op = 00
-实现。
-状态机类型：要求使用 Mealy
-型状态机。
-
-接口列表
-
-
-
-端口名
-位宽
-方向
-功能描述
-
-
-
-
-op
-2
-Input
-操作码
-
-
-operand
-8
-Input
-操作数
-
-
-clk
-1
-Input
-时钟信号
-
-
-result
-8
-Output
-当前周期的计算结果
-
-
-
-T3 智能电梯
-任务描述
-我们需要在 Logisim
-中设计一个组合电路，用于计算智能电梯在特定乘客分布下的总运行距离。
-系统共有 4 个楼层（第 0、1、2、3
-层）。输入包含电梯的初始位置和各层当前的乘客数量。电路需模拟电梯的贪心调度策略，计算出清空所有乘客所需的总移动楼层数。
-调度逻辑
-
-初始状态：电梯起始楼层由输入信号 from
-指定。起始楼层的乘客被视为立即进入电梯，因此在计算后续路径时，起始层的剩余乘客数视为
-0。
-目标选择：电梯总是优先前往当前剩余乘客最多（且不为
-0）的楼层。
-运行过程：
-
-从当前层移动至目标层，累加移动距离：\(Distance = |Target - Current|\)。
-到达后，该层乘客全部上梯，该层剩余乘客数变为 0。
-重复上述过程，直到所有楼层的乘客都被接走（所有 num 均为 0）。
-
-数据保证：输入的各层乘客数 num0 ~
-num3 互不相同，且初始值均大于 0。
-
-编码约定
-
-楼层距离：从第 \(n\) 层移动到第 \(m\) 层，距离为 \(|m - n|\)。
-初始位置：输入 from 采用 4
-位独热码 格式：
-
-0001 \(\rightarrow\)
-第 0 层
-0010 \(\rightarrow\)
-第 1 层
-0100 \(\rightarrow\)
-第 2 层
-1000 \(\rightarrow\)
-第 3 层
-
-
-接口列表
-
-
-
-端口名
-位宽
-方向
-功能描述
-
-
-
-
-from
-4
-Input
-初始楼层 (One-Hot)
-
-
-num0
-8
-Input
-第 0 层乘客数
-
-
-num1
-8
-Input
-第 1 层乘客数
-
-
-num2
-8
-Input
-第 2 层乘客数
-
-
-num3
-8
-Input
-第 3 层乘客数
-
-
-output
-8
-Output
-电梯移动总楼层数
-
-
-
-题目分析
-T1
-就是常规的状态机，可能的难点是寄存器赋初值，我用的两个异或门，还有一些其他的方式，好像还有人直接将输入减
-7，反正都可以。T2 没什么难度，一般而言这种组合逻辑都是最简单的。
-T3 这道题，我用的方法很复杂，设从小到大排序后各层人数是 \(num_{a_0},num_{a_1},num_{a_2},num_{a_3}\)
-，那么结果就是 \(|a_3-a_0|+|a_3-a_2|+|a_2-a_1|\)
-，我卡在了根据排序后的值对应到其数组下标上，注意到题干说每层人数不同，我就将排序后的四个值与排序前的四个值相比较，如果某两个相等，那就找到其下标了，然后用这个思路构造了一系列复杂的模块，最终也AC了。结束后看到群里八仙过海，各显神通，有一个做法很巧妙：就是直接将
-\(i\) 拼接到 \(num_i\)
-的后面，变成一个10位的数，但排序时只比前8位，这样排序后就能直接得到其原数组下标，类似于
-C 语言中的结构体排序吧。
-笔者的话
-有一个细节一定要注意，就是 Comparator 的
-Numeric Type 属性，一定要改成 Unsigned 而不是
-2's Complement，T1 和 T3 我都因为这一个点而 WA
-过。课前准备的话，可以多看看 Logisim 里面的元件，Bit Finder
-等冷门元件也是考到过的。还有建议将电路模块化，我的习惯是专门弄两个子电路来负责次态逻辑和输出逻辑，这两个都是组合逻辑，这样顶层只有状态转移逻辑，简洁而不容易错。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>CO</tag>
-        <tag>Logisim</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO P2上机</title>
-    <url>/2025/10/27/BUAA-CO%20P2%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 MIPS 汇编语言，三道题目一般至少两道会给参考 C
-代码，考验 MIPS 代码的编写能力。
-课上题目
-T1 工厂选址
-任务描述
-假设你正在编写城市规划核心功能。需要在给定的 \(n\) 个候选坐标点 \((x, y)\)
-中，筛选出一个符合特定条件的点用于建造工厂。
-筛选条件：
-
-象限限制：候选点必须位于平面直角坐标系的
-第二象限 或
-第四象限（不包含坐标轴）。
-面积最大化：该点向两坐标轴作垂线，与原点 \((0,0)\)
-所围成的矩形面积必须是所有满足条件点中最大的。
-
-你需要编写 MIPS 汇编程序实现该逻辑，输出选定点的坐标。
-判定逻辑
-有效性判定：
-对于输入坐标 \((x,
-y)\)，该点有效当且仅当满足以下二者之一：
-
-第二象限：\(x &lt; 0\) 且 \(y &gt; 0\)
-第四象限：\(x &gt; 0\) 且 \(y &lt; 0\)
-注：位于第一、三象限或坐标轴上的点应直接忽略。
-
-优化目标：
-计算矩形面积 \(Area = |x| \times
-|y|\)。
-
-若存在多个点的面积同为最大值，输出 输入顺序最靠前
-的那一组坐标。
-题目保证输入中至少存在一个满足条件的点。
-
-数据规模：
-
-\(n \le 1000\)
-\(0 \le |x|, |y| \le 10^9\)
-
-输入输出格式
-输入格式：
-
-第 1 行：输入一个整数 \(n\)，代表坐标总数。
-随后的 \(2n\)
-行：依次输入每个点的坐标信息。对于第 \(i\) 个点（\(0 \le
-i &lt; n\)），先输入 \(x_i\)，再输入 \(y_i\)
-
-输出格式：
-
-输出一行，包含两个整数 \(x\) 和
-\(y\)（即选定点的坐标），中间用一个空格分隔。
-
-输入样例：
-416-47-9-118-8
-输出样例：
-16 -4
-参考代码 (C语言)
-#include &lt;stdio.h&gt;int main(void) &#123;    int n;    scanf(&quot;%d&quot;, &amp;n);    long long best_area = 0;    int best_x = 0, best_y = 0;    for (int i = 0; i &lt; n; i++) &#123;        int x, y;        scanf(&quot;%d%d&quot;, &amp;x, &amp;y);        if (x == 0 || y == 0) continue;        if ((x &gt; 0 &amp;&amp; y &gt; 0) || (x &lt; 0 &amp;&amp; y &lt; 0)) continue;        int ax = x &gt;= 0 ? x : -x;        int ay = y &gt;= 0 ? y : -y;                long long area = (long long) ax * ay;        if (area &gt; best_area) &#123;            best_area = area;            best_x = x;            best_y = y;        &#125;    &#125;    printf(&quot;%d %d\n&quot;, best_x, best_y);    return 0;&#125;
-T2 K 递增
-任务描述
-使用 MIPS 汇编语言编写程序，计算将给定数组转换为 K
-递增数组 所需的最少操作次数。
-K 递增定义：
-给定一个下标从 0 开始、包含 \(n\)
-个正整数的数组 \(arr\)，以及一个正整数
-\(k\)。
-如果对于每个满足 \(k \le i \le n-1\)
-的下标 \(i\)，都有 \(arr[i-k] \le arr[i]\)，那么称 \(arr\) 是 K 递增的。
-输入输出格式
-输入格式：
-
-第 1 行：输入一个整数 \(n\)，表示数组大小 (\(1 \le n \le 20\))。
-第 2 行 至 第 \(n+1\)
-行：每行输入一个整数，依次为数组 \(arr\) 的元素。
-第 \(n+2\) 行：输入一个整数 \(k\)，表示 K 递增的参数 (\(1 \le k \le n-1\))。
-
-输出格式：
-
-输出一个整数，表示使数组成为 K 递增数组所需的最少操作次数。
-
-输入样例 1：
-5543211
-输出样例 1：
-4
-输入样例 2：
-65342612
-输出样例 2：
-3
-参考代码 (C语言)
-#include &lt;stdio.h&gt;#define MAX_N 20int computeLIS(int *subseq, int m) &#123;    if (m == 0) return 0;    int dp[MAX_N];    int maxLen = 1;    for (int i = 0; i &lt; m; i++) &#123;        dp[i] = 1;    &#125;    for (int i = 1; i &lt; m; i++) &#123;        for (int j = 0; j &lt; i; j++) &#123;            if (subseq[i] &gt;= subseq[j]) &#123;                if (dp[j] + 1 &gt; dp[i]) &#123;                    dp[i] = dp[j] + 1;                &#125;            &#125;        &#125;        maxLen = maxLen &gt; dp[i] ? maxLen : dp[i];    &#125;    return maxLen;&#125;int kIncreasing(int* arr, int arrSize, int k) &#123;    int ans = 0;    for (int i = 0; i &lt; k; i++) &#123;        int subseq[MAX_N];        int m = 0;        for (int j = i; j &lt; arrSize; j += k) &#123;            subseq[m++] = arr[j];        &#125;        int lisLen = computeLIS(subseq, m);        ans += (m - lisLen);    &#125;    return ans;&#125;int main() &#123;    int n, k;    scanf(&quot;%d&quot;, &amp;n);    int arr[MAX_N];    for (int i = 0; i &lt; n; i++) &#123;        scanf(&quot;%d&quot;, &amp;arr[i]);    &#125;    scanf(&quot;%d&quot;, &amp;k);    printf(&quot;%d&quot;, kIncreasing(arr, n, k));        return 0; &#125;
-T3 文件夹大小
-任务描述
-给定一个项目的目录树结构，树中的每个节点要么是文件，要么是文件夹。请实现一个
-MIPS 汇编程序，支持对文件系统的多次查询。
-对于每次查询给定的节点编号，你需要计算并输出该节点的
-“子树总大小”：
-
-若该节点为文件，则输出其自身大小。
-若该节点为文件夹，则输出该文件夹内所有内容（包含直接子文件、子文件夹及其递归包含的所有文件）的大小之和。
-注：文件夹本身的大小视为 0。
-
-输入输出格式
-输入格式：
-
-第 1 行：一个整数 \(n\)，表示节点总数（编号 \(1 \sim n\)）。
-节点描述部分：接下来按编号从小到大（先描述节点
-1，再描述节点 2…）依次输入 \(n\)
-个节点的详细信息。对于每个节点：
-
-先输入一行整数 \(type\)（0 或
-1）。
-若 \(type = 0\)
-(文件)：
-
-下一行输入一个整数 \(size\)，表示文件大小。
-
-若 \(type = 1\)
-(文件夹)：
-
-下一行输入一个整数 \(k\)，表示子节点数量。
-再接下来输入 \(k\)
-个整数，依次代表子节点的编号。
-
-
-查询部分：
-
-输入一个整数 \(q\)，表示查询次数。
-接下来 \(q\) 行，每行一个整数 \(id\)，表示要查询的节点编号（保证 \(id\) 合法）。
-
-
-输出格式：
-
-对每个查询输出一行整数，表示该节点对应的子树总大小。
-
-约束与样例
-约束条件：
-
-\(1 \le n \le 150\)
-文件大小 \(0 \le size \le
-10^6\)
-所有文件大小总和 \(\le 10^9\)
-总边数 \(\le 800\)
-查询次数 \(q \le 60\)
-
-输入样例：
-5122 30100114020013135
-输出样例：
-120201
-参考代码 (C语言)
-#include &lt;stdio.h&gt;#define MAXN 155#define MAXE 805int n;int nodeType[MAXN];     // 0: 文件, 1: 文件夹int fileSizeVal[MAXN];  // 文件大小(文件夹为0)int headAdj[MAXN];      // 邻接表头int toEdge[MAXE], nextEdge[MAXE];int edgeCnt;void add_edge(int u, int v) &#123;    toEdge[edgeCnt] = v;    nextEdge[edgeCnt] = headAdj[u];    headAdj[u] = edgeCnt++;&#125;int dfs_sum(int u) &#123;    if (nodeType[u] == 0) &#123;        return fileSizeVal[u];    &#125;    int size = 0;    for (int e = headAdj[u]; e != -1; e = nextEdge[e]) &#123;        int v = toEdge[e];        size += dfs_sum(v);    &#125;    return size;&#125;int main() &#123;    for(int i=0; i&lt;MAXN; i++) headAdj[i] = -1;         edgeCnt = 0;    scanf(&quot;%d&quot;, &amp;n);        for (int i = 1; i &lt;= n; i++) &#123;        int t, x;        scanf(&quot;%d&quot;, &amp;t);                 if (t == 0) &#123;            nodeType[i] = 0;            scanf(&quot;%d&quot;, &amp;x);             fileSizeVal[i] = x;        &#125; else &#123;            nodeType[i] = 1;            int k;            scanf(&quot;%d&quot;, &amp;k);             for (int j = 0; j &lt; k; j++) &#123;                int v;                scanf(&quot;%d&quot;, &amp;v);                add_edge(i, v);            &#125;        &#125;    &#125;    int q;    scanf(&quot;%d&quot;, &amp;q);    while (q--) &#123;        int id;        scanf(&quot;%d&quot;, &amp;id);        int ans = dfs_sum(id);        printf(&quot;%d\n&quot;, ans);    &#125;    return 0;&#125;
-题目分析
-T1 唯一可能卡住的点是代码中的
-long long，要用两个寄存器来表示一个 long long
-型变量，那么如何比较两个 long long
-变量的大小呢？设两个数分别是\(a=\{a1,a0\}\),\(b=\{b1,b0\}\)，那么 \(a&gt;b\) 不是 \(a1&gt;b1 \&amp;\&amp; a0&gt;b0\)，而应该是
-\(a1&gt;b1||a1==b1\&amp;\&amp;a0&gt;b0\)，和字典序类似。
-T3 的话，while
-循环见的次数不太多，我一开始写错了，其它的地方都是直接翻译就行。
-助教问答
-以下为部分问题：
-
-MIPS 编程中宏的作用
-我是否采用直接翻译 C 代码的方法？
-一些寄存器的含义，$ra、HI、LO、PC
-等
-
-笔者的话
-编写 MIPS
-代码，每个人都有自己的方法，我比较习惯于一字不差的翻译，将每一行 C
-代码都直接翻译成
-MIPS，而不会加一些优化之类的，这样的好处是一般不会出错。由于 MIPS
-语言可读性太差，因此我一般会使用 .eqv
-来重命名某些寄存器，比如 T1 中 C 代码出现了 n, x, y
-等变量，那么我就会直接
-.eqv n,$s0，.eqv x,$s1，.eqv y,$s2
-等，这样的话不必书写复杂的寄存器名，而是直接用其对应的变量名就好了。宏也是一个提高代码可读性的方法，下面是我用的宏，上机开始前可以先将这些模版默写出来：
-.macro readInt(%int)	li $v0,5	syscall	move %int,$v0.end_macro.macro printInt(%int)	move $a0,%int	li $v0,1	syscall.end_macro.macro printStr(%str)	move $a0,%str	li $v0,4	syscall.end_macro.macro index(%ans,%i,%j,%n)	mult %i,%n	mflo %ans	add %ans,%ans,%j	sll %ans,%ans,2.end_macro.macro return0	li $v0,10	syscall.end_macro.macro for(%reg,%begin,%end,%for,%for_end)	move %reg,%begin	%for:		slt $t7,%reg,%end		beq $t7,$0,%for_end.end_macro.macro for_end(%reg,%for,%for_end)		add %reg,%reg,1		j %for	%for_end:.end_macro.macro push(%r)	add $sp,$sp,-4	sw %r,($sp).end_macro.macro pop(%r)	lw %r,($sp)	add $sp,$sp,4.end_macro
-P2
-的一个重难点就是递归函数的编写，关于寄存器保护有一套原则，但是鉴于人们经常出错，有人选择直接将
-32
-个寄存器全部保护起来，总之如果始终不知道应该保护哪些，就只能采用这种方法了。
-另外写汇编代码时有很多细节，稍不注意就错了，且 debug 难度也很大，所以
-P2 很多人都没有过，不过也问题不大，P3 之前对分数影响微乎其微。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>CO</tag>
-        <tag>MIPS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO Pre上机</title>
-    <url>/2025/09/29/BUAA-CO%20Pre%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节主要是掌握三个工具，三道题目依次为 Logisim、Verilog、MIPS。
-课上题目
-T1 推箱子
-任务描述
-我们需要在 Logisim
-中设计一个软电路来模拟简易的推箱子游戏。游戏地图构建在一个二维平面直角坐标系中，范围是
-\(0 \le x, y \le 5\) 的正方形区域（共
-\(6 \times 6\) 个点）。
-箱子的起始位置（包括 Reset 后）固定在 \((0,0)\)，目标位置固定在
-\((5,5)\)。
-地图中包含 6 个固定的障碍点，分别为：\((1,1)\)、\((1,2)\)、\((2,1)\)、\((3,4)\)、\((4,3)\)、\((4,4)\)。
-控制逻辑
-系统输入 \((dx, dy)\)
-表示箱子的移动变化量，且保证只会出现 \((0,0)\)、\((1,0)\) 或 \((0,1)\) 这三种情况。
-设当前坐标为 \((x,
-y)\)，则预期坐标为 \((x+dx,
-y+dy)\)：
-
-如果预期坐标合法（即在地图边界内且不是障碍），则在下一周期将箱子移动到该位置；
-如果预期坐标非法（越界或撞墙），则箱子保持原地不动，并将报错信号
-flag 置为 1（持续一个周期）。
-
-输出判定
-
-当箱子成功到达目标点 \((5,5)\)
-时，输出信号 out 为 1，否则为 0。
-flag 信号默认为 0，仅在尝试非法移动时置为 1。
-
-接口列表
-
-输入：clk (时钟), reset
-(复位), dx (x位移), dy (y位移)
-输出：out (到达目标),
-flag (非法移动报错)
-
-T2 翻涌数字
-题目描述
-将 32 位输入 \(a\) 视为 8 个 4
-位宽的数，分别命名为 \(a_0, a_1, \dots,
-a_7\)（其中\(a_i = a[(i + 1) \cdot 4 -
-1 : i \cdot 4]\)）。
-对每一个 \(a_i\)
-进行前缀和计算，公式如下：
-\[a_i = \sum_{j=0}^{i} a_j\]
-计算规则
-
-溢出处理：若累加结果超过 4 位，仅保留低 4 位（即对
-16 取模）。
-输出格式：将计算后的 \(a_i\) 按原顺序拼接，作为 32 位输出
-out。
-
-样例
-
-输入：32'h11111111
-输出：32'h87654321
-
-接口列表
-
-输入：a[31:0]
-输出：out[31:0]
-
-T3 子矩阵提取
-题目描述
-编写 MIPS 汇编程序，从一个 \(4 \times
-4\) 的大矩阵 \(A\) 中，提取以
-\((i, j)\) 为左上角、大小为 \(m \times n\) 的子矩阵。
-输入格式
-输入共 20 行，均通过 syscall 读取整数：
-
-第 1-16 行：依次输入大矩阵 \(A\) 的元素 \(t\)（按行优先顺序，即第 0 行第 0 列、第 0
-行第 1 列……）。
-第 17 行：子矩阵行数 \(m\) (\(1 \le m
-\le 4\))。
-第 18 行：子矩阵列数 \(n\) (\(1 \le n
-\le 4\))。
-第 19 行：起始行坐标 \(i\) (\(0 \le i
-\le 3\))。
-第 20 行：起始列坐标 \(j\) (\(0 \le j
-\le 3\))。
-
-输出格式
-
-合法提取：输出 \(m \times
-n\) 的子矩阵。共 \(m\) 行，每行
-\(n\) 个元素，元素间用空格分隔。
-越界报错：若子矩阵超出大矩阵边界，仅输出字符串
-Out of bounds。
-
-约定与约束
-
-矩阵索引从 0 开始。
-请勿使用 .globl main。
-程序结束时必须使用以下代码：
-li $v0, 10syscall
-
-测试样例
-
-样例 1
-
-Input:
-123456789101112131415162211
-Output:
-6 710 11
-
-样例 2
-
-Input:
-432187651211109131415163222
-Output:
-Out of bounds
-
-
-题目分析
-T1
-是状态机问题，题干可能看上去比较新颖。一定不要自己搭组合电路，而是用
-Logisim 的 Analyze Circuit
-功能，输入真值表，自动产生对应的组合电路。还有可以多多利用 Logisim
-的子电路功能，将具体的组合逻辑放到子电路，从而使顶端模块清爽、简洁。还要注意
-flag 置 1 要持续一周期，因此在它前面还要加一个寄存器。
-T2 比较简单，使用 for 循环即可，但是 for
-循环似乎很多人都忘了怎么写了（也包括我在内），不用循环的话直接展开也不难。还有如果定义成
-4 位的变量，Verilog 似乎默认会自动取模，因此模 16 也可以不写。
-T3 中规中矩，一定要多利用宏，例如
-readInt、printInt、printStr
-等，for
-循环也可以封装成宏。但本题我犯了一个错误：我定义了一个
-printStr 宏函数，这个函数会在内部在 .data
-段中定义一个字符串，可能是由于字节不对齐的原因，使用这个函数后之后的地址可能不是
-4 的整数倍，因此程序不能正确运行，修改后就成功 AC
-了。因此尽量不要在函数内部定义字符串，而是在 .data
-里面定义好，并且先定义数组，再定义字符串，就可以尽量避免这种字节不对齐的问题。
-笔者的话
-Pre
-上机不占分，主要是熟悉一下形式，这次是只有做出三道才算通过，建议上机前再读一遍指导书，基本的知识点要牢记，比如状态机设计、Verilog
-中 for 循环的写法、MIPS 编程等等。还有，前几次上机 21:00
-后还可以继续做到 22:00，同时可以查看每道题的提示，因此不用太过担心。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>Verilog</tag>
-        <tag>CO</tag>
-        <tag>Logisim</tag>
-        <tag>MIPS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO P7上机</title>
-    <url>/2025/12/08/BUAA-CO%20P7%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Verilog 实现 MIPS 微系统，支持中断和异常。
-课上题目
-T1~T4
-都是课下强测，分别是功能强测、异常强测、中断强测、冲突强测。
-T5 Monitor
-在 P7 系统中（DM 范围 0x0000 ~
-0x2fff），新增一套内存监视控制机制。需在 CP0
-中扩展三个专用寄存器，并增加一条专用配置指令 monitor，配合
-sw 指令实现对特定内存区间的写入保护。
-1. 新增 CP0 寄存器
-系统复位后，以下三个寄存器均置为 0。
-
-
-
-
-
-
-
-
-
-编号
-寄存器名
-功能描述
-读写权限
-
-
-
-
-18
-DMBoundaryHI
-监视区间上界
-mfc0 可读；仅 monitor 可写
-
-
-19
-DMBoundaryLO
-监视区间下界
-mfc0 可读；仅 monitor 可写
-
-
-20
-DMEnable
-监视使能控制字
-mfc0 可读；仅 monitor 可写
-
-
-
-
-mtc0：仅能写入原有的 12-15 号寄存器（SR, Cause,
-EPC, PrID ），写入 18-20 号寄存器无效。
-monitor：仅能写入 18-20 号寄存器，写入 12-15
-号寄存器无效。
-mfc0：可读取上述所有寄存器。
-
-2. 逻辑定义
-使能信号生成
-DMEnable
-寄存器的值并不直接作为使能信号，需进行位统计比较：
-high_ones &lt;- count_ones(DMEnable[31:16])low_ones &lt;- count_ones(DMEnable[15:0])Monitor_Active &lt;- (high_ones &gt; low_ones)
-区间检查逻辑
-受监视的内存区间为 [DMBoundaryLO, DMBoundaryHI)。
-对于 sw
-指令，写入操作涉及的所有字节都必须位于该区间内才算合法。
-3. 指令与异常描述
-指令一：monitor
-monitor-rt-rd
-RTL：
-if (rd==18 &amp;&amp; GPR[rt] &gt;= DMBoundaryLO) ||(rd==19 &amp;&amp; GPR[rt] &lt;= DMBoundaryHI) || (rd==20）	CP0[rd] &lt;- GPR[rt]else if (rd==18 &amp;&amp; !GPR[rt] &gt;= DMBoundaryLO) ||(rd==19 &amp;&amp; !GPR[rt] &lt;= DMBoundaryHI)	SignalException(AdES)
-该指令用于更新 CP0
-的扩展寄存器。在写入时需进行合法性检查：更新后必须满足
-\(DMBoundaryLO \le
-DMBoundaryHI\)。如果写入操作导致该条件不满足，则不进行更新并触发异常。
-指令二：sw
-sw-base-rt-offset
-RTL：
-vAddr &lt;- GPR[base] + sign_ext(offset)high_ones &lt;- count_ones(DMEnable[31:16])low_ones &lt;- count_ones(DMEnable[15:0])Monitor_Active &lt;- (high_ones &gt; low_ones)is_in_range &lt;- (CP0[19] &lt;= vAddr) &amp;&amp; ((vAddr + 3) &lt; CP0[18])if (vAddr[1:0] != 00) || (Monitor_Active &amp;&amp; !is_in_range)    SignalException(AdES)else    memory[vAddr] &lt;- GPR[rt]
-当监视功能开启时，sw 指令需检查目标地址是否越界。
-题目分析
-T5 很复杂，但难度可能略低于去年的 withdraw。可能的一个难点是
-sw 的全部字节地址，其实就是 [vaddr, vaddr+3] 这个区间。我
-debug 许久才发现是一个条件中少加了括号，和 &amp;&amp; 和
-|| 的优先级有关，最终虚惊一场。
-助教问答
-
-看看测试程序和设计文档
-我是如何处理多个流水级、多条指令产生的异常的优先级的？
-如何判断一条指令是否处于延迟槽？
-我做这道题过程中遇到了什么问题
-我对计组课程有没有什么建议
-
-笔者的话
-P7 的课下可谓是最后一舞，笔者感觉比 P5
-还难。代码具体写法可以多参考一下 dalao
-的博客，此处只谈一些注意事项。通过 P7
-课下的弱测的难度就很大，每人刚写出来的代码往往都有数不清的
-bug，这时候就可以再次借助评测机了，不过 P7 和 MARS
-对拍就不合适了，只能找同学或者学长的 CPU
-来对拍，只有对拍几千轮都没有问题，那才敢比较放心。
-上机是 5 道做对 4
-道就算通过。开始后很拼手速，前四个题都是直接提交，如果有过不了的，那就需要现场
-debug。第五题一般是加新指令或者新异常，也可能两个都有，课下一定要充分理解每个异常是怎么产生和传递的，这样课上才能得心应手。另外
-P7 很多人会选择手动 gap，即只通过四道，会选择下周再试一次，因为 P7
-对成绩影响似乎大一点。还有一个细节，就是 handler.asm
-的代码也要打包提交（具体代码参考往届博客，反正这个自己写估计不太可能），不然用
-ISE 仿真时应该就没法处理异常的情况，也就很难 debug
-了（没错，我就忘交了）。
-P7
-结束了，那实验部分就告一段落，该开始理论部分的学习了。理论部分如果老师讲的浅，可以看其他老师班
-PPT，或者直接看王道书，王道上可以参考的主要就是存储系统，剩下的数制、流水线、总线、IO
-等也可以稍微参考，讲的都比较深，有些需要自己做取舍。另外 961
-的计组部分也可以做一做，仅有的两套往年题比较常规，去年的题量和难度感觉还是很大的，所以也做好心理准备（）
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>Verilog</tag>
-        <tag>CO</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO P3上机</title>
-    <url>/2025/11/03/BUAA-CO%20P3%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Logisim 实现单周期 CPU。
-课上题目
-T1 revi
-revi-rs-rt-imm16
-RTL
-temp &lt;- GPR[rs]result &lt;- temp[31-imm16:0]||reverse(temp[31:32-imm16])GPR[rt] &lt;- result
-T2 blz
-blz-rs-rt-offset
-RTL
-temp1 &lt;- count_leading_zeros(GPR[rs])temp2 &lt;- count_leading_zeros(GPR[rt])if (temp1 == temp2)     PC &lt;- PC + 4 + sign_ext(offset||00)else if (temp1 &gt; temp2)    PC &lt;- PC + 4    GPR[rs] &lt;- temp1else    PC &lt;- PC + 4    GPR[rs] &lt;- temp2
-T3 lwf
-lwf-base-rt-offset
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]filter &lt;- memword &amp; GPR[rt]ones &lt;- count_ones(filter)if (ones % 2 == 0)    GPR[rt] &lt;- memwordelse    GPR[(rt+1) % 32] &lt;- memword
-题目分析
-总的来说难度都不大，只要考前充分理解了 CPU 的数据通路，理解单周期 CPU
-是怎么跑那几条指令的，那么应该就能通过了。
-T1 需要将一个数翻转，我是用两个 Splitter
-反向拼接，就是手动修改每个端口的值有点繁琐。T2
-需要求前导零的个数，应该用 Bit Adder
-元件，如果想不到这个元件那难度就大了。有一个 Logisim
-的易错点，一个模块加了新的输出端口后，那么原端口的位置可能都会发生变化，这就导致在顶层连好的线实际上都断开了。这次上机时我们机房延长到了
-21:30 结束，从 P4 开始就只有两小时了。并注意，在 P3
-及之后，每个题目都要写测试程序（用新指令写一些汇编程序），虽然大部分人都是做完之后才写测试程序吧。
-助教问答
-以下为部分问题：
-
-看看测试程序和设计文档
-我评测机的设计思路，编写过程中出现了哪些错误，如何得到 Logisim
-的结果，评测机中代码生成的逻辑是什么，评测机是否测出我 CPU
-的问题，数据强度如何
-我 CPU 中 CTRL 模块的设计思路，0 号寄存器恒等于 0 是如何实现的
-
-笔者的话
-从 P3 开始就该开发 CPU
-了，每次上机的题目基本上都是运算类、跳转类、访存类各一道。上机之前一定要对
-CPU
-进行充分的测试，学有余力可以自己写评测机，往届学长也搞了一些评测机，可以直接拿来用，比如
-COT
-等。上机时可以先裸交一发，如果能过一些点就说明课下的设计基本是没问题的，否则就要先改课下的
-bug（虽然上机两小时内独立发现并修复 bug 非常难）。
-P3 仍然是使用 Logisim，建议适当利用
-Tunnel，用的太少，导线会太乱；用太多就不容易理清接线关系。另外在
-CTRL（控制模块）中，由 Instr
-生成对应的指令独热码时，不要用与门阵列，可以直接用
-Comparator 的，很简洁。另外可以提前给 CPU
-加一些要求之外的指令，比如
-j、jal、jr、jalr，加上这几个后，对跳转类指令的理解就更加深入了。还有学长加过
-lh、lb、sh、sb
-等指令，不过加这几个指令的工作量比较大，建议量力而行。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>CO</tag>
-        <tag>Logisim</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO P5上机</title>
-    <url>/2025/11/17/BUAA-CO%20P5%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Verilog 实现流水线 CPU。
-课上题目
-T1 ccc
-ccc-rs-rt-rd
-RTL
-temp1 &lt;- count_leading_zeros(GPR[rs])temp2 &lt;- count_leading_ones(GPR[rt])if (temp1 &gt; temp2)    GPR[rd] &lt;- GPR[rs][31:16] || GPR[rt][15:0]else    GPR[rd] &lt;- GPR[rt][31:16] || GPR[rs][15:0]
-T2 cjoc
-cjoc-rs-rt-offset
-RTL
-ext_offset &lt;- sign_ext(offset||00)id &lt;- ext_offset[4:2]temp &lt;- GPR[rs][id + 7 : id]condition &lt;- (temp &gt; 8&#x27;d21)if (condition)    GPR[rt] &lt;- PC + 8    PC &lt;- PC + 4 + ext_offsetelse     NullifyCurrentInstruction()
-T3 ccs
-ccs-base-rt-offset
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]high_ones &lt;- count_ones(memword[31:16])low_ones &lt;- count_ones(memword[15:0])if (high_ones &gt; low_ones)    dest_reg &lt;- 31    GPR[dest_reg] &lt;- memword ^ GPR[rt]else     dest_reg &lt;- high_ones    GPR[dest_reg] &lt;- memword ^ GPR[rt]
-题目分析
-T1 是运算类指令，经历了 P3 和 P4，应该对这种题目很熟悉了。T2 是
-bltzal（条件跳转并链接）的变体，可能的难点是清空延迟槽如何表示，具体可以参考往届博客，其等价于让
-FD 级流水线寄存器将原指令替换成 nop，即
-REG_D_flush = newSign &amp;&amp; !D_b_jump &amp;&amp; !stall，式中
-newSign 是我从 D_CTRL
-中新接出来的输出端口，当且仅当是该 ccc 指令时置 1。
-T3 是条件访存题，主要的难点是不能无脑阻塞，而是要分析可能的 GRF
-写地址。ccs 的写寄存器地址只可能是 1~16 和 31，所以如果 D
-级是读寄存器的指令，而且读的寄存器在上面的范围，而且 E 和 M 级是
-ccs 指令时，就要阻塞了。但这道题我到最后还是有两个点
-TLE，经过课后反思，因为我是在 W 级才将 dest_reg
-修改正确，其实在 M 级读出 data 后就完全可以了，因此是这里导致了
-TLE。
-助教问答
-以下为部分问题：
-
-看看测试程序和设计文档
-我清空延迟槽是如何学会的
-为什么要设计延迟槽
-讲一下第二题的解题思路
-
-笔者的话
-从 P4 到 P5
-可谓一座高山，从单周期到流水线，有太多的模块需要修改和完善，即使写完了，那么通过课下测试也是一个难点。建议多用评测机对拍，可以和
-MARS 对拍，也可以和同学甚至往届的 CPU 对拍。对 CPU
-的控制单元，指令分类我认为是一个好的做法，我将指令分成了这几类：load、store、calcR、calcI、branch、jumpR、jumpI、jumpLink、branchLink
-这几类（命名不太规范，见谅），每一类指令的相关控制信号和阻塞逻辑都大致是相同的。上机时将新指令归入相应的类会节省很多时间，比如是
-I 型计算类指令，就归入 calcI
-类，那么阻塞模块中基本就不用再修改了。不过对于一些特殊的指令，需要将其归入多个类，具体细节还需要自己研究透彻。
-P5
-的题目也有一些新变化，比如跳转题会有清空延迟槽，访存题会有条件访存。建议自己尝试添加一下
-bltzal
-指令，这个和考试的跳转题目比较类似。课程网站上也有推荐题目，一些经典题，比如
-bonall、blztal、lhogez
-等，上机前还是多做一做，确保理解了各个指令的数据通路。如果看不到推荐题（少数人有这种情况），可以用脚本爬一下
-cscore
-平台（爬虫的方法和结果见我另一篇帖子）。清空延迟槽可以将正确的代码先放到注释中，有备无患。然后多给
-CPU 预留一些接口，比如条件访存题，写入的寄存器值或地址直到 M
-级才知道，我一般是在顶层的 M 级直接修正，我在 CTRL
-模块中直接引出了一个新信号
-Use_Dynamic_A3，对于条件访存指令，这个控制信号的输出值就是
-1。同时也可以发现，题目中经常有求前导 0 的个数、前导 1
-的个数等函数，因此课下就准备好相关函数模板，上机时直接用，避免重复造轮子。以下是我的函数模板：
-//注意：一定先把位宽改成你所需要的位宽再使用这些函数！// 计算前导0个数function [31:0] lead0;input [31:0] x;integer i;begin    lead0=0;    for(i=31;i&gt;=0;i=i-1)begin        if(x[i]==0) lead0=lead0+1;        else i=-1;    endendendfunction// 计算前导1个数function [31:0] lead1;input [31:0] x;integer i;begin    lead1=0;    for(i=31;i&gt;=0;i=i-1)begin        if(x[i]==1) lead1=lead1+1;        else i=-1;    endendendfunction// 计算后导0个数function [31:0] trail0;input [31:0] x;integer i;begin    trail0=0;    for(i=0;i&lt;=31;i=i+1)begin        if(x[i]==0) trail0=trail0+1;        else i=32;    endendendfunction// 计算后导1个数function [31:0] trail1;input [31:0] x;integer i;begin    trail1=0;    for(i=0;i&lt;=31;i=i+1)begin        if(x[i]==1) trail1=trail1+1;        else i=32;    endendendfunction// 统计0的个数function [31:0] cnt0;input [31:0] x;integer i;begin    cnt0=0;    for(i=0;i&lt;=31;i=i+1)begin        cnt0=cnt0+!x[i];    endendendfunction// 统计1的个数function [31:0] cnt1;input [31:0] x;integer i;begin    cnt1=0;    for(i=0;i&lt;=31;i=i+1)begin        cnt1=cnt1+x[i];    endendendfunction// 最高位1的位置function [31:0] highbit1;input [31:0] x;integer i;begin    highbit1=32;    for(i=31;i&gt;=0;i=i-1)begin        if(x[i]==1)begin            highbit1=i;            i=-1;        end    endendendfunction// 最高位0的位置function [31:0] highbit0;input [31:0] x;integer i;begin    highbit0=32;    for(i=31;i&gt;=0;i=i-1)begin        if(x[i]==0)begin            highbit0=i;            i=-1;        end    endendendfunction// 最低位1的位置function [31:0] lowbit1;input [31:0] x;integer i;begin    lowbit1=32;    for(i=0;i&lt;=31;i=i+1)begin        if(x[i]==1)begin            lowbit1=i;            i=32;        end    endendendfunction// 最低位0的位置function [31:0] lowbit0;input [31:0] x;integer i;begin    lowbit0=32;    for(i=0;i&lt;=31;i=i+1)begin        if(x[i]==0)begin            lowbit0=i;            i=32;        end    endendendfunction// 判断是否为完全平方数function is_square;input [31:0] x;integer i;begin    is_square=0;    for(i=0;i*i&lt;=x;i=i+1)begin        if(i*i==x)begin            is_square=1;            i=x+1;        end    endendendfunction// 不大于该数的最大完全平方数function [31:0] max_square;input [31:0] x;integer i;begin    max_square=0;    for(i=0; i*i&lt;=x &amp;&amp; i&lt;=46340; i=i+1)begin        max_square=i*i;    endendendfunction// 判断是否为质数function is_prime;input [31:0] x;integer i;begin    if(x &lt; 2) is_prime = 0;    else begin        is_prime = 1;        for(i=2; i*i&lt;=x; i=i+1) begin            if(x%i==0) begin                is_prime = 0;                i = x;            end        end    endendendfunction// 不大于该数的最大质数function [31:0] max_prime;input [31:0] x;integer i, j;reg is_p;begin    max_prime=0;    for(i=x; i&gt;=2; i=i-1)begin        is_p=1;        for(j=2; j*j&lt;=i; j=j+1)begin            if(i%j==0)begin                is_p=0;                j=i;            end        end        if(is_p)begin            max_prime=i;            i=0;        end    endendendfunction
-关于上机时的 debug，我的建议是将魔改版
-MARS也打包交上去，如果某题 WA 了，自己编写一段测试程序，先用
-testbench 仿真得到相应输出，再用魔改版 MARS
-得到正确的输出（注意：上机时提供的课程组 MARS 和上面这个也不同，上面的
-MARS 对每条写 GRF 或者 DM
-的指令都会输出结果，而课程组提供的不能），再直接将两个输出对比，尽量不要看复杂的波形图了。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>Verilog</tag>
-        <tag>CO</tag>
       </tags>
   </entry>
   <entry>
@@ -1277,95 +1332,6 @@ ProblemId），如果打开了题目就将其截图或其他形式保存下来�
         <category>计算机组成</category>
       </categories>
       <tags>
-        <tag>CO</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Hello World</title>
-    <url>/2026/01/16/hello-world/</url>
-    <content><![CDATA[Welcome to Hexo! This is your very
-first post. Check documentation for
-more info. If you get any problems when using Hexo, you can find the
-answer in troubleshooting or
-you can ask me on GitHub.
-Quick Start
-Create a new post
-$ hexo new &quot;My New Post&quot;
-More info: Writing
-Run server
-$ hexo server
-More info: Server
-Generate static files
-$ hexo generate
-More info: Generating
-Deploy to remote sites
-$ hexo deploy
-More info: Deployment
-]]></content>
-  </entry>
-  <entry>
-    <title>Math-Test</title>
-    <url>/2026/01/16/Math-Test/</url>
-    <content><![CDATA[这是一个数学公式的测试帖子
-\[
-E = mc^2
-\]
-\[
-\int_a^b f(x)\mathrm{d}x=F(b)-F(a)
-\]
-]]></content>
-  </entry>
-  <entry>
-    <title>BUAA-CO P4上机</title>
-    <url>/2025/11/10/BUAA-CO%20P4%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Verilog 实现单周期 CPU。
-课上题目
-T1 brc
-brc-rs-rt-rd
-RTL
-temp &lt;- GPR[rs][4:0]if (temp &lt; 25 &amp;&amp; count_ones(GPR[rt][temp+7:temp]) % 2 == 0)    GPR[rd] &lt;- reverse(GPR[rt])else    GPR[rd] &lt;- GPR[rt]
-T2 cabc
-cabc-rs-rt-offset
-RTL
-cross1 &lt;- GPR[rs][23:16]||GPR[rt][7:0]||GPR[rs][31:24]||GPR[rt][15:8]cross2 &lt;- GPR[rt][7:0]||GPR[rs][23:16]||GPR[rt][31:24]||GPR[rs][15:8]xor_result &lt;- cross1 ^ cross2cnt1 &lt;- count_zeros(xor_result[31:16])cnt2 &lt;- count_zeros(xor_result[15:0])if (cnt1 == cnt2)    PC &lt;- PC + 4 + sign_ext(offset||00)else    GPR[rt] &lt;- xor_result
-T3 lhboc
-lhboc-base-rt-offset
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]temp1 &lt;- count_ones(memword[15:0])temp2 &lt;- count_ones(memword[31:16])if (temp1 &gt;= temp2)    GPR[rt] &lt;- sign_ext(memword[15:0])else    GPR[rt] &lt;- sign_ext(memword[31:16])
-题目分析
-T1 是运算类指令，新加一个 ALUOp 的取值，然后在 ALU
-中加入对应的计算逻辑。T2 是跳转类指令的变体，可以仿照 beq
-来添加，但注意不跳转时还要写寄存器。T3 是访存类指令，仿照
-lw 来做，本质就是对 lw
-回写寄存器的数据加了一些处理而已。
-助教问答
-以下为部分问题：
-
-看看测试程序和设计文档
-CTRL 模块的实现思路，EXT 输入的来源是什么，beq 指令的数据通路
-Verilog 中使用什么函数读取机器码
-我的评测机是不是全自动的？评测机生成的汇编程序是否有效？如何保证
-sw 和 lw 指令的地址偏移量是合法的？
-
-笔者的话
-从 P4 开始就要迭代开发 Verilog CPU 了，P4 课下就是直接将 P3
-的电路转化成 Verilog 代码，难度不大。还是可以自己加一些额外的指令，比如
-j、jalr
-等。另外可以提前预留出接口，比如将新加的指令提前命名成 new0
-变量，新加的信号命名成 newSign
-并连接到对应的模块等等，上机时直接修改就行了。
-添加每一个新指令，我一般都是从
-CTRL（控制模块）开始，每设置一个控制信号的值，就在对应的模块中增加新逻辑，如
-NPCOp 对应 NPC 模块，DMWr 对应
-DM，这样不容易漏。另外也有学长建议过使用 git
-来管理版本，学有余力也可以尝试。上机时间紧，且我对 git
-的掌握尚不熟练，所以我没有尝试过。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>Verilog</tag>
         <tag>CO</tag>
       </tags>
   </entry>
