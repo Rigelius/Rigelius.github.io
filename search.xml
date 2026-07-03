@@ -576,65 +576,131 @@ testbench，不要因为某题简单就不写，因为最后助教会一一检�
       </tags>
   </entry>
   <entry>
-    <title>BUAA-CO P3上机</title>
-    <url>/2025/11/03/BUAA-CO%20P3%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Logisim 实现单周期 CPU。
-课上题目
-T1 revi
-revi-rs-rt-imm16
+    <title>BUAA-CO P6上机</title>
+    <url>/2025/12/01/BUAA-CO%20P6%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Verilog 实现流水线 CPU。
+第一次课上题目
+T1 mygo
+mygo-rs-rt
 RTL
-temp &lt;- GPR[rs]result &lt;- temp[31-imm16:0]||reverse(temp[31:32-imm16])GPR[rt] &lt;- result
-T2 blz
-blz-rs-rt-offset
+function pattern_value(g):    return count_leading_zeros(g) * 2 + count_ones(g)function characteristic_code(A):    sum &lt;- 0    for i in 0..7:        g &lt;- A[4*i+3 : 4*i]        sum &lt;- sum + pattern_value(g) * (i + 1)    return sum    MDU_Start(Busy_Cycles = 5)temp1 &lt;- characteristic_code(GPR[rs])temp2 &lt;- characteristic_code(GPR[rt])if (temp1 &gt; temp2)    HI &lt;- GPR[rs]    LO &lt;- GPR[rt]else if (temp1 &lt; temp2)    HI &lt;- GPR[rt]    LO &lt;- GPR[rs]else    HI &lt;- GPR[rs] ^ GPR[rt]    LO &lt;- GPR[rs] ^ GPR[rt]
+T2 jalx
+jalx-rs-rt-offset
 RTL
-temp1 &lt;- count_leading_zeros(GPR[rs])temp2 &lt;- count_leading_zeros(GPR[rt])if (temp1 == temp2)     PC &lt;- PC + 4 + sign_ext(offset||00)else if (temp1 &gt; temp2)    PC &lt;- PC + 4    GPR[rs] &lt;- temp1else    PC &lt;- PC + 4    GPR[rs] &lt;- temp2
-T3 lwf
-lwf-base-rt-offset
+temp &lt;- GPR[rs] ^ GPR[rt]x &lt;- temp[4:0]// Find the largest perfect square less than or equal to xwhile (!is_perfect_square(x))    x &lt;- x - 1GPR[x] &lt;- PC + 8PC &lt;- PC + 4 + sign_ext(offset||00)
+T3 lbo
+lbo-base-rt-offset
 RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]filter &lt;- memword &amp; GPR[rt]ones &lt;- count_ones(filter)if (ones % 2 == 0)    GPR[rt] &lt;- memwordelse    GPR[(rt+1) % 32] &lt;- memword
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]byte &lt;- vAddr[1:0]temp &lt;- memword[8*byte+7 : 8*byte]for i in 0..3:    temp1 &lt;- GPR[rt][8*i+7 : 8*i]    if (temp != temp1)        if (count_ones(temp) &gt; count_ones(temp1))            GPR[rt][8*i+7 : 8*i] &lt;- temp
+第二次课上题目
+T1 mujica
+mujica-rs-rt-imm16
+RTL
+ext32 &lt;- sign_ext(imm16)cnt1 &lt;- count_ones(imm16)if (cnt1 % 2 == 0)    temp &lt;- GPR[rs] &amp; ext32    GPR[rt] &lt;- temp + GPR[rt]else    temp &lt;- GPR[rs] | ext32    GPR[rt] &lt;- temp ^ GPR[rt]
+T2 botto
+botto-rs-rt-offset
+RTL
+function hamming_distance(x, y):    return count_ones(x ^ y)    hd &lt;- hamming_distance(GPR[rs], GPR[rt])if (hd &lt; 8)    PC &lt;- PC + 4 + sign_ext(offset||00)    GPR[rt] &lt;- hdelse if (hd &lt;= 24)    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rt] &gt;&gt;&gt; hdelse    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rs] | GPR[rt]
+T3 lwcm
+lwcm-base-rt-offset
+本题要求在 M 级维护一个 32 位寄存器 WD，复位值为
+32'h0。
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]if (memword == WD)    GPR[rt] &lt;- memwordelse    GPR[26] &lt;- memwordWD &lt;- memword
 题目分析
-总的来说难度都不大，只要考前充分理解了 CPU 的数据通路，理解单周期 CPU
-是怎么跑那几条指令的，那么应该就能通过了。
-T1 需要将一个数翻转，我是用两个 Splitter
-反向拼接，就是手动修改每个端口的值有点繁琐。T2
-需要求前导零的个数，应该用 Bit Adder
-元件，如果想不到这个元件那难度就大了。有一个 Logisim
-的易错点，一个模块加了新的输出端口后，那么原端口的位置可能都会发生变化，这就导致在顶层连好的线实际上都断开了。这次上机时我们机房延长到了
-21:30 结束，从 P4 开始就只有两小时了。并注意，在 P3
-及之后，每个题目都要写测试程序（用新指令写一些汇编程序），虽然大部分人都是做完之后才写测试程序吧。
+第一次上机的 T1
+是乘除指令的变体，在乘除槽中添加相关运算，难度应该不算大，但是笔者最终也没有通过，可能是当时现场写的
+count_leading_zeros
+等函数，比较着急导致细节写错了吧。因此可以提前把这些函数都加到 CPU
+中，具体模板在上篇文章末。
+T2 做起来比较棘手，当时我看名字是 jalx，就一直当成
+jalr 的变体做的，但事后发现其实更像是 bltzal
+的变体，只不过无条件跳转而已，最终我很多点都 TLE 了，没有通过。T3
+比较简单。
+第二次上机明显比第一次简单，T1
+不涉及乘除槽，还是普通的运算类，需要注意这个题同时涉及了
+GPR[rs]、GPR[rt] 和 ext32，因此可以在 ALU 中再加一个输入端口。
+T2 有一个细节就是写入的寄存器地址可能是 rs 或者
+rt，而写入寄存器地址只有得到寄存器值之后才能确定，因此可以在 E
+级刚开始加一个特判，将正确的地址修正回来，本题阻塞逻辑我没有改，仅仅将新指令分到
+branch 类，然后自动采用的 b 类阻塞方式。T3
+是常见的条件访存类型，关于阻塞，我是判断如果 D 级需要用 rt 或者 26
+号寄存器值，才考虑阻塞。
 助教问答
 以下为部分问题：
 
 看看测试程序和设计文档
-我评测机的设计思路，编写过程中出现了哪些错误，如何得到 Logisim
-的结果，评测机中代码生成的逻辑是什么，评测机是否测出我 CPU
-的问题，数据强度如何
-我 CPU 中 CTRL 模块的设计思路，0 号寄存器恒等于 0 是如何实现的
+讲解第二题的思路
+讲解乘除槽的实现思路
+我的评测机是如何写的
 
 笔者的话
-从 P3 开始就该开发 CPU
-了，每次上机的题目基本上都是运算类、跳转类、访存类各一道。上机之前一定要对
-CPU
-进行充分的测试，学有余力可以自己写评测机，往届学长也搞了一些评测机，可以直接拿来用，比如
-COT
-等。上机时可以先裸交一发，如果能过一些点就说明课下的设计基本是没问题的，否则就要先改课下的
-bug（虽然上机两小时内独立发现并修复 bug 非常难）。
-P3 仍然是使用 Logisim，建议适当利用
-Tunnel，用的太少，导线会太乱；用太多就不容易理清接线关系。另外在
-CTRL（控制模块）中，由 Instr
-生成对应的指令独热码时，不要用与门阵列，可以直接用
-Comparator 的，很简洁。另外可以提前给 CPU
-加一些要求之外的指令，比如
-j、jal、jr、jalr，加上这几个后，对跳转类指令的理解就更加深入了。还有学长加过
-lh、lb、sh、sb
-等指令，不过加这几个指令的工作量比较大，建议量力而行。
+P6 相对 P5，CPU
+主要的修改点是增加了几条新指令、乘除槽、存储器外置，总体难度不大。上机的题型只有运算类题目可能出乘除相关的，其余两道和
+P5 差不多，一般而言简单一些。到了 P5、P6
+挂的人肯定就多了起来，不过也不用担心，每人有 3 次挂 P 的机会，只要通关
+P7，实验部分成绩就都差不多。
 ]]></content>
       <categories>
         <category>计算机组成</category>
       </categories>
       <tags>
-        <tag>Logisim</tag>
         <tag>CO</tag>
+        <tag>Verilog</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO P4上机</title>
+    <url>/2025/11/10/BUAA-CO%20P4%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Verilog 实现单周期 CPU。
+课上题目
+T1 brc
+brc-rs-rt-rd
+RTL
+temp &lt;- GPR[rs][4:0]if (temp &lt; 25 &amp;&amp; count_ones(GPR[rt][temp+7:temp]) % 2 == 0)    GPR[rd] &lt;- reverse(GPR[rt])else    GPR[rd] &lt;- GPR[rt]
+T2 cabc
+cabc-rs-rt-offset
+RTL
+cross1 &lt;- GPR[rs][23:16]||GPR[rt][7:0]||GPR[rs][31:24]||GPR[rt][15:8]cross2 &lt;- GPR[rt][7:0]||GPR[rs][23:16]||GPR[rt][31:24]||GPR[rs][15:8]xor_result &lt;- cross1 ^ cross2cnt1 &lt;- count_zeros(xor_result[31:16])cnt2 &lt;- count_zeros(xor_result[15:0])if (cnt1 == cnt2)    PC &lt;- PC + 4 + sign_ext(offset||00)else    GPR[rt] &lt;- xor_result
+T3 lhboc
+lhboc-base-rt-offset
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]temp1 &lt;- count_ones(memword[15:0])temp2 &lt;- count_ones(memword[31:16])if (temp1 &gt;= temp2)    GPR[rt] &lt;- sign_ext(memword[15:0])else    GPR[rt] &lt;- sign_ext(memword[31:16])
+题目分析
+T1 是运算类指令，新加一个 ALUOp 的取值，然后在 ALU
+中加入对应的计算逻辑。T2 是跳转类指令的变体，可以仿照 beq
+来添加，但注意不跳转时还要写寄存器。T3 是访存类指令，仿照
+lw 来做，本质就是对 lw
+回写寄存器的数据加了一些处理而已。
+助教问答
+以下为部分问题：
+
+看看测试程序和设计文档
+CTRL 模块的实现思路，EXT 输入的来源是什么，beq 指令的数据通路
+Verilog 中使用什么函数读取机器码
+我的评测机是不是全自动的？评测机生成的汇编程序是否有效？如何保证
+sw 和 lw 指令的地址偏移量是合法的？
+
+笔者的话
+从 P4 开始就要迭代开发 Verilog CPU 了，P4 课下就是直接将 P3
+的电路转化成 Verilog 代码，难度不大。还是可以自己加一些额外的指令，比如
+j、jalr
+等。另外可以提前预留出接口，比如将新加的指令提前命名成 new0
+变量，新加的信号命名成 newSign
+并连接到对应的模块等等，上机时直接修改就行了。
+添加每一个新指令，我一般都是从
+CTRL（控制模块）开始，每设置一个控制信号的值，就在对应的模块中增加新逻辑，如
+NPCOp 对应 NPC 模块，DMWr 对应
+DM，这样不容易漏。另外也有学长建议过使用 git
+来管理版本，学有余力也可以尝试。上机时间紧，且我对 git
+的掌握尚不熟练，所以我没有尝试过。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+        <tag>Verilog</tag>
       </tags>
   </entry>
   <entry>
@@ -832,57 +898,65 @@ P2 很多人都没有过，不过也问题不大，P3 之前对分数影响微�
       </tags>
   </entry>
   <entry>
-    <title>BUAA-CO P4上机</title>
-    <url>/2025/11/10/BUAA-CO%20P4%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Verilog 实现单周期 CPU。
+    <title>BUAA-CO P3上机</title>
+    <url>/2025/11/03/BUAA-CO%20P3%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Logisim 实现单周期 CPU。
 课上题目
-T1 brc
-brc-rs-rt-rd
+T1 revi
+revi-rs-rt-imm16
 RTL
-temp &lt;- GPR[rs][4:0]if (temp &lt; 25 &amp;&amp; count_ones(GPR[rt][temp+7:temp]) % 2 == 0)    GPR[rd] &lt;- reverse(GPR[rt])else    GPR[rd] &lt;- GPR[rt]
-T2 cabc
-cabc-rs-rt-offset
+temp &lt;- GPR[rs]result &lt;- temp[31-imm16:0]||reverse(temp[31:32-imm16])GPR[rt] &lt;- result
+T2 blz
+blz-rs-rt-offset
 RTL
-cross1 &lt;- GPR[rs][23:16]||GPR[rt][7:0]||GPR[rs][31:24]||GPR[rt][15:8]cross2 &lt;- GPR[rt][7:0]||GPR[rs][23:16]||GPR[rt][31:24]||GPR[rs][15:8]xor_result &lt;- cross1 ^ cross2cnt1 &lt;- count_zeros(xor_result[31:16])cnt2 &lt;- count_zeros(xor_result[15:0])if (cnt1 == cnt2)    PC &lt;- PC + 4 + sign_ext(offset||00)else    GPR[rt] &lt;- xor_result
-T3 lhboc
-lhboc-base-rt-offset
+temp1 &lt;- count_leading_zeros(GPR[rs])temp2 &lt;- count_leading_zeros(GPR[rt])if (temp1 == temp2)     PC &lt;- PC + 4 + sign_ext(offset||00)else if (temp1 &gt; temp2)    PC &lt;- PC + 4    GPR[rs] &lt;- temp1else    PC &lt;- PC + 4    GPR[rs] &lt;- temp2
+T3 lwf
+lwf-base-rt-offset
 RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]temp1 &lt;- count_ones(memword[15:0])temp2 &lt;- count_ones(memword[31:16])if (temp1 &gt;= temp2)    GPR[rt] &lt;- sign_ext(memword[15:0])else    GPR[rt] &lt;- sign_ext(memword[31:16])
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]filter &lt;- memword &amp; GPR[rt]ones &lt;- count_ones(filter)if (ones % 2 == 0)    GPR[rt] &lt;- memwordelse    GPR[(rt+1) % 32] &lt;- memword
 题目分析
-T1 是运算类指令，新加一个 ALUOp 的取值，然后在 ALU
-中加入对应的计算逻辑。T2 是跳转类指令的变体，可以仿照 beq
-来添加，但注意不跳转时还要写寄存器。T3 是访存类指令，仿照
-lw 来做，本质就是对 lw
-回写寄存器的数据加了一些处理而已。
+总的来说难度都不大，只要考前充分理解了 CPU 的数据通路，理解单周期 CPU
+是怎么跑那几条指令的，那么应该就能通过了。
+T1 需要将一个数翻转，我是用两个 Splitter
+反向拼接，就是手动修改每个端口的值有点繁琐。T2
+需要求前导零的个数，应该用 Bit Adder
+元件，如果想不到这个元件那难度就大了。有一个 Logisim
+的易错点，一个模块加了新的输出端口后，那么原端口的位置可能都会发生变化，这就导致在顶层连好的线实际上都断开了。这次上机时我们机房延长到了
+21:30 结束，从 P4 开始就只有两小时了。并注意，在 P3
+及之后，每个题目都要写测试程序（用新指令写一些汇编程序），虽然大部分人都是做完之后才写测试程序吧。
 助教问答
 以下为部分问题：
 
 看看测试程序和设计文档
-CTRL 模块的实现思路，EXT 输入的来源是什么，beq 指令的数据通路
-Verilog 中使用什么函数读取机器码
-我的评测机是不是全自动的？评测机生成的汇编程序是否有效？如何保证
-sw 和 lw 指令的地址偏移量是合法的？
+我评测机的设计思路，编写过程中出现了哪些错误，如何得到 Logisim
+的结果，评测机中代码生成的逻辑是什么，评测机是否测出我 CPU
+的问题，数据强度如何
+我 CPU 中 CTRL 模块的设计思路，0 号寄存器恒等于 0 是如何实现的
 
 笔者的话
-从 P4 开始就要迭代开发 Verilog CPU 了，P4 课下就是直接将 P3
-的电路转化成 Verilog 代码，难度不大。还是可以自己加一些额外的指令，比如
-j、jalr
-等。另外可以提前预留出接口，比如将新加的指令提前命名成 new0
-变量，新加的信号命名成 newSign
-并连接到对应的模块等等，上机时直接修改就行了。
-添加每一个新指令，我一般都是从
-CTRL（控制模块）开始，每设置一个控制信号的值，就在对应的模块中增加新逻辑，如
-NPCOp 对应 NPC 模块，DMWr 对应
-DM，这样不容易漏。另外也有学长建议过使用 git
-来管理版本，学有余力也可以尝试。上机时间紧，且我对 git
-的掌握尚不熟练，所以我没有尝试过。
+从 P3 开始就该开发 CPU
+了，每次上机的题目基本上都是运算类、跳转类、访存类各一道。上机之前一定要对
+CPU
+进行充分的测试，学有余力可以自己写评测机，往届学长也搞了一些评测机，可以直接拿来用，比如
+COT
+等。上机时可以先裸交一发，如果能过一些点就说明课下的设计基本是没问题的，否则就要先改课下的
+bug（虽然上机两小时内独立发现并修复 bug 非常难）。
+P3 仍然是使用 Logisim，建议适当利用
+Tunnel，用的太少，导线会太乱；用太多就不容易理清接线关系。另外在
+CTRL（控制模块）中，由 Instr
+生成对应的指令独热码时，不要用与门阵列，可以直接用
+Comparator 的，很简洁。另外可以提前给 CPU
+加一些要求之外的指令，比如
+j、jal、jr、jalr，加上这几个后，对跳转类指令的理解就更加深入了。还有学长加过
+lh、lb、sh、sb
+等指令，不过加这几个指令的工作量比较大，建议量力而行。
 ]]></content>
       <categories>
         <category>计算机组成</category>
       </categories>
       <tags>
+        <tag>Logisim</tag>
         <tag>CO</tag>
-        <tag>Verilog</tag>
       </tags>
   </entry>
   <entry>
@@ -1087,6 +1161,30 @@ PPT，或者直接看王道书，王道上可以参考的主要就是存储系�
       </tags>
   </entry>
   <entry>
+    <title>BUAA-CO 推荐题目汇总</title>
+    <url>/2025/12/09/BUAA-CO%20%E6%8E%A8%E8%8D%90%E9%A2%98%E7%9B%AE%E6%B1%87%E6%80%BB/</url>
+    <content><![CDATA[可能有些人会感到，计组有时没题可做了，即使在往届博客上看到题目，也没有相关的评测环境，难以确定是否做对，HDLBits
+上的题画风又不太一致，但其实 cscore 上就有很多的题目可以访问。
+比如某题目的网址如下：
+http://cscore.buaa.edu.cn/#/problem?ProblemId=334&amp;PieId=1338
+PieId 应该是每届和每届都不同，2406 对应的是 1338。ProblemId
+是题目编号，没有规律可言，但同一个 ProblemId
+似乎每届都能访问到题目。我们便可以先查到本届的 PieId，再按顺序遍历
+ProblemId（当然也可以直接访问我提供的
+ProblemId），如果打开了题目就将其截图或其他形式保存下来，从而就有很多题目可以做并评测了。
+可惜的是，笔者直到 P5
+时才在往届博客中看到这个方法，因此很多之前的题目都没用了，而 P6
+及以后的题又爬不到，因此这些题只能流传下去了（）
+源码和题目获取
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>BUAA-CO Pre上机</title>
     <url>/2025/09/29/BUAA-CO%20Pre%E4%B8%8A%E6%9C%BA/</url>
     <content><![CDATA[本节主要是掌握三个工具，三道题目依次为 Logisim、Verilog、MIPS。
@@ -1235,676 +1333,6 @@ Pre
         <tag>Verilog</tag>
         <tag>MIPS</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO P6上机</title>
-    <url>/2025/12/01/BUAA-CO%20P6%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Verilog 实现流水线 CPU。
-第一次课上题目
-T1 mygo
-mygo-rs-rt
-RTL
-function pattern_value(g):    return count_leading_zeros(g) * 2 + count_ones(g)function characteristic_code(A):    sum &lt;- 0    for i in 0..7:        g &lt;- A[4*i+3 : 4*i]        sum &lt;- sum + pattern_value(g) * (i + 1)    return sum    MDU_Start(Busy_Cycles = 5)temp1 &lt;- characteristic_code(GPR[rs])temp2 &lt;- characteristic_code(GPR[rt])if (temp1 &gt; temp2)    HI &lt;- GPR[rs]    LO &lt;- GPR[rt]else if (temp1 &lt; temp2)    HI &lt;- GPR[rt]    LO &lt;- GPR[rs]else    HI &lt;- GPR[rs] ^ GPR[rt]    LO &lt;- GPR[rs] ^ GPR[rt]
-T2 jalx
-jalx-rs-rt-offset
-RTL
-temp &lt;- GPR[rs] ^ GPR[rt]x &lt;- temp[4:0]// Find the largest perfect square less than or equal to xwhile (!is_perfect_square(x))    x &lt;- x - 1GPR[x] &lt;- PC + 8PC &lt;- PC + 4 + sign_ext(offset||00)
-T3 lbo
-lbo-base-rt-offset
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]byte &lt;- vAddr[1:0]temp &lt;- memword[8*byte+7 : 8*byte]for i in 0..3:    temp1 &lt;- GPR[rt][8*i+7 : 8*i]    if (temp != temp1)        if (count_ones(temp) &gt; count_ones(temp1))            GPR[rt][8*i+7 : 8*i] &lt;- temp
-第二次课上题目
-T1 mujica
-mujica-rs-rt-imm16
-RTL
-ext32 &lt;- sign_ext(imm16)cnt1 &lt;- count_ones(imm16)if (cnt1 % 2 == 0)    temp &lt;- GPR[rs] &amp; ext32    GPR[rt] &lt;- temp + GPR[rt]else    temp &lt;- GPR[rs] | ext32    GPR[rt] &lt;- temp ^ GPR[rt]
-T2 botto
-botto-rs-rt-offset
-RTL
-function hamming_distance(x, y):    return count_ones(x ^ y)    hd &lt;- hamming_distance(GPR[rs], GPR[rt])if (hd &lt; 8)    PC &lt;- PC + 4 + sign_ext(offset||00)    GPR[rt] &lt;- hdelse if (hd &lt;= 24)    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rt] &gt;&gt;&gt; hdelse    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rs] | GPR[rt]
-T3 lwcm
-lwcm-base-rt-offset
-本题要求在 M 级维护一个 32 位寄存器 WD，复位值为
-32'h0。
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]if (memword == WD)    GPR[rt] &lt;- memwordelse    GPR[26] &lt;- memwordWD &lt;- memword
-题目分析
-第一次上机的 T1
-是乘除指令的变体，在乘除槽中添加相关运算，难度应该不算大，但是笔者最终也没有通过，可能是当时现场写的
-count_leading_zeros
-等函数，比较着急导致细节写错了吧。因此可以提前把这些函数都加到 CPU
-中，具体模板在上篇文章末。
-T2 做起来比较棘手，当时我看名字是 jalx，就一直当成
-jalr 的变体做的，但事后发现其实更像是 bltzal
-的变体，只不过无条件跳转而已，最终我很多点都 TLE 了，没有通过。T3
-比较简单。
-第二次上机明显比第一次简单，T1
-不涉及乘除槽，还是普通的运算类，需要注意这个题同时涉及了
-GPR[rs]、GPR[rt] 和 ext32，因此可以在 ALU 中再加一个输入端口。
-T2 有一个细节就是写入的寄存器地址可能是 rs 或者
-rt，而写入寄存器地址只有得到寄存器值之后才能确定，因此可以在 E
-级刚开始加一个特判，将正确的地址修正回来，本题阻塞逻辑我没有改，仅仅将新指令分到
-branch 类，然后自动采用的 b 类阻塞方式。T3
-是常见的条件访存类型，关于阻塞，我是判断如果 D 级需要用 rt 或者 26
-号寄存器值，才考虑阻塞。
-助教问答
-以下为部分问题：
-
-看看测试程序和设计文档
-讲解第二题的思路
-讲解乘除槽的实现思路
-我的评测机是如何写的
-
-笔者的话
-P6 相对 P5，CPU
-主要的修改点是增加了几条新指令、乘除槽、存储器外置，总体难度不大。上机的题型只有运算类题目可能出乘除相关的，其余两道和
-P5 差不多，一般而言简单一些。到了 P5、P6
-挂的人肯定就多了起来，不过也不用担心，每人有 3 次挂 P 的机会，只要通关
-P7，实验部分成绩就都差不多。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>CO</tag>
-        <tag>Verilog</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO 推荐题目汇总</title>
-    <url>/2025/12/09/BUAA-CO%20%E6%8E%A8%E8%8D%90%E9%A2%98%E7%9B%AE%E6%B1%87%E6%80%BB/</url>
-    <content><![CDATA[可能有些人会感到，计组有时没题可做了，即使在往届博客上看到题目，也没有相关的评测环境，难以确定是否做对，HDLBits
-上的题画风又不太一致，但其实 cscore 上就有很多的题目可以访问。
-比如某题目的网址如下：
-http://cscore.buaa.edu.cn/#/problem?ProblemId=334&amp;PieId=1338
-PieId 应该是每届和每届都不同，2406 对应的是 1338。ProblemId
-是题目编号，没有规律可言，但同一个 ProblemId
-似乎每届都能访问到题目。我们便可以先查到本届的 PieId，再按顺序遍历
-ProblemId（当然也可以直接访问我提供的
-ProblemId），如果打开了题目就将其截图或其他形式保存下来，从而就有很多题目可以做并评测了。
-可惜的是，笔者直到 P5
-时才在往届博客中看到这个方法，因此很多之前的题目都没用了，而 P6
-及以后的题又爬不到，因此这些题只能流传下去了（）
-源码和题目获取
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>CO</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-OOpre 课程总结</title>
-    <url>/2025/11/11/BUAA-OOpre%20%E8%AF%BE%E7%A8%8B%E6%80%BB%E7%BB%93/</url>
-    <content><![CDATA[一、架构设计
-继承与接口设计
-项目最终UML类图如下：
-
-采用模块化的思想，我的最终架构可以分为以下几个核心模块：
-1. 入口与控制层
-
-Main：程序入口，仅用于初始化Scanner、冒险者容器advs、关系管理器rm，并创建总控制器CommandUtil。
-CommandUtil：系统的总控制器。
-
-控制：负责解析所有用户命令。它从Main接收Scanner，通过switch语句分发指令（
-“aa”, “ab”, “fight”, “use” 等）。
-协作：作为协调者，调用 Adventurer
-类的业务方法和 RelationManager 的关系处理方法。
-
-
-2. 核心实体层
-
-Adventurer：管理冒险者的所有属性和行为。
-
-属性管理：管理基础属性（hitPoint,
-baseAtk, baseDef, mana,
-money）及状态（dead）。
-物品管理：
-
-items：存储冒险者拥有的所有物品。
-bottleBackpack：药水瓶背包，采用LinkedHashMap这一数据结构，通过重写removeEldestEntry方法，实现了“最多携带10个药水瓶，超出时移除最旧条目”的逻辑。
-
-技能与关系：spells
-存储学会的法术，superior和subordinates记录雇佣关系。
-行为管理：封装了addBottle,
-addEquipment, learnSpell,
-takeItem 等所有逻辑。
-
-
-3. 物品与技能系统
-
-Item
-(抽象类)：所有物品的顶层基类。
-Usable
-(接口)：定义了“可使用物品”的规范。
-Bottle
-(抽象类)：继承于Item，并实现了Usable接口。派生出HpBottle等具体药水类。
-Equipment
-(抽象类)：继承自Item。派生出Armour
-和Weapon (抽象类)。Weapon
-进一步派生出Sword 和Magicbook。
-Spell
-(抽象类)：实现了Usable接口。派生出HealSpell
-和AttackSpell。
-
-4. 关系管理模块
-
-RelationManager：负责处理冒险者间的雇佣关系，提供关系的添加、删除、死亡处理等操作。
-LrParser：配合CommandUtil
-使用的递归下降解析器，用于解析”lr”指令，并通过调用rm
-的方法建立雇佣关系。
-
-5. 工具/辅助类
-
-Factory：实现了工厂模式。提供一系列方法，如createBottle，用于创建对象实例。
-
-架构调整及考虑
-
-CommandUtil的添加：最初对指令的处理全部由Main类完成，随着指令的增加，Main类变得过于臃肿，且超出代码行数限制，因此引入该类专门负责读取和解析指令，使Main类仅仅作为程序入口。
-Factory的添加：随着迭代的进行，Bottle和Equipment等都有了多个子类，这时需要根据某一物品所属的子类名来相应地创建对象，为了降低项目的耦合度，便添加了Factory工厂类来专门创建对象。
-RelationManager的添加：第六次作业引入了雇佣关系，需要管理各个冒险者之间的关系，为避免Adventurer类中耦合度过高，引入了该类来统一完成关系的添加、删除、查询等操作。
-
-二、使用JUnit的心得体会
-
-JUnit即”Java单元测试“，指针对每一个Java类（主类除外），都编写多个测试函数来测试该类的方法是否达到了预期的功能，并测试各种不同情况下方法的稳健性，可以检测Java项目中是否存在低级的逻辑问题。
-之前的程序设计过程中，我们大多是通过构造测试数据，将程序的输出与答案进行对比，来排除程序的问题；而通过JUnit，我们可以初步检验每个类、每个方法的正确性，从而减少测试的工作量。
-JUnit促使我们思考边界情况。
-编写测试用例的过程，也是对自己代码的再次检查。我们可以测试很多种边界情况，比如正常参数、null、0等，当然前提必须是满足题干中的数据范围。这一步能提前找出很多代码漏洞，极大减少了后期调试的麻烦。
-
-三、学习OOPre的心得体会
-
-在OOPre的学习中，我掌握了Java的基本语法和常见的数据容器等。相比“原始”的C语言，Java语言明显更加现代，比如Java将C语言中复杂的指针替换成了“引用”。此外，C语言不注重类型的检查，有很多自动类型转化的例子，而Java却对此要求很严格，比如if和while的判断条件中必须是boolean类型，之前我们可能习惯了的if(a)，必须再改成if(a!=0)，此外还要多注意操作的某个对象是否为null，否则程序可能会抛出异常。
-我最大的收获是从“面向过程”到“面向对象”的思维转变。
-之前我们大多在完成一道道编程题目，仅仅追求AC，而不关注代码可读性、可扩展性等等。而现在我们要迭代开发项目，这便要求我们保持良好的代码风格，提高程序的可读性等。
-在学习工程模式等设计模式时，我也感受到开发的规范性，原来这些方法都有对应的理论支持，而不是凭空想出来的策略。比如我在第一部分架构设计中提到的Factory类，就是对“工厂模式”的一次具体实践，它帮助我将“对象的创建”与“对象的使用”解耦，降低了代码耦合度。
-在使用git的过程中，我也感受到了现代版本管理系统的强大功能，通过在终端输入指令或者图形化界面，我们便可以轻松实现一个项目的不同版本间的转换。但我的git相关知识还仅限于成功提交作业，希望在未来我能够进一步深入学习git相关知识。
-
-四、对OOPre课程的简单建议
-在听课过程中某些概念不好理解，比如“观察者模式”等，只听概念的话有一种云里雾里的感觉，希望以后多讲一些相关代码示例，从而提高学习效率。
-]]></content>
-      <categories>
-        <category>OO</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>OO</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-ML 往年考题汇总</title>
-    <url>/2026/07/01/BUAA-ML%20%E5%BE%80%E5%B9%B4%E8%80%83%E9%A2%98%E6%B1%87%E6%80%BB/</url>
-    <content><![CDATA[0. 写在前面
-本文将往年本研考题按知识模块归类，只保留了与期末复习范围一致的题目。
-转载来源： 研2025
-研2024
-研2024(1)
-研2023
-研2020(这个文章需要收费，完整内容见这里) 研2020(1)(这个文章需要收费，完整内容见这里)
-研2019
-本2025 本2023
-本2021
-1. 分类器性能度量
-本2025 题1
-写出混淆矩阵，解释 TP、FP、TN、FN
-的定义。给出预测值和真实值，计算查准率、查全率和 F1 值。
-研2023 题1
-给出一个混淆矩阵。
-
-说明 TP、FP、TN、FN 的含义。
-计算 Precision、Recall 和 F1 值。
-
-研2024 题2
-写出混淆矩阵，解释 Precision 和 Recall
-的计算方法，说明查准率、查全率两个指标之间的关系，并给出 F1
-度量的计算公式。
-研2024 题3
-介绍线性分类模型、Fisher
-准则、感知机准则、最小二乘准则、逻辑回归和支持向量机的基本思想，并说明支持向量机与一般线性分类器的区别。
-2. 贝叶斯决策
-本2021 题2
-基于最小错误率和最小风险进行贝叶斯决策。
-本2023 题1
-题干给出先验概率和决策损失表。
-
-根据最小错误率贝叶斯决策进行分类。
-根据最小风险贝叶斯决策进行决策。
-
-本2025 题2
-给出 \(c_1\)、\(c_2\)
-和决策损失表，使用最小错误率和最小风险进行决策。
-研2019 题1
-进行贝叶斯决策，分别基于最小风险和最小方差进行决策。
-研2024 题1
-给出相关数据，分别根据最小错误率贝叶斯决策和最小风险贝叶斯决策进行计算。
-研2025 题1
-给出先验概率、类条件概率和决策损失函数 \(\lambda\)。
-
-使用最小错误率进行决策。
-使用最小风险进行决策。
-
-3. 感知机准则
-本2021 题1
-使用感知机准则求判别函数。
-本2023 题4
-题干给出 \(x_1,x_2,x_3,x_4,a_1,b_1\)
-的值，且 \(x_1,x_2 \in A\)，\(x_3,x_4 \in
-B\)。使用梯度下降法求感知机准则函数，并给出 \(a,b\) 的最终值。
-本2025 题3
-使用感知机准则求判别函数。
-研2023 题5
-给出两个二维正样本、两个二维负样本，以及初始向量 \(a,b\)。学习率为
-1，使用感知机准则进行迭代计算。
-研2024 题5
-给出两个二维正样本、两个二维负样本和初始权重向量，写出增广形式，并使用感知机准则写出所有迭代步骤和最终结果。说明梯度下降失效问题的原因及解决办法。
-4. 支持向量机 SVM
-本2021 题5
-介绍 SVM 模型，并说明核函数的作用。
-本2023 题2
-简述支持向量机（SVM）的原理，说明遇到噪声和线性不可分时应该如何解决。
-本2025 题4
-解释支持向量机 SVM 的思想，解释核函数的作用。
-研2019 题3
-说明 SVM 的基本思想、模型表达式、软间隔和硬间隔的物理含义，以及如何用
-SVM 解决非线性问题。
-研2020 题2
-说明 SVM
-的基本思路、模型公式、软间隔、硬间隔、如何处理离群点和噪声，以及如何处理非线性样本分类。
-研2023 题2
-说明支持向量机的原理、模型表达式，说明如何处理噪声和离群点，以及如何解决非线性问题。
-研2025 题4
-
-从几何解析的角度描述参数 \(w\) 和
-\(b\) 的意义。
-说明惩罚系数和松弛变量的作用。
-
-5. 决策树与 ID3
-本2021 题6
-给出 12 行数据和 3 个属性列，根据 ID3
-算法构建一棵决策树，并说明决策树避免过拟合的两种方法。
-本2023 题3
-题干给出一张特征表。
-
-使用 ID3
-算法构造一个决策树，并使用构造的决策树判断一个实例的分类结果。
-如何解决决策树的过拟合问题？简述一种解决办法的原理及其缺点。
-
-本2025 题5
-根据三种属性（口味：甜、咸、酸；温度：冷、热；分量：大、中、小）对 12
-个样本构建 ID3 决策树，分析 ID3
-的缺点，举出两种缓解过拟合的方法（预剪枝算法、后剪枝算法），并选择其中一种说明优劣。
-研2019 题2
-说明 ID3 和 C4.5 的区别，说明预剪枝和后剪枝的基本思想及优缺点。
-研2019 题6
-说明什么是过拟合，以及解决过拟合的方法。
-研2020 题1
-使用 ID3
-算法构建决策树，对宇宙星球或近地卫星是否适合生存进行分类。另一份同年回忆版给出的近地卫星题干为：2077
-年人类发射近地卫星，一共发射 800
-颗，根据大小和轨道远近，有着不同的宜居条件（“是”表示宜居），表格如下。
-
-
-
-数量
-大小
-轨道
-是否宜居
-
-
-
-
-30
-大
-远
-是
-
-
-130
-大
-近
-是
-
-
-48
-小
-远
-是
-
-
-161
-小
-近
-是
-
-
-20
-大
-远
-否
-
-
-170
-大
-近
-否
-
-
-11
-小
-远
-否
-
-
-230
-小
-近
-否
-
-
-
-构建一个 ID3
-决策树，要求写出详细计算过程，并画出决策树，标出每个结点的正类、负类样本数量和分支结点对应的属性，并标出叶子结点最终属于哪个类别。
-研2023 题4
-第一问：使用 ID3 算法计算并构造一棵决策树。第二问：说明 ID3
-算法的缺点，并列举改进算法。
-研2024 题7
-使用 ID3 算法手动构建一棵决策树。说明 ID3
-算法的优缺点，以及如何改进。
-研2025 题8
-判断学生是否会加入算法竞赛集训队。题干给出 4
-个属性：GPA（高、中、低）、感兴趣程度（高、一般、低）、时间（充足、一般、紧张）、编程能力（高、中、低）。
-
-按照 ID3 流程生成决策树。
-给定一个同学的属性，判断他是否会加入。
-简述预剪枝和后剪枝的方法及优缺点。
-
-6. BP 反向传播算法
-本2021 题7
-推导 BP 算法中权值的更新公式。
-本2023 题8
-如下图所示，推导神经网络中 \(w_{md}\) 和 \(w_{km}\) 的更新公式。
-
-
-本2023 BP 神经网络结构图
-
-本2025 题8
-包含一层隐藏层的前馈神经网络如图所示，其中给定训练集：
-\[
-D=\{(x_1,t_1),(x_2,t_2),\ldots,(x_N,t_N)\},\quad
-x_i\in\mathbb{R}^{D},\quad t_i\in\mathbb{R}^{K}
-\]
-隐藏层激活函数为 \(h(x)\)，输出层激活函数为 \(\sigma(x)\)。\(y_n\) 表示第 \(n\) 个样本 \(x_n\) 对应的神经网络输出向量：
-\[
-y_n=[y_{n1},\ldots,y_{nk},\ldots,y_{nK}]^T
-\]
-准则函数为：
-\[
-E_n(w)=\frac{1}{2}\sum_{k=1}^{K}(y_{nk}-t_{nk})^2
-\]
-网络包含 \(D\) 个输入神经元、\(K\) 个输出神经元，以及 \(M\)
-个隐层神经元。试推导反向传播算法中对每一层权值参数 \(w_{md}\) 与 \(w_{km}\) 的更新。
-研2019 题8
-给出一个 \(4\times 4\times 4\times
-3\)
-的全连接神经网络，推导反向传播算法，并以第二层的第三个节点为例进行说明。
-研2020 题8
-推导三层 BP
-神经网络的误差反向传播过程。以下图为例，推导反向传播（back
-prop）的主要思想，要求写出详细过程，其中 \(i\) 为输入层，\(k\) 为输出层，且 layer \(j\) 和 layer \(k\) 均有 Sigmoid 函数作为激活函数。
-
-
-BP 神经网络示意图
-
-研2023 题8
-给出一个三层神经网络，计算 BP 流程。
-研2024 题9
-给出的神经网络有两个隐藏层，其中有一层有权重，输出层有激活函数。推导神经网络的反向传播过程。要求先写正向传播表达式，再反向求偏导，并注意推导式中求和符号的含义。
-研2025 题9
-给定带有一个隐藏层的前馈全连接神经网络，隐藏层和输出层都有激活函数。
-
-推导第一层和第二层参数 \(w\)
-如何更新。
-说明动量 SGD 和 Adam 如何解决陷入局部极值点或震荡的问题。
-简述为什么会出现梯度消失，以及如何缓解这一现象。
-
-7. K-means
-本2021 题4
-写出 K-means 算法，说明其不足，并写出它的一种改进。
-本2023 题6
-简述 K-means 算法原理。K-means 算法有什么缺点？给出一种改进方法。
-本2025 题6
-描述 K-means 算法流程，分析劣势并给出一种改进方法（K-means++）。
-研2023 题7
-给出 K-means 算法的基本流程。给出一个包含 10 个点的表格和 3
-个中心点，使用 K-means 进行计算。
-研2024 题4
-介绍 K-means 模型，写出模型的计算过程。
-研2025 题2
-
-使用数学语言描述 K-means 的流程。
-执行一遍 K-means 流程：给定 4 个二维点的坐标，初始化 2
-个二维中心点，要求迭代执行 2 次。
-说明 K-means 的缺陷以及解决办法（K-means++）。
-
-8. PCA 与 LDA / Fisher 准则
-本2021 题3
-利用 PCA 算法将给定的五个二维向量降到一维。简述 PCA 算法和 LDA
-算法的基本思想，并说明两者的区别。
-本2023 题5
-简述 PCA 和 LDA（Fisher 准则）的原理和区别。
-研2019 题7
-基于最小均方误差思想推导 PCA 算法，并写出计算步骤。
-研2020 题6
-写出主成分分析（Principal Component Analysis,
-PCA）的基本思想，并从最大方差思想推导其结果。
-研2023 题6
-基于最小均方误差推导 PCA 主成分分析，并给出 PCA 算法的基本流程。
-研2024 题8
-介绍
-PCA，解释什么是基于最大方差和基于最小均方误差的思想，并从最大方差思想推导
-PCA。掌握最大方差和最小均方误差的计算方法，能用数学语言描述和推导。
-研2025 题3
-
-简述最大方差、最小均方误差的主要思想。
-写出 PCA
-的一般求解过程，包括求协方差矩阵、最大特征值对应的特征向量等。
-说明 PCA 与 LDA 的关系与区别。
-
-9. 集成学习
-本2023 题7
-简述集成学习的基本思想，简述 Boosting 和 Bagging 的原理和区别。
-本2025 题7
-描述 AdaBoosting
-串行学习流程，分析随机森林的学习器，并说明如何实现多样化的学习器。
-研2020 题3
-说明集成学习的基本思想，并分别以串行化的 Boosting 和并行化的 Bagging
-解释其原理。
-研2023 题3
-说明集成学习的原理，并介绍 AdaBoost 和 Random Forest
-的串行、并行思想。
-研2024 题6
-说明集成学习的思想，介绍 Boosting 和 Bagging
-两种方法，并说明模型的采样、结构和输出形式。
-研2025 题7
-
-叙述集成学习的思想。
-简述 Boosting 和 Bagging 的执行流程。
-
-10. 深度学习与开放题
-本2021 题8
-谈谈机器学习在某领域的应用，如医疗、金融、电商、交通等。
-本2023 题9
-现如今购物 App
-的推荐算法总是会根据用户的浏览记录，向用户推荐感兴趣的商品，使用户陷入“信息茧房”中。
-
-如何使用机器学习优化产品业务？
-从算法的角度，简述如何规避“信息茧房”。
-
-本2025 题9
-文生视频用到了什么技术？说明其可能的挑战和潜在问题。
-研2019 题9
-给出机器学习和深度学习的联系，说明二者各有什么优缺点，并谈谈你认为未来深度学习会如何发展。
-研2020 题9
-结合本课程内容谈谈你对深度学习的理解，说明深度学习模型存在什么问题，并谈谈你对深度学习未来发展方向的预测。
-研2023 题9
-结合所学内容，给出大模型的应用，以及大模型未来的挑战和方向。
-研2024 题10
-谈谈人工智能的潜在应用及挑战。
-研2024(1) 题9
-说明机器学习如何在大模型中应用。
-]]></content>
-      <categories>
-        <category>机器学习</category>
-      </categories>
-      <tags>
-        <tag>ML</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title></title>
-    <url>/2026/07/03/%E7%A0%942020(1)/</url>
-    <content><![CDATA[
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-北航机器学习期末考试试题2020年春-CSDN博客
-
-
-
-
-
-
-
-
-        .MathJax_Message, .MathJax_Preview{
-            display: none !important;
-        }
-    
-* { user-select: text; } pre{max-height: none!important; overflow-y: hidden;}
-
-
-
-
-
-
-
-
-
-
-
-
-北航机器学习期末考试试题2020年春
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-北航机器学习期末考试试题2020春
-看csdn上试题收费，积分还挺高，本着共享的理念，把2020春季ML考试的试题公开，若侵权，立删
-前8道题10分，第9题20分
-决策树采用ID3算法 对宇宙星球是否适合生存分类SVM的原理；软间隔、硬间隔；以及对非线性样本点分类集成学习的原理，以及及串行boosting以及bagging的简单概括K-means与混合高斯模型的异同以及EM算法的原理，如何计算马尔可夫随机场最大团；马尔可夫随机场的联合概率分布（势函数表示），贝叶斯网络联合概率分布PCA主成分基于最大方差推导R-CNN关于残差模块的误差分析
-     
-      
-       
-        
-         
-          
-           ∂
-          
-          
-           
-            E
-           
-           
-            n
-           
-          
-         
-         
-          
-           ∂
-          
-          
-           
-            x
-           
-           
-            l
-           
-          
-         
-        
-       
-       
-        \frac {\partial E_n} {\partial x^l}
-       
-      
-     ∂xl∂En​​3层bp神经网络的误差反向传播的推导关于深度学习的问题，以及你对深度学习未来发展的预测 2019秋季ML试题
-上联：随机过程随机过，我过不了
-下联：机器学习机器学，我学不会
-横批：明年还是你
-
-
-
-
-
-
-
-
-
-
-
-
-        确定要放弃本次机会？
-      
-福利倒计时
-
-
-:
-
-:
-
-
-
-
-
-立减 ¥
-
-
-普通VIP年卡可用
-
-立即使用
-
-
-
-
-
-
-
-]]></content>
   </entry>
   <entry>
     <title>BUAA-ML 期末复习</title>
@@ -2995,296 +2423,428 @@ AdaBoosting 串行学习流程：
       </tags>
   </entry>
   <entry>
-    <title></title>
-    <url>/2026/07/03/%E7%A0%942020/</url>
-    <content><![CDATA[
-    
+    <title>BUAA-ML 往年考题汇总</title>
+    <url>/2026/07/01/BUAA-ML%20%E5%BE%80%E5%B9%B4%E8%80%83%E9%A2%98%E6%B1%87%E6%80%BB/</url>
+    <content><![CDATA[0. 写在前面
+本文将往年本研考题按知识模块归类，只保留了与期末复习范围一致的题目。
+转载来源： 研2025
+研2024
+研2024(1)
+研2023
+研2020(这个文章需要收费，完整内容见这里) 研2020(1)(这个文章需要收费，完整内容见这里) 研2019
+本2025 本2023
+本2021
+1. 分类器性能度量
+本2025 题1
+写出混淆矩阵，解释 TP、FP、TN、FN
+的定义。给出预测值和真实值，计算查准率、查全率和 F1 值。
+研2023 题1
+给出一个混淆矩阵。
+
+说明 TP、FP、TN、FN 的含义。
+计算 Precision、Recall 和 F1 值。
+
+研2024 题2
+写出混淆矩阵，解释 Precision 和 Recall
+的计算方法，说明查准率、查全率两个指标之间的关系，并给出 F1
+度量的计算公式。
+研2024 题3
+介绍线性分类模型、Fisher
+准则、感知机准则、最小二乘准则、逻辑回归和支持向量机的基本思想，并说明支持向量机与一般线性分类器的区别。
+2. 贝叶斯决策
+本2021 题2
+基于最小错误率和最小风险进行贝叶斯决策。
+本2023 题1
+题干给出先验概率和决策损失表。
+
+根据最小错误率贝叶斯决策进行分类。
+根据最小风险贝叶斯决策进行决策。
+
+本2025 题2
+给出 \(c_1\)、\(c_2\)
+和决策损失表，使用最小错误率和最小风险进行决策。
+研2019 题1
+进行贝叶斯决策，分别基于最小风险和最小方差进行决策。
+研2024 题1
+给出相关数据，分别根据最小错误率贝叶斯决策和最小风险贝叶斯决策进行计算。
+研2025 题1
+给出先验概率、类条件概率和决策损失函数 \(\lambda\)。
+
+使用最小错误率进行决策。
+使用最小风险进行决策。
+
+3. 感知机准则
+本2021 题1
+使用感知机准则求判别函数。
+本2023 题4
+题干给出 \(x_1,x_2,x_3,x_4,a_1,b_1\)
+的值，且 \(x_1,x_2 \in A\)，\(x_3,x_4 \in
+B\)。使用梯度下降法求感知机准则函数，并给出 \(a,b\) 的最终值。
+本2025 题3
+使用感知机准则求判别函数。
+研2023 题5
+给出两个二维正样本、两个二维负样本，以及初始向量 \(a,b\)。学习率为
+1，使用感知机准则进行迭代计算。
+研2024 题5
+给出两个二维正样本、两个二维负样本和初始权重向量，写出增广形式，并使用感知机准则写出所有迭代步骤和最终结果。说明梯度下降失效问题的原因及解决办法。
+4. 支持向量机 SVM
+本2021 题5
+介绍 SVM 模型，并说明核函数的作用。
+本2023 题2
+简述支持向量机（SVM）的原理，说明遇到噪声和线性不可分时应该如何解决。
+本2025 题4
+解释支持向量机 SVM 的思想，解释核函数的作用。
+研2019 题3
+说明 SVM 的基本思想、模型表达式、软间隔和硬间隔的物理含义，以及如何用
+SVM 解决非线性问题。
+研2020 题2
+说明 SVM
+的基本思路、模型公式、软间隔、硬间隔、如何处理离群点和噪声，以及如何处理非线性样本分类。
+研2023 题2
+说明支持向量机的原理、模型表达式，说明如何处理噪声和离群点，以及如何解决非线性问题。
+研2025 题4
+
+从几何解析的角度描述参数 \(w\) 和
+\(b\) 的意义。
+说明惩罚系数和松弛变量的作用。
+
+5. 决策树与 ID3
+本2021 题6
+给出 12 行数据和 3 个属性列，根据 ID3
+算法构建一棵决策树，并说明决策树避免过拟合的两种方法。
+本2023 题3
+题干给出一张特征表。
+
+使用 ID3
+算法构造一个决策树，并使用构造的决策树判断一个实例的分类结果。
+如何解决决策树的过拟合问题？简述一种解决办法的原理及其缺点。
+
+本2025 题5
+根据三种属性（口味：甜、咸、酸；温度：冷、热；分量：大、中、小）对 12
+个样本构建 ID3 决策树，分析 ID3
+的缺点，举出两种缓解过拟合的方法（预剪枝算法、后剪枝算法），并选择其中一种说明优劣。
+研2019 题2
+说明 ID3 和 C4.5 的区别，说明预剪枝和后剪枝的基本思想及优缺点。
+研2019 题6
+说明什么是过拟合，以及解决过拟合的方法。
+研2020 题1
+使用 ID3
+算法构建决策树，对宇宙星球或近地卫星是否适合生存进行分类。另一份同年回忆版给出的近地卫星题干为：2077
+年人类发射近地卫星，一共发射 800
+颗，根据大小和轨道远近，有着不同的宜居条件（“是”表示宜居），表格如下。
 
 
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    北航机器学习2020-2021秋季学期期末试题回忆_慕弋云子-CSDN博客
-    
-        
-        
-    
-              
-    
-        
-    
-    
-    
-        
-    
-    
-    
-    
-        .MathJax, .MathJax_Message, .MathJax_Preview{
-            display: none
-        }
-    
-    
-      
-    
-    
-    
-* { user-select: text; }pre{max-height: none!important; overflow-y: hidden;}
-  
-    
-        
-      
-    
-
-    
-    
-    
-    
-    
-        
-          
-          
-          
+数量
+大小
+轨道
+是否宜居
 
 
-  
-    
-      
-        北航机器学习2020-2021秋季学期期末试题回忆
-      
-      
-          
-              
-              原创
-                
-                 
-                  于&nbsp;2021-01-13 10:56:03&nbsp;发布
-                ·
-                6.2k 阅读
-                
-                  ·
-                  
-                  
-                  
-                      13
-                  
-                
-                ·
-                
-                  
-                  
-                  
-                      81
-                  
-                
-
-                  ·
-                  
-                    CC 4.0 BY-SA版权
-                    
-                                版权声明：本文为博主原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接和本声明。
-                    
-                  
-              
-              
-              
-          
-          
-             
-              
-                     
-                       文章标签：
-                      
-                          #机器学习
-                      
-                     
-                  
-              
-          
-       
-          
-       
-      
-    
-  
-    
-    
-        
-        
-        
-                
-                    
-                        
-                    
-                    北航机器学习2020-2021秋季学期期末试题回忆 
-fanjn, zhangyy, yuanq, wanggq, weixy, anh, wangyy, zhouxy, likc1 
- 
-【注&#xff1a;考试使用纯白的A3答题纸&#xff0c;考试时间2h&#xff0c;各位同学可以自行模拟考试】 
- 
-此试卷1-8题为10分&#xff0c;第9题为20分 
-1.2077年人类发射近地卫星&#xff0c;一共发射800颗&#xff0c;根据大小和轨道远近&#xff0c;有着不同的宜居条件&#xff08;&#43;表示宜居&#xff09;&#xff0c;有以下表格&#xff08;数字八九不离十&#xff0c;其他属性什么的原题就是交替的&#xff09; 
-数量大小轨道是否宜居30大远是130大近是48小远是161小近是20大远否170大近否11小远否230小近否
-构建一个ID3决策树&#xff0c;要求写出详细计算过程&#xff0c;并画出决策树&#xff0c;标出每个结点的正类、负类样本数量和分支结点对应的属性&#xff0c;并标出叶子结点最终为哪个类别。 
- 
-2.SVM的基本思路、模型公式、如何处理离群点和噪声、如何处理非线性的情况 
- 
-3.集成学习的基本思想&#xff0c;并分别以串行化的boosting和并行化的bagging解释其原理 
- 
-4.写出k均值和高斯混合模型的异同点&#xff0c;并简述EM算法的基本流程。 
- 
-5.a图是一个无向的马尔可夫场&#xff0c;b图是一个有向的贝叶斯网络&#xff08;类似ppt上的这个&#xff09;  
-&#xff08;1&#xff09;写出a图的所有极大团 &#xff08;2&#xff09;写出a图和b图的联合概率分布&#xff08;a图中以
-    
-     
-      
-       
-        
-         ψ
-        
-        
-         Q
-        
-       
-       
-        (
-       
-       
-        
-         X
-        
-        
-         Q
-        
-       
-       
-        )
-       
-      
-      
-       ψ_Q (X_Q)
-      
-     
-    ψQ​(XQ​)表示与团Q对应的势函数&#xff09; 
- 
-6.根据残差模块&#xff08;左图&#xff09;进行残差神经网络&#xff08;右图&#xff09;的推导&#xff1a;求解
-    
-     
-      
-       
-        
-         
-          ∂
-         
-         
-          E
-         
-        
-        
-         
-          ∂
-         
-         
-          
-           x
-          
-          
-           l
-          
-         
-        
-       
-      
-      
-       \frac{∂E}{∂x^l }
-      
-     
-    ∂xl∂E​。  
- 
-7.写出主成分分析&#xff08;Principle Component Analysis&#xff09;的基本思想&#xff0c;并从最大方差思想推导其结果。 
- 
-8.以下图为例&#xff0c;推导反向传播&#xff08;back prop&#xff09;的主要思想&#xff0c;要求写出详细过程&#xff0c;其中i为输入&#xff0c;k为输出层&#xff0c;注意layer j和layer k均有Sigmoid函数作为激活函数。 
- 
- 
-9.结合本课程的内容谈谈你对深度学习的理解&#xff0c;深度学习模型存在什么问题&#xff0c;你觉得深度学习未来会往什么方向发展。 
- 
- 
- 以对应题目顺序排列 ↩︎  
-
-                
-                
-                
-        
-    
 
 
-  
+30
+大
+远
+是
 
 
-  
-  
-   
-      
-      
-        确定要放弃本次机会？
-      
-      福利倒计时
-      
-        
-        :
-        
-        :
-        
-      
-      
-        
-          
-          立减 ¥
-          
-        
-        普通VIP年卡可用
-      
-      立即使用
-  
+130
+大
+近
+是
 
-     
-  
-  
-  
-  
-  
-  
-  
-  
-  
-    
-  
-  
-  
-  
-  
-  
-  
-  
-    
-  
-  
-  
-  
-      
-      
-      
 
+48
+小
+远
+是
+
+
+161
+小
+近
+是
+
+
+20
+大
+远
+否
+
+
+170
+大
+近
+否
+
+
+11
+小
+远
+否
+
+
+230
+小
+近
+否
+
+
+
+构建一个 ID3
+决策树，要求写出详细计算过程，并画出决策树，标出每个结点的正类、负类样本数量和分支结点对应的属性，并标出叶子结点最终属于哪个类别。
+研2023 题4
+第一问：使用 ID3 算法计算并构造一棵决策树。第二问：说明 ID3
+算法的缺点，并列举改进算法。
+研2024 题7
+使用 ID3 算法手动构建一棵决策树。说明 ID3
+算法的优缺点，以及如何改进。
+研2025 题8
+判断学生是否会加入算法竞赛集训队。题干给出 4
+个属性：GPA（高、中、低）、感兴趣程度（高、一般、低）、时间（充足、一般、紧张）、编程能力（高、中、低）。
+
+按照 ID3 流程生成决策树。
+给定一个同学的属性，判断他是否会加入。
+简述预剪枝和后剪枝的方法及优缺点。
+
+6. BP 反向传播算法
+本2021 题7
+推导 BP 算法中权值的更新公式。
+本2023 题8
+如下图所示，推导神经网络中 \(w_{md}\) 和 \(w_{km}\) 的更新公式。
+
+
+本2023 BP 神经网络结构图
+
+本2025 题8
+包含一层隐藏层的前馈神经网络如图所示，其中给定训练集：
+\[
+D=\{(x_1,t_1),(x_2,t_2),\ldots,(x_N,t_N)\},\quad
+x_i\in\mathbb{R}^{D},\quad t_i\in\mathbb{R}^{K}
+\]
+隐藏层激活函数为 \(h(x)\)，输出层激活函数为 \(\sigma(x)\)。\(y_n\) 表示第 \(n\) 个样本 \(x_n\) 对应的神经网络输出向量：
+\[
+y_n=[y_{n1},\ldots,y_{nk},\ldots,y_{nK}]^T
+\]
+准则函数为：
+\[
+E_n(w)=\frac{1}{2}\sum_{k=1}^{K}(y_{nk}-t_{nk})^2
+\]
+网络包含 \(D\) 个输入神经元、\(K\) 个输出神经元，以及 \(M\)
+个隐层神经元。试推导反向传播算法中对每一层权值参数 \(w_{md}\) 与 \(w_{km}\) 的更新。
+研2019 题8
+给出一个 \(4\times 4\times 4\times
+3\)
+的全连接神经网络，推导反向传播算法，并以第二层的第三个节点为例进行说明。
+研2020 题8
+推导三层 BP
+神经网络的误差反向传播过程。以下图为例，推导反向传播（back
+prop）的主要思想，要求写出详细过程，其中 \(i\) 为输入层，\(k\) 为输出层，且 layer \(j\) 和 layer \(k\) 均有 Sigmoid 函数作为激活函数。
+
+
+BP 神经网络示意图
+
+研2023 题8
+给出一个三层神经网络，计算 BP 流程。
+研2024 题9
+给出的神经网络有两个隐藏层，其中有一层有权重，输出层有激活函数。推导神经网络的反向传播过程。要求先写正向传播表达式，再反向求偏导，并注意推导式中求和符号的含义。
+研2025 题9
+给定带有一个隐藏层的前馈全连接神经网络，隐藏层和输出层都有激活函数。
+
+推导第一层和第二层参数 \(w\)
+如何更新。
+说明动量 SGD 和 Adam 如何解决陷入局部极值点或震荡的问题。
+简述为什么会出现梯度消失，以及如何缓解这一现象。
+
+7. K-means
+本2021 题4
+写出 K-means 算法，说明其不足，并写出它的一种改进。
+本2023 题6
+简述 K-means 算法原理。K-means 算法有什么缺点？给出一种改进方法。
+本2025 题6
+描述 K-means 算法流程，分析劣势并给出一种改进方法（K-means++）。
+研2023 题7
+给出 K-means 算法的基本流程。给出一个包含 10 个点的表格和 3
+个中心点，使用 K-means 进行计算。
+研2024 题4
+介绍 K-means 模型，写出模型的计算过程。
+研2025 题2
+
+使用数学语言描述 K-means 的流程。
+执行一遍 K-means 流程：给定 4 个二维点的坐标，初始化 2
+个二维中心点，要求迭代执行 2 次。
+说明 K-means 的缺陷以及解决办法（K-means++）。
+
+8. PCA 与 LDA / Fisher 准则
+本2021 题3
+利用 PCA 算法将给定的五个二维向量降到一维。简述 PCA 算法和 LDA
+算法的基本思想，并说明两者的区别。
+本2023 题5
+简述 PCA 和 LDA（Fisher 准则）的原理和区别。
+研2019 题7
+基于最小均方误差思想推导 PCA 算法，并写出计算步骤。
+研2020 题6
+写出主成分分析（Principal Component Analysis,
+PCA）的基本思想，并从最大方差思想推导其结果。
+研2023 题6
+基于最小均方误差推导 PCA 主成分分析，并给出 PCA 算法的基本流程。
+研2024 题8
+介绍
+PCA，解释什么是基于最大方差和基于最小均方误差的思想，并从最大方差思想推导
+PCA。掌握最大方差和最小均方误差的计算方法，能用数学语言描述和推导。
+研2025 题3
+
+简述最大方差、最小均方误差的主要思想。
+写出 PCA
+的一般求解过程，包括求协方差矩阵、最大特征值对应的特征向量等。
+说明 PCA 与 LDA 的关系与区别。
+
+9. 集成学习
+本2023 题7
+简述集成学习的基本思想，简述 Boosting 和 Bagging 的原理和区别。
+本2025 题7
+描述 AdaBoosting
+串行学习流程，分析随机森林的学习器，并说明如何实现多样化的学习器。
+研2020 题3
+说明集成学习的基本思想，并分别以串行化的 Boosting 和并行化的 Bagging
+解释其原理。
+研2023 题3
+说明集成学习的原理，并介绍 AdaBoost 和 Random Forest
+的串行、并行思想。
+研2024 题6
+说明集成学习的思想，介绍 Boosting 和 Bagging
+两种方法，并说明模型的采样、结构和输出形式。
+研2025 题7
+
+叙述集成学习的思想。
+简述 Boosting 和 Bagging 的执行流程。
+
+10. 深度学习与开放题
+本2021 题8
+谈谈机器学习在某领域的应用，如医疗、金融、电商、交通等。
+本2023 题9
+现如今购物 App
+的推荐算法总是会根据用户的浏览记录，向用户推荐感兴趣的商品，使用户陷入“信息茧房”中。
+
+如何使用机器学习优化产品业务？
+从算法的角度，简述如何规避“信息茧房”。
+
+本2025 题9
+文生视频用到了什么技术？说明其可能的挑战和潜在问题。
+研2019 题9
+给出机器学习和深度学习的联系，说明二者各有什么优缺点，并谈谈你认为未来深度学习会如何发展。
+研2020 题9
+结合本课程内容谈谈你对深度学习的理解，说明深度学习模型存在什么问题，并谈谈你对深度学习未来发展方向的预测。
+研2023 题9
+结合所学内容，给出大模型的应用，以及大模型未来的挑战和方向。
+研2024 题10
+谈谈人工智能的潜在应用及挑战。
+研2024(1) 题9
+说明机器学习如何在大模型中应用。
 ]]></content>
+      <categories>
+        <category>机器学习</category>
+      </categories>
+      <tags>
+        <tag>ML</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OOpre 课程总结</title>
+    <url>/2025/11/11/BUAA-OOpre%20%E8%AF%BE%E7%A8%8B%E6%80%BB%E7%BB%93/</url>
+    <content><![CDATA[一、架构设计
+继承与接口设计
+项目最终UML类图如下：
+
+采用模块化的思想，我的最终架构可以分为以下几个核心模块：
+1. 入口与控制层
+
+Main：程序入口，仅用于初始化Scanner、冒险者容器advs、关系管理器rm，并创建总控制器CommandUtil。
+CommandUtil：系统的总控制器。
+
+控制：负责解析所有用户命令。它从Main接收Scanner，通过switch语句分发指令（
+“aa”, “ab”, “fight”, “use” 等）。
+协作：作为协调者，调用 Adventurer
+类的业务方法和 RelationManager 的关系处理方法。
+
+
+2. 核心实体层
+
+Adventurer：管理冒险者的所有属性和行为。
+
+属性管理：管理基础属性（hitPoint,
+baseAtk, baseDef, mana,
+money）及状态（dead）。
+物品管理：
+
+items：存储冒险者拥有的所有物品。
+bottleBackpack：药水瓶背包，采用LinkedHashMap这一数据结构，通过重写removeEldestEntry方法，实现了“最多携带10个药水瓶，超出时移除最旧条目”的逻辑。
+
+技能与关系：spells
+存储学会的法术，superior和subordinates记录雇佣关系。
+行为管理：封装了addBottle,
+addEquipment, learnSpell,
+takeItem 等所有逻辑。
+
+
+3. 物品与技能系统
+
+Item
+(抽象类)：所有物品的顶层基类。
+Usable
+(接口)：定义了“可使用物品”的规范。
+Bottle
+(抽象类)：继承于Item，并实现了Usable接口。派生出HpBottle等具体药水类。
+Equipment
+(抽象类)：继承自Item。派生出Armour
+和Weapon (抽象类)。Weapon
+进一步派生出Sword 和Magicbook。
+Spell
+(抽象类)：实现了Usable接口。派生出HealSpell
+和AttackSpell。
+
+4. 关系管理模块
+
+RelationManager：负责处理冒险者间的雇佣关系，提供关系的添加、删除、死亡处理等操作。
+LrParser：配合CommandUtil
+使用的递归下降解析器，用于解析”lr”指令，并通过调用rm
+的方法建立雇佣关系。
+
+5. 工具/辅助类
+
+Factory：实现了工厂模式。提供一系列方法，如createBottle，用于创建对象实例。
+
+架构调整及考虑
+
+CommandUtil的添加：最初对指令的处理全部由Main类完成，随着指令的增加，Main类变得过于臃肿，且超出代码行数限制，因此引入该类专门负责读取和解析指令，使Main类仅仅作为程序入口。
+Factory的添加：随着迭代的进行，Bottle和Equipment等都有了多个子类，这时需要根据某一物品所属的子类名来相应地创建对象，为了降低项目的耦合度，便添加了Factory工厂类来专门创建对象。
+RelationManager的添加：第六次作业引入了雇佣关系，需要管理各个冒险者之间的关系，为避免Adventurer类中耦合度过高，引入了该类来统一完成关系的添加、删除、查询等操作。
+
+二、使用JUnit的心得体会
+
+JUnit即”Java单元测试“，指针对每一个Java类（主类除外），都编写多个测试函数来测试该类的方法是否达到了预期的功能，并测试各种不同情况下方法的稳健性，可以检测Java项目中是否存在低级的逻辑问题。
+之前的程序设计过程中，我们大多是通过构造测试数据，将程序的输出与答案进行对比，来排除程序的问题；而通过JUnit，我们可以初步检验每个类、每个方法的正确性，从而减少测试的工作量。
+JUnit促使我们思考边界情况。
+编写测试用例的过程，也是对自己代码的再次检查。我们可以测试很多种边界情况，比如正常参数、null、0等，当然前提必须是满足题干中的数据范围。这一步能提前找出很多代码漏洞，极大减少了后期调试的麻烦。
+
+三、学习OOPre的心得体会
+
+在OOPre的学习中，我掌握了Java的基本语法和常见的数据容器等。相比“原始”的C语言，Java语言明显更加现代，比如Java将C语言中复杂的指针替换成了“引用”。此外，C语言不注重类型的检查，有很多自动类型转化的例子，而Java却对此要求很严格，比如if和while的判断条件中必须是boolean类型，之前我们可能习惯了的if(a)，必须再改成if(a!=0)，此外还要多注意操作的某个对象是否为null，否则程序可能会抛出异常。
+我最大的收获是从“面向过程”到“面向对象”的思维转变。
+之前我们大多在完成一道道编程题目，仅仅追求AC，而不关注代码可读性、可扩展性等等。而现在我们要迭代开发项目，这便要求我们保持良好的代码风格，提高程序的可读性等。
+在学习工程模式等设计模式时，我也感受到开发的规范性，原来这些方法都有对应的理论支持，而不是凭空想出来的策略。比如我在第一部分架构设计中提到的Factory类，就是对“工厂模式”的一次具体实践，它帮助我将“对象的创建”与“对象的使用”解耦，降低了代码耦合度。
+在使用git的过程中，我也感受到了现代版本管理系统的强大功能，通过在终端输入指令或者图形化界面，我们便可以轻松实现一个项目的不同版本间的转换。但我的git相关知识还仅限于成功提交作业，希望在未来我能够进一步深入学习git相关知识。
+
+四、对OOPre课程的简单建议
+在听课过程中某些概念不好理解，比如“观察者模式”等，只听概念的话有一种云里雾里的感觉，希望以后多讲一些相关代码示例，从而提高学习效率。
+]]></content>
+      <categories>
+        <category>OO</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>OO</tag>
+      </tags>
   </entry>
 </search>
