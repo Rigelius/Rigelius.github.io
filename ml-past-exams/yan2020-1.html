@@ -1,0 +1,141 @@
+﻿<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<link href="https://blog.csdn.net/qq_43343919/article/details/112399970" rel="canonical"/>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<meta content="webkit" name="renderer">
+<meta content="webkit" name="force-rendering">
+<meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible"/>
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content='{"pid": "blog", "spm":"1001.2101"}' name="report"/>
+<meta content="always" name="referrer"/>
+<meta content="no-siteapp" http-equiv="Cache-Control"><link href="#" media="handheld" rel="alternate"/>
+<meta content="5a59773ab8077d4a62bf469ab966a63b_1497598848" name="shenma-site-verification"/>
+<meta content="pc" name="applicable-device"/>
+<link href="https://g.csdnimg.cn/static/logo/favicon32.ico" rel="shortcut icon" type="image/x-icon"/>
+<title>北航机器学习期末考试试题2020年春-CSDN博客</title>
+<meta content="深度学习,经验分享" name="keywords"/>
+<meta content='{"autorun":true,"install":true,"keyword":"北航机器学习期末"}' name="csdn-baidu-search"/>
+<meta content="文章浏览阅读5k次，点赞9次，收藏36次。本文公开了2020年春季北京航空航天大学机器学习课程的期末考试试题，包括决策树的ID3算法、SVM原理、集成学习概述、K-means与混合高斯模型对比等内容，并探讨了深度学习的未来发展。
+" name="description"/>
+<link href="/ml-past-exams/csdn-assets/css/csdnimg.cn_release_blogv2_dist_pc_css_detail_enter-04867641c4.min.css" rel="stylesheet" type="text/css"/>
+<link href="/ml-past-exams/csdn-assets/css/csdnimg.cn_release_blogv2_dist_pc_themesSkin_skin3-template_skin3-template-762f7595fd.min.css" rel="stylesheet" type="text/css"/>
+<meta content='{"type":"0","fixModel":"1"}' name="toolbar"/>
+<link href="/ml-past-exams/csdn-assets/css/csdnimg.cn_public_sandalstrap_1.4_css_sandalstrap.min.css" rel="stylesheet" type="text/css"/>
+<style>
+        .MathJax_Message, .MathJax_Preview{
+            display: none !important;
+        }
+    </style>
+<style type="text/css">* { user-select: text; } pre{max-height: none!important; overflow-y: hidden;}</style></meta></meta></meta></head>
+<body class="nodata" style="">
+
+<link href="/ml-past-exams/csdn-assets/css/csdnimg.cn_release_blogv2_dist_pc_css_blog_code-01256533b5.min.css" rel="stylesheet"/>
+<link href="/ml-past-exams/csdn-assets/css/csdnimg.cn_release_blogv2_dist_mdeditor_css_editerView_chart-3456820cac.css" rel="stylesheet">
+<link href="/ml-past-exams/csdn-assets/css/g.csdnimg.cn_lib_swiper_6.0.4_css_swiper.css" rel="stylesheet">
+<div class="main_father clearfix d-flex justify-content-center mainfather-concision" style="height:100%;">
+<div class="container clearfix container-concision" id="mainBox">
+<main>
+<div class="blog-content-box">
+<div class="article-header-box" id="article-header-box">
+<div class="article-header">
+<div class="article-title-box">
+<h1 class="title-article" id="articleContentId">北航机器学习期末考试试题2020年春</h1>
+</div>
+
+</div>
+</div>
+<div id="blogHuaweiyunAdvert"></div>
+
+<article class="baidu_pl">
+<div class="article_content clearfix" id="article_content">
+<link href="/ml-past-exams/csdn-assets/css/csdnimg.cn_release_blogv2_dist_mdeditor_css_editerView_kdoc_html_views-1a98987dfd.css" rel="stylesheet"/>
+<link href="/ml-past-exams/csdn-assets/css/csdnimg.cn_release_blogv2_dist_mdeditor_css_editerView_ck_htmledit_views-a50b13a894.css" rel="stylesheet"/>
+<div class="markdown_views prism-atom-one-dark" id="content_views">
+<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+<path d="M5,0 0,2.5 5,5z" id="raphael-marker-block" stroke-linecap="round" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+</svg>
+<h3><a id="2020_0"></a>北航机器学习期末考试试题2020春</h3>
+<h4><a id="csdn2020ML_1"></a>看csdn上试题收费，积分还挺高，本着共享的理念，把2020春季ML考试的试题公开，若侵权，立删</h4>
+<h5><a id="810920_2"></a>前8道题10分，第9题20分</h5>
+<ol><li>决策树采用ID3算法 对宇宙星球是否适合生存分类</li><li>SVM的原理；软间隔、硬间隔；以及对非线性样本点分类</li><li>集成学习的原理，以及及串行boosting以及bagging的简单概括</li><li>K-means与混合高斯模型的异同以及EM算法的原理，如何计算</li><li>马尔可夫随机场最大团；马尔可夫随机场的联合概率分布（势函数表示），贝叶斯网络联合概率分布</li><li>PCA主成分基于最大方差推导</li><li>R-CNN关于残差模块的误差分析<span class="katex--inline"><span class="katex"><span class="katex-mathml">
+     
+      
+       
+        
+         
+          
+           ∂
+          
+          
+           
+            E
+           
+           
+            n
+           
+          
+         
+         
+          
+           ∂
+          
+          
+           
+            x
+           
+           
+            l
+           
+          
+         
+        
+       
+       
+        \frac {\partial E_n} {\partial x^l}
+       
+      
+     </span><span class="katex-html"><span class="base"><span class="strut" style="height: 1.25363em; vertical-align: -0.35742em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.896208em;"><span class="" style="top: -2.64258em;"><span class="pstrut" style="height: 3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight" style="margin-right: 0.05556em;">∂</span><span class="mord mtight"><span class="mord mathdefault mtight">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.782029em;"><span class="" style="top: -2.786em; margin-right: 0.0714286em;"><span class="pstrut" style="height: 2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathdefault mtight" style="margin-right: 0.01968em;">l</span></span></span></span></span></span></span></span></span></span></span><span class="" style="top: -3.23em;"><span class="pstrut" style="height: 3em;"></span><span class="frac-line" style="border-bottom-width: 0.04em;"></span></span><span class="" style="top: -3.4101em;"><span class="pstrut" style="height: 3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight" style="margin-right: 0.05556em;">∂</span><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right: 0.05764em;">E</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.164543em;"><span class="" style="top: -2.357em; margin-left: -0.05764em; margin-right: 0.0714286em;"><span class="pstrut" style="height: 2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathdefault mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.143em;"><span class=""></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.35742em;"><span class=""></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></li><li>3层bp神经网络的误差反向传播的推导</li><li>关于深度学习的问题，以及你对深度学习未来发展的预测<br/> <a href="https://blog.csdn.net/sinat_38425013/article/details/103689617">2019秋季ML试题</a></li></ol>
+<p>上联：随机过程随机过，我过不了</p>
+<p>下联：机器学习机器学，我学不会</p>
+<p>横批：明年还是你</p>
+</div>
+<link href="/ml-past-exams/csdn-assets/css/csdnimg.cn_release_blogv2_dist_mdeditor_css_editerView_markdown_views-e1cc28b339.css" rel="stylesheet"/>
+<link href="/ml-past-exams/csdn-assets/css/csdnimg.cn_release_blogv2_dist_mdeditor_css_style-d1e89cace4.css" rel="stylesheet"/>
+</div>
+</article>
+</div>
+<div class="directory-boxshadow-dialog" style="display:none;">
+<div class="directory-boxshadow-dialog-box">
+</div>
+<div class="vip-limited-time-offer-box-new" id="vip-limited-time-offer-box-new">
+<img class="limited-img limited-img-new" src="/ml-past-exams/csdn-assets/img/csdnimg.cn_release_blogv2_dist_pc_img_vip-limited-close-newWhite.png"/>
+<div class="vip-limited-time-top">
+        确定要放弃本次机会？
+      </div>
+<span class="vip-limited-time-text">福利倒计时</span>
+<div class="limited-time-box-new">
+<span class="time-hour"></span>
+<i>:</i>
+<span class="time-minite"></span>
+<i>:</i>
+<span class="time-second"></span>
+</div>
+<div class="limited-time-vip-box">
+<p>
+<img class="coupon-img" src="/ml-past-exams/csdn-assets/img/csdnimg.cn_release_blogv2_dist_pc_img_vip-limited-close-roup.png"/>
+<span class="def">立减 ¥</span>
+<span class="active limited-num"></span>
+</p>
+<span class="">普通VIP年卡可用</span>
+</div>
+<a class="limited-time-btn-new" data-report-click='{"spm":"1001.2101.3001.9621"}' data-report-query="spm=1001.2101.3001.9621" href="https://mall.csdn.net/vip">立即使用</a>
+</div>
+</div>
+<hr/></main></div></div></link></link><hr></body>
+<link href="/ml-past-exams/csdn-assets/css/g.csdnimg.cn_lib_cboxEditor_1.1.6_embed-editor.min.css" rel="stylesheet"/>
+<link href="/ml-past-exams/csdn-assets/css/csdnimg.cn_release_blog_editor_html_release1.6.12_ckeditor_plugins_codesnippet_lib_highlight_styles_atom-one-dark.css" rel="stylesheet"/>
+<link href="/ml-past-exams/csdn-assets/css/cdn-static-cache.gitcode.com_gitcode-quick-app-components-fe_gitcode-repo.pro.css" rel="stylesheet" type="text/css"/>
+</html>

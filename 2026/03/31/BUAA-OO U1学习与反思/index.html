@@ -1,0 +1,652 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>BUAA-OO U1学习与反思 | Rigelius Blog</title><meta name="author" content="Rigelius"><meta name="copyright" content="Rigelius"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="第一单元 OO 学习与反思 一、 度量分析 1. 类与复杂度分析 基于最终的作业代码，我对核心类进行了度量分析：    Class OCavg OCmax WMC     ChoiceFactor 1.5 2 3   DeriveFactor 2.5 4 5   ExpFactor 1 1 2   Expr 1.33 2 4">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BUAA-OO U1学习与反思">
+<meta property="og:url" content="https://rigelius.github.io/2026/03/31/BUAA-OO%20U1%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/index.html">
+<meta property="og:site_name" content="Rigelius Blog">
+<meta property="og:description" content="第一单元 OO 学习与反思 一、 度量分析 1. 类与复杂度分析 基于最终的作业代码，我对核心类进行了度量分析：    Class OCavg OCmax WMC     ChoiceFactor 1.5 2 3   DeriveFactor 2.5 4 5   ExpFactor 1 1 2   Expr 1.33 2 4">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://rigelius.github.io/img/covers/cover4.jpg">
+<meta property="article:published_time" content="2026-03-31T08:19:00.000Z">
+<meta property="article:modified_time" content="2026-07-05T06:20:13.350Z">
+<meta property="article:author" content="Rigelius">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="OO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://rigelius.github.io/img/covers/cover4.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "BUAA-OO U1学习与反思",
+  "url": "https://rigelius.github.io/2026/03/31/BUAA-OO%20U1%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/",
+  "image": "https://rigelius.github.io/img/covers/cover4.jpg",
+  "datePublished": "2026-03-31T08:19:00.000Z",
+  "dateModified": "2026-07-05T06:20:13.350Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Rigelius",
+      "url": "https://Rigelius.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/avatar.png"><link rel="canonical" href="https://rigelius.github.io/2026/03/31/BUAA-OO%20U1%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'BUAA-OO U1学习与反思',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/css/katex-local.css"><meta name="generator" content="Hexo 8.1.1"></head><body><div class="bg-animation" id="web_bg" style="background-color: #f0f0f0;"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">25</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><div class="menus_items"><div class="menus_item"><span class="site-page custom-search-btn"><i class="fa-fw fas fa-search"></i><span> Search</span></span></div><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 目录</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><span class="site-page custom-theme-toggle"><i class="fa-fw fas fa-moon"></i></span></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/covers/cover4.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Rigelius Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">BUAA-OO U1学习与反思</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><span class="site-page custom-search-btn"><i class="fa-fw fas fa-search"></i><span> Search</span></span></div><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 目录</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><span class="site-page custom-theme-toggle"><i class="fa-fw fas fa-moon"></i></span></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">BUAA-OO U1学习与反思</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-03-31T08:19:00.000Z" title="发表于 2026-03-31 16:19:00">2026-03-31</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-05T06:20:13.350Z" title="更新于 2026-07-05 14:20:13">2026-07-05</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/OO/">OO</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="第一单元-oo-学习与反思">第一单元 OO 学习与反思</h1>
+<h2 id="一-度量分析">一、 度量分析</h2>
+<h3 id="类与复杂度分析">1. 类与复杂度分析</h3>
+<p>基于最终的作业代码，我对核心类进行了度量分析：</p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>OCavg</th>
+<th>OCmax</th>
+<th>WMC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ChoiceFactor</td>
+<td>1.5</td>
+<td>2</td>
+<td>3</td>
+</tr>
+<tr>
+<td>DeriveFactor</td>
+<td>2.5</td>
+<td>4</td>
+<td>5</td>
+</tr>
+<tr>
+<td>ExpFactor</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Expr</td>
+<td>1.33</td>
+<td>2</td>
+<td>4</td>
+</tr>
+<tr>
+<td>FuncFactor</td>
+<td>2.67</td>
+<td>5</td>
+<td>8</td>
+</tr>
+<tr>
+<td>FuncFactor.RecCacheKey</td>
+<td>1.67</td>
+<td>3</td>
+<td>5</td>
+</tr>
+<tr>
+<td>FuncReg</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+</tr>
+<tr>
+<td>FuncReg.FuncDef</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>FuncReg.RecDef</td>
+<td>1</td>
+<td>1</td>
+<td>15</td>
+</tr>
+<tr>
+<td>Lexer</td>
+<td>2.8</td>
+<td>9</td>
+<td>14</td>
+</tr>
+<tr>
+<td>MainClass</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Mono</td>
+<td>4.04</td>
+<td>14</td>
+<td>105</td>
+</tr>
+<tr>
+<td>Number</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Parser</td>
+<td>2.09</td>
+<td>7</td>
+<td>46</td>
+</tr>
+<tr>
+<td>Poly</td>
+<td>3.41</td>
+<td>10</td>
+<td>58</td>
+</tr>
+<tr>
+<td>Power</td>
+<td>2.5</td>
+<td>4</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Processor</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Sign</td>
+<td>3</td>
+<td>6</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Term</td>
+<td>1.67</td>
+<td>3</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+<p>根据表格可以看到，最复杂的三个类依次是
+<code>Mono</code>、<code>Poly</code>、<code>Parser</code>。在
+<code>Mono</code>
+类中，我定义了许多方法，不仅包括基本的代数运算（如求导等），还为了追求极致的最短输出长度而定义了化简方法，这在一定程度上违反了单一职责原则。<code>Poly</code>
+类则相对干练，主要负责加、减、乘、幂等多项式间的数学运算以及转化为字符串的
+<code>toString</code>。在 <code>Parser</code>
+中，我采用了递归下降的语法解析方式，针对每一种类型的因子和表达式都编写了解析方法，实现了较好的模块内聚。</p>
+<h3 id="方法复杂度分析">2. 方法复杂度分析</h3>
+<p>结合上述类复杂度，我进一步使用工具对部分核心方法进行了度量：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>CogC</th>
+<th>ev(G)</th>
+<th>iv(G)</th>
+<th>v(G)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Lexer.next()</code></td>
+<td>10</td>
+<td>2</td>
+<td>8</td>
+<td>9</td>
+</tr>
+<tr>
+<td><code>Parser.parseFactor()</code></td>
+<td>9</td>
+<td>7</td>
+<td>10</td>
+<td>10</td>
+</tr>
+<tr>
+<td><code>Poly.equals(Object)</code></td>
+<td>10</td>
+<td>8</td>
+<td>3</td>
+<td>9</td>
+</tr>
+<tr>
+<td><code>FuncFactor.solveRec(int, Poly)</code></td>
+<td>8</td>
+<td>2</td>
+<td>5</td>
+<td>5</td>
+</tr>
+<tr>
+<td><code>Parser.parseRecDef(Scanner)</code></td>
+<td>7</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+</tr>
+<tr>
+<td><code>Mono.equals(Object)</code></td>
+<td>7</td>
+<td>7</td>
+<td>2</td>
+<td>8</td>
+</tr>
+<tr>
+<td><code>Poly.power(BigInteger)</code></td>
+<td>7</td>
+<td>3</td>
+<td>4</td>
+<td>6</td>
+</tr>
+<tr>
+<td><code>Poly.multiply(Poly)</code></td>
+<td>5</td>
+<td>2</td>
+<td>4</td>
+<td>5</td>
+</tr>
+<tr>
+<td><code>Mono.derive(String)</code></td>
+<td>4</td>
+<td>1</td>
+<td>5</td>
+<td>5</td>
+</tr>
+<tr>
+<td><code>Poly.toOptimalString(boolean)</code></td>
+<td>17</td>
+<td>7</td>
+<td>9</td>
+<td>12</td>
+</tr>
+<tr>
+<td><code>Mono.toOptimalString(boolean)</code></td>
+<td>21</td>
+<td>5</td>
+<td>16</td>
+<td>21</td>
+</tr>
+</tbody>
+</table>
+<p>从上表可以看出，<code>Lexer.next()</code> 和
+<code>Parser.parseFactor()</code>
+的分支极多，因为需要处理各种不同的符号和因子。同时
+<code>Parser.parseRecDef(Scanner)</code> 和
+<code>FuncFactor.solveRec</code>
+这类函数函数解析和代入时也具有中等规模的控制流复杂度。<code>Mono</code>
+和 <code>Poly</code> 的 <code>toOptimalString</code>
+承担了输出的任务，这些方法的控制流和圈复杂度非常高，后续如果继续迭代，应考虑将其抽离为独立的
+<code>Printer</code> 类。 ### 3. 类图与设计考虑</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">classDiagram</span><br><span class="line"></span><br><span class="line">    class Factor</span><br><span class="line">    &lt;&lt;interface&gt;&gt; Factor</span><br><span class="line"></span><br><span class="line">    class Number</span><br><span class="line">    class Power</span><br><span class="line">    class ExpFactor</span><br><span class="line">    class FuncFactor</span><br><span class="line">    class ChoiceFactor</span><br><span class="line">    class DeriveFactor</span><br><span class="line">    class Expr</span><br><span class="line"></span><br><span class="line">    class Term</span><br><span class="line">    class Poly</span><br><span class="line">    class Mono</span><br><span class="line">    class Sign</span><br><span class="line">    class FuncReg</span><br><span class="line"></span><br><span class="line">    class MainClass</span><br><span class="line">    class Parser</span><br><span class="line">    class Lexer</span><br><span class="line">    class Processor</span><br><span class="line"></span><br><span class="line">    Factor &lt;|.. Number : 实现</span><br><span class="line">    Factor &lt;|.. Power : 实现</span><br><span class="line">    Factor &lt;|.. ExpFactor : 实现</span><br><span class="line">    Factor &lt;|.. FuncFactor : 实现</span><br><span class="line">    Factor &lt;|.. ChoiceFactor : 实现</span><br><span class="line">    Factor &lt;|.. DeriveFactor : 实现</span><br><span class="line">    Factor &lt;|.. Expr : 实现 (递归嵌套)</span><br><span class="line"></span><br><span class="line">    Expr *--  Term : 包含多个项</span><br><span class="line">    Term *--  Factor : 包含多个因子</span><br><span class="line"></span><br><span class="line">    Poly *--  Mono : 维护单项式 Map</span><br><span class="line">    Mono --&gt; Poly : 递归包含 expPoly</span><br><span class="line">    Mono --&gt; Sign : 使用 Sign 作为哈希键</span><br><span class="line"></span><br><span class="line">    MainClass --&gt; Parser : 调用</span><br><span class="line">    Parser --&gt; Lexer : 使用</span><br><span class="line">    Parser --&gt; Processor : 预处理</span><br><span class="line">    Parser ..&gt; Factor : 构建 AST 节点</span><br><span class="line">    FuncFactor --&gt; FuncReg : 查询函数定义</span><br><span class="line"></span><br><span class="line">    style Factor fill:#E6E6FA,stroke:#708090,stroke-width:2px</span><br><span class="line">    style Poly fill:#B0C4DE,stroke:#708090,stroke-width:1px</span><br><span class="line">    style Mono fill:#B0C4DE,stroke:#708090,stroke-width:1px</span><br></pre></td></tr></table></figure>
+<p><strong>顶层控制与解析模块</strong></p>
+<ul>
+<li><code>MainClass</code>：程序启动入口和全局调度者。</li>
+<li><code>Processor</code>：预处理模块，主要负责清洗字符串中的连续正负号等。</li>
+<li><code>Lexer</code>：词法分析器，将纯文本字符流转化为 Token 流。</li>
+<li><code>Parser</code>：语法分析器，使用递归下降，将 Token
+流转化为抽象语法树（AST）。</li>
+<li><code>FuncReg</code>：全局函数注册表，管理所有自定义函数及递推函数的定义。</li>
+</ul>
+<p><strong>抽象语法树节点</strong></p>
+<ul>
+<li><code>Factor</code> ：因子接口，通过统一的 <code>toPoly()</code>
+方法实现了多态。</li>
+<li><code>Expr</code>：表达式节点，由多个 <code>Term</code>
+的加减组合而成。</li>
+<li><code>Term</code>：项节点，由多个 <code>Factor</code>
+的连乘组合而成。</li>
+<li><code>Number</code>：常数因子节点，内部封装了大整数。</li>
+<li><code>Power</code>：变量幂因子节点，形如 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>x</mi><mi>n</mi></msup></mrow><annotation encoding="application/x-tex">x^n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6644em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span> 或 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>y</mi><mi>n</mi></msup></mrow><annotation encoding="application/x-tex">y^n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8588em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0359em;">y</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span>，保存自变量符号及其指数。</li>
+<li><code>ExpFactor</code>：指数函数因子节点，形如 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mi>exp</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>f</mi><mi>a</mi><mi>c</mi><mi>t</mi><mi>o</mi><mi>r</mi><mo stretchy="false">)</mo><msup><mo stretchy="false">)</mo><mi>n</mi></msup></mrow><annotation encoding="application/x-tex">(\exp(factor))^n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mop">exp</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.1076em;">f</span><span class="mord mathnormal">a</span><span class="mord mathnormal">c</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.0278em;">or</span><span class="mclose">)</span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span>，封装了内部表达式及外层乘方指数。</li>
+<li><code>FuncFactor</code>：函数调用因子节点，负责查表
+<code>FuncReg</code> 并将具体实参代入。</li>
+<li><code>ChoiceFactor</code>：选择式因子节点，专门保存并解析条件分支表达式
+<code>[?:]</code> 中的四个判断基元。</li>
+<li><code>DeriveFactor</code>：求导算子因子节点，保存求偏导类型（<code>dx</code>,
+<code>dy</code>, <code>grad</code>）及其作用的表达式模块。</li>
+</ul>
+<p><strong>核心引擎计算部分</strong></p>
+<ul>
+<li><code>Poly</code>：程序最核心的计算引擎，使用 <code>HashMap</code>
+维护单项式集合。它实现了多项式的各种代数运算与合并。</li>
+<li><code>Mono</code>：最小代数运算单元，包含系数、自变量指数级别内部多层嵌套的
+<code>exp</code> 特征多项式。</li>
+<li><code>Sign</code>：单项式特征类，将 <code>Mono</code>
+剔除系数后剩余的特征抽取为不可变属性，用作哈希键。</li>
+</ul>
+<hr />
+<h2 id="二-架构设计体验">二、 架构设计体验</h2>
+<p>我在三次作业中的宏观架构演进一直保持着高度自洽，且具有良好的向后扩展能力。</p>
+<h3 id="hw1初识递归下降">HW1：初识递归下降</h3>
+<p>在 HW1，我紧贴指导书规范，建立了一套“词法分析 ⟶ 语法分析 ⟶ 抽象语法树
+⟶ 多项式计算”的架构。这一模型将表达式严格拆解为 <code>Expr</code> ⟶
+<code>Term</code> ⟶ <code>Factor</code>
+的文法节点体系。随后，我对所有层级的子节点统一落实了 <code>toPoly</code>
+这个方法。但在早期理解不深时，我的 <code>Poly</code> 更是粗犷地使用
+<code>ArrayList</code> 线性存储各项
+<code>Mono</code>，合并同类项时就稍显麻烦了，需要专门建立一个指数到系数的
+<code>HashMap</code> 来实现。</p>
+<h3
+id="hw2引入指数函数自定义函数与选择式因子">HW2：引入指数函数、自定义函数与选择式因子</h3>
+<p>HW2 引入了指数函数 <code>exp()</code>、自定义函数 <code>f(x)</code>
+以及选择式因子 <code>[(A==B)?C:D]</code>。现在单项式不仅有一个
+<code>x</code> 的指数，还包含了以 <code>exp</code>
+包裹的多项式。因此我主要做了以下重构：</p>
+<ol type="1">
+<li><p><strong>重构多项式底层</strong>：首先由于数据范围的变化，<code>exponent</code>
+类型需要改成大整数类，然后我将 <code>Mono</code> 扩展为
+<code>Mono(BigInteger coefficient, BigInteger exponent, Poly expPoly)</code>。此外，我还引入了内部类
+<code>Sign</code> ，即去掉系数后的指数和多项式部分， <code>Poly</code>
+类中的 <code>ArrayList</code> ，我也直接换成了从 <code>Sign</code> 到
+<code>Mono</code> 的 <code>HashMap</code>
+，这下就不需要写合并同类项方法了，而是自动实现合并。其实这里完全也可以用从
+<code>Sign</code> 到系数的 HashMap ，但这样的话我的 <code>Mono</code>
+类似乎就有点多余，因此我还是保留了看似复杂的前一种策略。</p></li>
+<li><p><strong>函数代入环境字典</strong>：为了实现函数形参替换，我没有选择在字符串层次上进行字符串替换（这种应该很容易
+TLE），而是引入了环境字典
+<code>Map&lt;String, Poly&gt; vars</code>。在每个 AST 节点的
+<code>toPoly</code> 方法中传入该字典，从而实现函数调用的解析。</p></li>
+</ol>
+<p>而选择式因子对架构没有影响，按原有架构进行添加即可。</p>
+<h3
+id="hw3求导双变量与递推函数的加入">HW3：求导、双变量与递推函数的加入</h3>
+<p>经过 HW2 的小幅重构，面对 HW3 引入的双变量 <code>x</code> 和
+<code>y</code>、求导算子 <code>dx/dy/grad</code> 以及自定义递推函数
+<code>f{n}(x)</code>，我在架构上几乎没有改动。 对于求导算子
+<code>DeriveFactor</code>，我在底层的 <code>Mono</code> 和
+<code>Poly</code> 当中补充了专门的求导方法；针对 <code>y</code>
+的引入，仅需在 <code>Mono</code> 类中增加记录 <code>y</code>
+次幂的专门属性即可。这些新增部分在被 <code>toPoly</code>
+解析处理后，进行运算的依然是和 HW2
+类似的多项式，因此原本的加减乘除及输出逻辑基本不需要修改。</p>
+<h3 id="新的迭代情景引入三角函数">新的迭代情景：引入三角函数</h3>
+<p>如果引入三角函数因子<code>sin(Factor)</code> 与
+<code>cos(Factor)</code> ，并要求合并与化简：
+我目前的架构完全禁得住这项考验。我们只需声明 <code>SinFactor</code> 和
+<code>CosFactor</code> 实现 <code>Factor</code> 接口，并新增
+<code>Parser</code> 中的分支即可。真正的深入修改都在底层架构：我们要给
+<code>Mono</code> 与 <code>Sign</code>
+追加可以记录三角函数特征的属性。唯一的难点其实在于怎样运用诱导公式或两角和差公式等规律去对合并前的
+<code>Poly</code> 加以化简而已。</p>
+<hr />
+<h2 id="三-分析自己程序的-bug">三、 分析自己程序的 Bug</h2>
+<p>在这三次作业的强测与互测中，我唯一被测出 Bug 的地方是在
+HW3，由于化简优化时复杂度控制不当而导致了 TLE。 -
+<strong>问题及特征：</strong>
+互测房里的同学针对我的代码逻辑，构造了一个使得代码 TLE
+的样例。我出问题的类是 <code>Mono</code> 中的
+<code>toOptimalString()</code> 方法。 - <strong>深层原因分析：</strong>
+原因是，我设定了多项式的项数在小范围时采用状态压缩 DP。该 Hack
+样例利用大量系数相邻的大整数，项数刚好达到我规定的上界，导致程序穷举中产生超时。
+- <strong>Bug 复杂度反思：</strong>
+回看前面的方法度量分析表，<code>toOptimalString</code>
+的圈复杂度和认知复杂度都比较高。这说明在编写时引入了过多复杂的逻辑分支。修改这个
+bug 的策略，我目前采用的是调小项数搜索范围的上界。</p>
+<hr />
+<h2 id="四-发现别人-bug-所采用的策略">四、 发现别人 Bug
+所采用的策略</h2>
+<p>在互测环节中，我主要采用了以下策略：</p>
+<ol type="1">
+<li><strong>借助 AI 搭建评测机</strong>：我使用 Python
+搭建了评测机脚本。策略是通过大量随机生成的数据测试房间内的 8
+份作业代码，然后将结果使用 Sympy
+库对比来寻找一致性。这能有效找出一些基础的逻辑错误和格式问题，但因为数据是随机生成的，较难定向构造出使得程序
+TLE 的极端数据。</li>
+<li><strong>结合源码阅读定向构造</strong>：针对评测机难以覆盖的盲区，我会尝试阅读别人的代码来设计测试用例：
+<ul>
+<li>比如看到同学处理三目运算符 <code>[(A==B)?X:Y]</code>
+时将两种选择都进行了计算展开再剪裁，我就会在不选的那一方构造复杂的函数嵌套，使其
+TLE。</li>
+<li>看到有同学采用 <code>String.replaceAll</code>
+这种字符串替换来处理函数代入时，便可以尝试构造多层嵌套函数，使其因耗时太长而TLE。</li>
+</ul></li>
+</ol>
+<hr />
+<h2 id="五-分析自己进行的优化">五、 分析自己进行的优化</h2>
+<p>我在结果长度的化简优化上主要做了以下工作： 1.
+<strong>正项优先打印：</strong> 通过遍历 <code>Poly</code> 中的各个
+<code>Mono</code>，找到第一个常数系数为正的项并放到最前面输出，去掉了开头的正负号问题，这种优化十分稳定。
+2. <strong>提取公因数：</strong> 对于 <code>exp(factor)</code>
+类型，我会遍历其内部各个系数的公约数，提取至外部以缩短总体长度。 3.
+<strong>状态压缩优化：</strong>
+对于需要拆开内部的项，当项数处于我设定的小范围时，使用状压 DP
+来寻找最优解；超过范围则原样输出。</p>
+<p>这些优化虽然缩减了字符串长度，但在保障了代码的常规简洁性的同时，却并未百分之百保证正确性。过于追求局部最短，使得某些化简方法的圈复杂度攀升，在个别极端数据下出现了
+TLE 的情况。后续的优化应该更加注意平衡正确性与性能之间的关系。</p>
+<hr />
+<h2 id="六-大模型相关使用">六、 大模型相关使用</h2>
+<p>在三次作业中，我只参考了 AI
+给出的架构思路、示例代码和修改建议，并未让其直接编写我的代码。当遇到输出错误、抛异常或是搭建评测机时的各种问题，将报错结合代码抛给
+AI 排查，效果往往非常好。总之，AI
+经过提示后可以精准发现代码逻辑方面的问题，并帮忙修补漏洞。但对于时间复杂度分析和构造那些能让代码运行超时的极端数据，它由于没有全局运行环境概念，仍显力不从心，这时候人工阅读源码构造更为可靠。</p>
+<hr />
+<h2 id="七-心得体会">七、 心得体会</h2>
+<p>经过本单元的学习，我还是收获颇丰的。一开始听说我们要进行表达式深层编译解析时，便想起原先学后缀表达式时的痛苦。但是递归下降和抽象语法树的方法极大地解耦了难度。表达式先被切分为一个个
+Token，再由 Parser 解析对应部分，最终建立 AST。这时节点统一实现的
+<code>toPoly()</code>
+方法发挥功能，将一切降维成多项式，自下而上依次化简计算即可。相对之前理解的后缀表达式，代码行数虽然变多了，但可读性和扩展性却实现了质的飞跃。</p>
+<p>关于 AI 的使用，如今的 AI 驾驭 OO
+作业可以说游刃有余了。我会借此设计架构、学习算法以及进行 Debug
+和辅助构造测试，总体效果不错。但同时也深刻体会到，面向对象编程的相关思考与代码掌控等修养，依然是无法被
+AI 工具完全替代的。</p>
+<hr />
+<h2 id="八-未来方向建议">八、 未来方向建议</h2>
+<p>整体而言，我们的 OO
+课在难度递进设计上已经非常合理了，第一单元的课程安排也很完备。唯独建议在性能优化方面，可以再多给一些相关的指导提示，或者在单元结束后公布一下
+std
+标程用的具体优化方法。我还是十分好奇采用什么方法能在时间限制下将表达式化至最短的。</p>
+<hr />
+<h2 id="九-思考题">九、 思考题</h2>
+<h3 id="如何检查输入是否符合要求"><strong>1.
+如何检查输入是否符合要求？</strong></h3>
+<p>建议进行双重检查，大致如下：
+首先在预处理入口处：使用正则表达式扫描字符串，排查非法符号、不合规操作符组合（如
+<code>**</code> 等）。第二层在 <code>Parser</code>
+递归下降流程中：如果遇到偏离文法规则的分支，可以直接抛出对应的自定义异常。</p>
+<h3 id="如何精确计算一个合法输入的-cost"><strong>2.
+如何精确计算一个合法输入的 cost？</strong></h3>
+<p>通过在各个抽象语法树节点类中声明 <code>getCost()</code>
+方法，可以实现自顶向下的递归计算。对于基础的加减乘除和常数，直接按指导书的运算法则进行累加或相乘；对于函数调用，需要将实参代入到函数定义的
+AST
+中生成新表达式，再递归计算；对于选择式因子，必须在计算时判断条件表达式是否恒等，从而动态累加正确分支的代价；最后，由于求导等算子涉及代价的指数增长，在内部实现时需使用
+<code>BigInteger</code> 来防溢出。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://Rigelius.github.io">Rigelius</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://rigelius.github.io/2026/03/31/BUAA-OO%20U1%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/">https://rigelius.github.io/2026/03/31/BUAA-OO%20U1%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://Rigelius.github.io" target="_blank">Rigelius Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java/">Java</a><a class="post-meta__tags" href="/tags/OO/">OO</a></div><div class="post-share"><div class="social-share" data-image="/img/covers/cover4.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/04/01/BUAA-OS%20Lab1%E4%B8%8A%E6%9C%BA/" title="BUAA-OS Lab1上机"><img class="cover" src="/img/covers/cover14.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">BUAA-OS Lab1上机</div></div><div class="info-2"><div class="info-item-1">本节考查内容为 MOS 内核的启动，主要包含 ELF 文件结构、格式化 IO 的实现等，整体内容较分散。 课上题目 Exam 点击查看题面 这道题将 ELF 进行了一些扩展，形式依旧是代码填空，甚至很多答案都直接在题干里明确写出来了，感谢课程组（） Extra 点击查看题面 这道题要求实现一个 scank，类似于 printk，主要难点在于输入位置的推进方式。最初尝试直接对局部变量 ch 递增，后来参考辅助函数才意识到应使用回调函数 in 读取下一个字符，最终通过。 笔者的话 Lab1 一般主要考 ELF 解析以及格式化 IO。后者可以是增加一些新的转义符（比如 %k），在理解了 printk 的调用链路、掌握基本的字符串处理后便容易解决；也可能是更难的形式，如写入到字符串、内存等，这就相当考验 C 语言指针的功底了。 </div></div></div></a><a class="pagination-related" href="/2026/03/18/BUAA-OS%20Lab0%E4%B8%8A%E6%9C%BA/" title="BUAA-OS Lab0上机"><img class="cover" src="/img/covers/cover7.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">BUAA-OS Lab0上机</div></div><div class="info-2"><div class="info-item-1">本节考查内容为 OS 实验中常用工具链，一个重点是 Bash 编程。 课上题目 Exam 点击查看题面 这道题初看题干可能有些疑惑，但实际上只需要填 Makefile 中的几个空，主要考查 make 的语法以及 gcc 等命令，难度不大。 Extra 点击查看题面 Bash 综合应用题，但实际上相比去年难度已经降低了很多，也变成代码填空的形式，主要考查常用命令，比如 sed、awk 等。 笔者的话 这部分内容相对独立，主要学习 Linux 常用命令，初次接触可能不太好全部记住，但多加使用便会越来越熟练。可以多阅读实验指导书，网上也有一些 OJ 用来评测，适当做一些能加深巩固。这次的 Extra，其中一个卡了我很久的细节是：如何判断一个变量字符串是否为空。我用了一个很笨的做法——将其输出到一个文件，再和另一个空文件用 diff 对比，根据返回值来判定。考完才知道使用 if [[ -n "$str" ]] 就可以，确实暴露出我的生疏。之后在用 awk 时又单引号和双引号混用，导致 $ 没能正确转义，又 debug 了很久，好在最后还是按时做了出...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/06/02/BUAA-OO%20U3%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/" title="BUAA-OO U3学习与反思"><img class="cover" src="/img/covers/cover5.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-02</div><div class="info-item-2">BUAA-OO U3学习与反思</div></div><div class="info-2"><div class="info-item-1">第三单元 OO 学习与反思 一、JML 和规格驱动开发 JML 契约式设计 JML 本质上是在 Java 接口外面再套一层形式化约束。它通过 requires、ensures、assignable 和 signals 等，明确了方法的前置条件、后置条件、可修改状态以及异常抛出条件。相比于自然语言，JML 可以准确地约束方法的规格。在 OOP 中，它作为实现者与调用者之间的契约，消除了语义上的歧义。 规格驱动开发 这一单元最明显的变化就是写代码前先看规格。规格开发的主要优势有： 1. 实现自由度与结果约束：只要对外状态满足 ensures，内部用 HashMap、TreeSet，还是自己写容器，都可以。比如有的方法 JML 写得像全局遍历，但实现时完全没必要照着翻译成循环。只要返回值和状态变化对，内部可以做缓存，也可以增量维护。 2. 测试驱动：JML 为测试提供了清晰的依据。通过直接对照 ensures 和 signals 子句，可以很容易地推导出测试的分支和边界情况，从而编写出高覆盖率的单元测试。 二、JUnit 测试经验总结 在本单元的...</div></div></div></a><a class="pagination-related" href="/2025/11/11/BUAA-OOpre%20%E8%AF%BE%E7%A8%8B%E6%80%BB%E7%BB%93/" title="BUAA-OOpre 课程总结"><img class="cover" src="/img/covers/cover3.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-11-11</div><div class="info-item-2">BUAA-OOpre 课程总结</div></div><div class="info-2"><div class="info-item-1">一、架构设计 继承与接口设计 项目最终UML类图如下：  采用模块化的思想，我的最终架构可以分为以下几个核心模块： 1. 入口与控制层  Main：程序入口，仅用于初始化Scanner、冒险者容器advs、关系管理器rm，并创建总控制器CommandUtil。 CommandUtil：系统的总控制器。  控制：负责解析所有用户命令。它从Main接收Scanner，通过switch语句分发指令（ “aa”, “ab”, “fight”, “use” 等）。 协作：作为协调者，调用 Adventurer 类的业务方法和 RelationManager 的关系处理方法。   2. 核心实体层  Adventurer：管理冒险者的所有属性和行为。  属性管理：管理基础属性（hitPoint, baseAtk, baseDef, mana, money）及状态（dead）。 物品管理：  items：存储冒险者拥有的所有物品。 bottleBackpack：药水瓶背包，采用LinkedHashMap这一数据结构，通过重写removeEld...</div></div></div></a><a class="pagination-related" href="/2026/06/19/BUAA-OO%20U4%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/" title="BUAA-OO U4学习与反思"><img class="cover" src="/img/covers/cover14.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-19</div><div class="info-item-2">BUAA-OO U4学习与反思</div></div><div class="info-2"><div class="info-item-1">第四单元 OO 学习与反思 这学期的 OO 课程到这里基本告一段落了。回顾四个单元，课程不仅是在考察代码能力，更是在引导我们改变开发习惯。本文主要围绕第四单元的图书馆系统，结合前三个单元的作业，对自己在架构设计、测试方法上的思维演进进行一个整体复盘，同时也会分享一下使用大模型辅助建模的实际体验。 一、 第四单元正向建模与开发 第四单元的任务是实现并不断扩展一个图书馆管理系统。随着迭代推进，需求一直在增加：从最初单纯的借书、还书和预约（hw13），到加入精品书架、阅读室和评分机制（hw14），最后又引入了比较繁琐的信用分、借阅期限以及续借规则（hw15）。在这一阶段，我认为正向建模的方法帮我理清楚了思路。 1. 一阶类图：构建系统骨架 动手敲代码之前，我们需要先在 StarUML 里完成一阶类图。它的主要意义在于限制开发初期的随意性，强制把核心业务解耦。针对复杂的题面，我首先尝试把核心实体和场地对象分离出来：  核心实体：提取了 Reader（维护读者的状态等）和 Book（维护单本图书的状态和流转历史）。 业务场所：分离出了 Bookshelf（普通书架...</div></div></div></a><a class="pagination-related" href="/2026/04/26/BUAA-OO%20U2%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/" title="BUAA-OO U2学习与反思"><img class="cover" src="/img/covers/cover6.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-26</div><div class="info-item-2">BUAA-OO U2学习与反思</div></div><div class="info-2"><div class="info-item-1">第二单元 OO 学习与反思 一、同步块的设置和锁的选择 锁的设置与演变  第五次作业：一开始，为了稳妥，我把主要的同步块都放在了共享的 BaseQueue 里， offer、take、isEmpty 这些方法全加上了 synchronized。这时候逻辑比较简单，锁住队列本身就能解决大部分并发读写的问题，线程等待也是靠 wait() 和 notifyAll() 在队列对象上完成。 第六次作业：到了第六次作业，加了检修机制和自由分配电梯的逻辑。我在各个电梯井 ElevatorThread 里加了一些状态控制，由于状态会被电梯和调度器同时访问，我在通知电梯改变状态的时候，借用了电梯专属的 processQueue 的锁来做 notifyAll。此时调度器 DispatchThread 拿 scheduleQueue 的锁，电梯拿自己的 processQueue 锁，分工明确，基本没有问题。 第七次作业：这次的重点是换乘层 F2 的防撞。我给 ElevatorShaft 专门加了个显式的公平锁 ReentrantLock f2Lock。当任意一轿...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Rigelius</div><div class="author-info-description">A blog about technology and life.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">25</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Rigelius"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E5%8D%95%E5%85%83-oo-%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D"><span class="toc-number">1.</span> <span class="toc-text">第一单元 OO 学习与反思</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80-%E5%BA%A6%E9%87%8F%E5%88%86%E6%9E%90"><span class="toc-number">1.1.</span> <span class="toc-text">一、 度量分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B1%BB%E4%B8%8E%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%88%86%E6%9E%90"><span class="toc-number">1.1.1.</span> <span class="toc-text">1. 类与复杂度分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%88%86%E6%9E%90"><span class="toc-number">1.1.2.</span> <span class="toc-text">2. 方法复杂度分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%BD%93%E9%AA%8C"><span class="toc-number">1.2.</span> <span class="toc-text">二、 架构设计体验</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#hw1%E5%88%9D%E8%AF%86%E9%80%92%E5%BD%92%E4%B8%8B%E9%99%8D"><span class="toc-number">1.2.1.</span> <span class="toc-text">HW1：初识递归下降</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#hw2%E5%BC%95%E5%85%A5%E6%8C%87%E6%95%B0%E5%87%BD%E6%95%B0%E8%87%AA%E5%AE%9A%E4%B9%89%E5%87%BD%E6%95%B0%E4%B8%8E%E9%80%89%E6%8B%A9%E5%BC%8F%E5%9B%A0%E5%AD%90"><span class="toc-number">1.2.2.</span> <span class="toc-text">HW2：引入指数函数、自定义函数与选择式因子</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#hw3%E6%B1%82%E5%AF%BC%E5%8F%8C%E5%8F%98%E9%87%8F%E4%B8%8E%E9%80%92%E6%8E%A8%E5%87%BD%E6%95%B0%E7%9A%84%E5%8A%A0%E5%85%A5"><span class="toc-number">1.2.3.</span> <span class="toc-text">HW3：求导、双变量与递推函数的加入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B0%E7%9A%84%E8%BF%AD%E4%BB%A3%E6%83%85%E6%99%AF%E5%BC%95%E5%85%A5%E4%B8%89%E8%A7%92%E5%87%BD%E6%95%B0"><span class="toc-number">1.2.4.</span> <span class="toc-text">新的迭代情景：引入三角函数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89-%E5%88%86%E6%9E%90%E8%87%AA%E5%B7%B1%E7%A8%8B%E5%BA%8F%E7%9A%84-bug"><span class="toc-number">1.3.</span> <span class="toc-text">三、 分析自己程序的 Bug</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B-%E5%8F%91%E7%8E%B0%E5%88%AB%E4%BA%BA-bug-%E6%89%80%E9%87%87%E7%94%A8%E7%9A%84%E7%AD%96%E7%95%A5"><span class="toc-number">1.4.</span> <span class="toc-text">四、 发现别人 Bug
+所采用的策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94-%E5%88%86%E6%9E%90%E8%87%AA%E5%B7%B1%E8%BF%9B%E8%A1%8C%E7%9A%84%E4%BC%98%E5%8C%96"><span class="toc-number">1.5.</span> <span class="toc-text">五、 分析自己进行的优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD-%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9B%B8%E5%85%B3%E4%BD%BF%E7%94%A8"><span class="toc-number">1.6.</span> <span class="toc-text">六、 大模型相关使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83-%E5%BF%83%E5%BE%97%E4%BD%93%E4%BC%9A"><span class="toc-number">1.7.</span> <span class="toc-text">七、 心得体会</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB-%E6%9C%AA%E6%9D%A5%E6%96%B9%E5%90%91%E5%BB%BA%E8%AE%AE"><span class="toc-number">1.8.</span> <span class="toc-text">八、 未来方向建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D-%E6%80%9D%E8%80%83%E9%A2%98"><span class="toc-number">1.9.</span> <span class="toc-text">九、 思考题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E6%A3%80%E6%9F%A5%E8%BE%93%E5%85%A5%E6%98%AF%E5%90%A6%E7%AC%A6%E5%90%88%E8%A6%81%E6%B1%82"><span class="toc-number">1.9.1.</span> <span class="toc-text">1.
+如何检查输入是否符合要求？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E7%B2%BE%E7%A1%AE%E8%AE%A1%E7%AE%97%E4%B8%80%E4%B8%AA%E5%90%88%E6%B3%95%E8%BE%93%E5%85%A5%E7%9A%84-cost"><span class="toc-number">1.9.2.</span> <span class="toc-text">2.
+如何精确计算一个合法输入的 cost？</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/01/BUAA-ML%20%E5%BE%80%E5%B9%B4%E8%80%83%E9%A2%98%E6%B1%87%E6%80%BB/" title="BUAA-ML 往年考题汇总"><img src="/img/covers/cover10.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="BUAA-ML 往年考题汇总"/></a><div class="content"><a class="title" href="/2026/07/01/BUAA-ML%20%E5%BE%80%E5%B9%B4%E8%80%83%E9%A2%98%E6%B1%87%E6%80%BB/" title="BUAA-ML 往年考题汇总">BUAA-ML 往年考题汇总</a><time datetime="2026-07-01T06:00:00.000Z" title="发表于 2026-07-01 14:00:00">2026-07-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/01/BUAA-ML%20%E6%9C%9F%E6%9C%AB%E5%A4%8D%E4%B9%A0/" title="BUAA-ML 期末复习"><img src="/img/covers/cover3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="BUAA-ML 期末复习"/></a><div class="content"><a class="title" href="/2026/07/01/BUAA-ML%20%E6%9C%9F%E6%9C%AB%E5%A4%8D%E4%B9%A0/" title="BUAA-ML 期末复习">BUAA-ML 期末复习</a><time datetime="2026-07-01T06:00:00.000Z" title="发表于 2026-07-01 14:00:00">2026-07-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/19/BUAA-OO%20U4%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/" title="BUAA-OO U4学习与反思"><img src="/img/covers/cover14.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="BUAA-OO U4学习与反思"/></a><div class="content"><a class="title" href="/2026/06/19/BUAA-OO%20U4%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/" title="BUAA-OO U4学习与反思">BUAA-OO U4学习与反思</a><time datetime="2026-06-19T07:46:00.000Z" title="发表于 2026-06-19 15:46:00">2026-06-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/15/BUAA-%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E4%B8%8E%E4%BF%A1%E6%81%AF%E6%8E%A8%E6%96%AD%20%E6%9C%9F%E6%9C%AB%E8%80%83%E9%A2%98%E5%9B%9E%E5%BF%86%E7%89%88/" title="BUAA-信号处理与信息推断 期末考题回忆版"><img src="/img/covers/cover11.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="BUAA-信号处理与信息推断 期末考题回忆版"/></a><div class="content"><a class="title" href="/2026/06/15/BUAA-%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E4%B8%8E%E4%BF%A1%E6%81%AF%E6%8E%A8%E6%96%AD%20%E6%9C%9F%E6%9C%AB%E8%80%83%E9%A2%98%E5%9B%9E%E5%BF%86%E7%89%88/" title="BUAA-信号处理与信息推断 期末考题回忆版">BUAA-信号处理与信息推断 期末考题回忆版</a><time datetime="2026-06-15T14:00:00.000Z" title="发表于 2026-06-15 22:00:00">2026-06-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/15/BUAA-%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E4%B8%8E%E4%BF%A1%E6%81%AF%E6%8E%A8%E6%96%AD%20%E6%A0%B8%E5%BF%83%E6%95%99%E7%A8%8B/" title="BUAA-信号处理与信息推断 核心教程"><img src="/img/covers/cover2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="BUAA-信号处理与信息推断 核心教程"/></a><div class="content"><a class="title" href="/2026/06/15/BUAA-%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E4%B8%8E%E4%BF%A1%E6%81%AF%E6%8E%A8%E6%96%AD%20%E6%A0%B8%E5%BF%83%E6%95%99%E7%A8%8B/" title="BUAA-信号处理与信息推断 核心教程">BUAA-信号处理与信息推断 核心教程</a><time datetime="2026-06-15T14:00:00.000Z" title="发表于 2026-06-15 22:00:00">2026-06-15</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/img/background.jpg);"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Rigelius</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.3</a></span></div></div></footer></div><div class="search-dialog" id="search-modal"><div class="search-dialog-wrapper"><div class="search-dialog-header"><h3 class="search-dialog-title">搜索</h3><button id="search-close" type="button">×</button></div><div class="search-dialog-input-wrap"><label class="search-input-label" for="search-input">关键词</label><input id="search-input" type="text" autocomplete="off"></div><div class="search-results" id="search-results"></div></div></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.3"></script><script src="/js/main.js?v=5.5.3"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'Rigelius/Rigelius.github.io',
+      'data-repo-id': 'R_kgDOQ6-aAw',
+      'data-category-id': 'DIC_kwDOQ6-aA84C1ESp',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script src="/js/custom.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
