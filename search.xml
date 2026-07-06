@@ -1,196 +1,275 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>BUAA-CO P2上机</title>
-    <url>/2025/10/27/BUAA-CO%20P2%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 MIPS 汇编语言，三道题目一般至少两道会给参考 C
-代码，考验 MIPS 代码的编写能力。
+    <title>BUAA-CO P0上机</title>
+    <url>/2025/10/13/BUAA-CO%20P0%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为
+Logisim，一般是一道组合逻辑和两道时序逻辑，时序逻辑中一个是有限状态机。
 课上题目
-T1 工厂选址
+T1 起伏数列
 任务描述
-假设你正在编写城市规划核心功能。需要在给定的 n 个候选坐标点 (x,
-y) 中，筛选出一个符合特定条件的点用于建造工厂。
-筛选条件：
-
-象限限制：候选点必须位于平面直角坐标系的
-第二象限 或
-第四象限（不包含坐标轴）。
-面积最大化：该点向两坐标轴作垂线，与原点 (0,0)
-所围成的矩形面积必须是所有满足条件点中最大的。
-
-你需要编写 MIPS 汇编程序实现该逻辑，输出选定点的坐标。
+我们需要在 Logisim 中设计一个 Moore
+型有限状态机，用于实时监测输入数列的波动趋势。输入 a 为 5 位无符号整数。
+数列的初始值默认为 a_0 =
+7。即复位后，读入的第一个数据 a_1 将与 7 进行比较。
 判定逻辑
-有效性判定：
-对于输入坐标 (x,
-y)，该点有效当且仅当满足以下二者之一：
+设当前输入为 a_{m}，上一周期输入为
+a_{m-1}（题目保证相邻输入不相等）：
 
-第二象限：x &lt; 0 且 y &gt; 0
-第四象限：x &gt; 0 且 y &lt; 0
-注：位于第一、三象限或坐标轴上的点应直接忽略。
+若 a_{m} &gt;
+a_{m-1}，记为“起”；
+若 a_{m} &lt;
+a_{m-1}，记为“伏”。
 
-优化目标：
-计算矩形面积 Area = |x| \times
-|y|。
+我们需要检测的目标模式是 “起 \rightarrow 起 \rightarrow 伏 \rightarrow 起”。
+状态机支持循环检测，即当前成功匹配序列的最后一个“起”，可以作为下一个序列的开头。
+当且仅当最近四个周期的变化趋势严格满足“起起伏起”时，输出
+output 为 1，其他情况 output 默认为 0。
+样例
+串行输入串为：(7)8901215，则状态机输出为：(0)0001001。
+接口列表
 
-若存在多个点的面积同为最大值，输出 输入顺序最靠前
-的那一组坐标。
-题目保证输入中至少存在一个满足条件的点。
 
-数据规模：
 
-n \le 1000
-0 \le |x|, |y| \le 10^9
+端口名
+位宽
+方向
+功能描述
 
-输入输出格式
-输入格式：
 
-第 1 行：输入一个整数 n，代表坐标总数。
-随后的 2n
-行：依次输入每个点的坐标信息。对于第 i
-个点（0 \le i &lt; n），先输入 x_i，再输入 y_i
 
-输出格式：
 
-输出一行，包含两个整数 x 和 y（即选定点的坐标），中间用一个空格分隔。
+a
+5
+I
+输入
 
-输入样例：
-416-47-9-118-8
-输出样例：
-16 -4
-参考代码 (C语言)
-#include &lt;stdio.h&gt;int main(void) &#123;    int n;    scanf(&quot;%d&quot;, &amp;n);    long long best_area = 0;    int best_x = 0, best_y = 0;    for (int i = 0; i &lt; n; i++) &#123;        int x, y;        scanf(&quot;%d%d&quot;, &amp;x, &amp;y);        if (x == 0 || y == 0) continue;        if ((x &gt; 0 &amp;&amp; y &gt; 0) || (x &lt; 0 &amp;&amp; y &lt; 0)) continue;        int ax = x &gt;= 0 ? x : -x;        int ay = y &gt;= 0 ? y : -y;                long long area = (long long) ax * ay;        if (area &gt; best_area) &#123;            best_area = area;            best_x = x;            best_y = y;        &#125;    &#125;    printf(&quot;%d %d\n&quot;, best_x, best_y);    return 0;&#125;
-T2 K 递增
+
+clk
+1
+I
+时钟信号
+
+
+reset
+1
+I
+异步复位信号
+
+
+output
+1
+O
+结果
+
+
+
+T2 二进制移位计算器
 任务描述
-使用 MIPS 汇编语言编写程序，计算将给定数组转换为 K
-递增数组 所需的最少操作次数。
-K 递增定义：
-给定一个下标从 0 开始、包含 n
-个正整数的数组 arr，以及一个正整数
-k。
-如果对于每个满足 k \le i \le n-1
-的下标 i，都有 arr[i-k] \le arr[i]，那么称 arr 是 K 递增的。
-输入输出格式
-输入格式：
+我们需要在 Logisim 中设计一个 Mealy
+型有限状态机，实现一个支持特定移位运算的二进制计算器。
+系统基于 8 位无符号整数
+进行运算。在每个时钟周期，系统接收 2 位的操作码 op 和 8
+位的操作数
+operand，根据当前内部寄存器的值进行“左移一位”后，再与输入操作数进行运算，并更新寄存器状态。
+运算逻辑
+设当前寄存器内的值为 Reg，输入的操作数为 Val，运算结果记为 Result。
+所有运算均在 8 位
+宽度下进行，计算结果若溢出则自动截断（保留低 8 位）。
 
-第 1 行：输入一个整数 n，表示数组大小 (1
-\le n \le 20)。
-第 2 行 至 第 n+1
-行：每行输入一个整数，依次为数组 arr
-的元素。
-第 n+2 行：输入一个整数 k，表示 K 递增的参数 (1 \le k \le n-1)。
 
-输出格式：
 
-输出一个整数，表示使数组成为 K 递增数组所需的最少操作次数。
 
-输入样例 1：
-5543211
-输出样例 1：
+
+
+
+
+op
+功能描述
+逻辑表达式
+
+
+
+
+00
+复位：将寄存器清零
+Result = 0
+
+
+01
+移位加：左移一位后加上操作数
+Result = (Reg \ll 1) + Val
+
+
+10
+移位减：左移一位后减去操作数
+Result = (Reg \ll 1) - Val
+
+
+11
+移位异或：左移一位后与操作数异或
+Result = (Reg \ll 1) \oplus
+Val
+
+
+
+约束条件
+
+初始状态：计算器初始状态寄存器值为
+8'h00。
+复位控制：本模块不设置独立的
+reset 引脚，复位功能完全通过输入 op = 00
+实现。
+状态机类型：要求使用 Mealy
+型状态机。
+
+接口列表
+
+
+
+端口名
+位宽
+方向
+功能描述
+
+
+
+
+op
+2
+Input
+操作码
+
+
+operand
+8
+Input
+操作数
+
+
+clk
+1
+Input
+时钟信号
+
+
+result
+8
+Output
+当前周期的计算结果
+
+
+
+T3 智能电梯
+任务描述
+我们需要在 Logisim
+中设计一个组合电路，用于计算智能电梯在特定乘客分布下的总运行距离。
+系统共有 4 个楼层（第 0、1、2、3
+层）。输入包含电梯的初始位置和各层当前的乘客数量。电路需模拟电梯的贪心调度策略，计算出清空所有乘客所需的总移动楼层数。
+调度逻辑
+
+初始状态：电梯起始楼层由输入信号 from
+指定。起始楼层的乘客被视为立即进入电梯，因此在计算后续路径时，起始层的剩余乘客数视为
+0。
+目标选择：电梯总是优先前往当前剩余乘客最多（且不为
+0）的楼层。
+运行过程：
+
+从当前层移动至目标层，累加移动距离：Distance = |Target - Current|。
+到达后，该层乘客全部上梯，该层剩余乘客数变为 0。
+重复上述过程，直到所有楼层的乘客都被接走（所有 num 均为 0）。
+
+数据保证：输入的各层乘客数 num0 ~
+num3 互不相同，且初始值均大于 0。
+
+编码约定
+
+楼层距离：从第 n
+层移动到第 m 层，距离为 |m - n|。
+初始位置：输入 from 采用 4
+位独热码 格式：
+
+0001 \rightarrow 第 0
+层
+0010 \rightarrow 第 1
+层
+0100 \rightarrow 第 2
+层
+1000 \rightarrow 第 3
+层
+
+
+接口列表
+
+
+
+端口名
+位宽
+方向
+功能描述
+
+
+
+
+from
 4
-输入样例 2：
-65342612
-输出样例 2：
-3
-参考代码 (C语言)
-#include &lt;stdio.h&gt;#define MAX_N 20int computeLIS(int *subseq, int m) &#123;    if (m == 0) return 0;    int dp[MAX_N];    int maxLen = 1;    for (int i = 0; i &lt; m; i++) &#123;        dp[i] = 1;    &#125;    for (int i = 1; i &lt; m; i++) &#123;        for (int j = 0; j &lt; i; j++) &#123;            if (subseq[i] &gt;= subseq[j]) &#123;                if (dp[j] + 1 &gt; dp[i]) &#123;                    dp[i] = dp[j] + 1;                &#125;            &#125;        &#125;        maxLen = maxLen &gt; dp[i] ? maxLen : dp[i];    &#125;    return maxLen;&#125;int kIncreasing(int* arr, int arrSize, int k) &#123;    int ans = 0;    for (int i = 0; i &lt; k; i++) &#123;        int subseq[MAX_N];        int m = 0;        for (int j = i; j &lt; arrSize; j += k) &#123;            subseq[m++] = arr[j];        &#125;        int lisLen = computeLIS(subseq, m);        ans += (m - lisLen);    &#125;    return ans;&#125;int main() &#123;    int n, k;    scanf(&quot;%d&quot;, &amp;n);    int arr[MAX_N];    for (int i = 0; i &lt; n; i++) &#123;        scanf(&quot;%d&quot;, &amp;arr[i]);    &#125;    scanf(&quot;%d&quot;, &amp;k);    printf(&quot;%d&quot;, kIncreasing(arr, n, k));        return 0; &#125;
-T3 文件夹大小
-任务描述
-给定一个项目的目录树结构，树中的每个节点要么是文件，要么是文件夹。请实现一个
-MIPS 汇编程序，支持对文件系统的多次查询。
-对于每次查询给定的节点编号，你需要计算并输出该节点的
-“子树总大小”：
-
-若该节点为文件，则输出其自身大小。
-若该节点为文件夹，则输出该文件夹内所有内容（包含直接子文件、子文件夹及其递归包含的所有文件）的大小之和。
-注：文件夹本身的大小视为 0。
-
-输入输出格式
-输入格式：
-
-第 1 行：一个整数 n，表示节点总数（编号 1 \sim n）。
-节点描述部分：接下来按编号从小到大（先描述节点
-1，再描述节点 2…）依次输入 n
-个节点的详细信息。对于每个节点：
-
-先输入一行整数 type（0 或
-1）。
-若 type = 0
-(文件)：
-
-下一行输入一个整数 size，表示文件大小。
-
-若 type = 1
-(文件夹)：
-
-下一行输入一个整数 k，表示子节点数量。
-再接下来输入 k
-个整数，依次代表子节点的编号。
+Input
+初始楼层 (One-Hot)
 
 
-查询部分：
+num0
+8
+Input
+第 0 层乘客数
 
-输入一个整数 q，表示查询次数。
-接下来 q 行，每行一个整数 id，表示要查询的节点编号（保证 id 合法）。
+
+num1
+8
+Input
+第 1 层乘客数
 
 
-输出格式：
+num2
+8
+Input
+第 2 层乘客数
 
-对每个查询输出一行整数，表示该节点对应的子树总大小。
 
-约束与样例
-约束条件：
+num3
+8
+Input
+第 3 层乘客数
 
-1 \le n \le 150
-文件大小 0 \le size \le 10^6
-所有文件大小总和 \le 10^9
-总边数 \le 800
-查询次数 q \le 60
 
-输入样例：
-5122 30100114020013135
-输出样例：
-120201
-参考代码 (C语言)
-#include &lt;stdio.h&gt;#define MAXN 155#define MAXE 805int n;int nodeType[MAXN];     // 0: 文件, 1: 文件夹int fileSizeVal[MAXN];  // 文件大小(文件夹为0)int headAdj[MAXN];      // 邻接表头int toEdge[MAXE], nextEdge[MAXE];int edgeCnt;void add_edge(int u, int v) &#123;    toEdge[edgeCnt] = v;    nextEdge[edgeCnt] = headAdj[u];    headAdj[u] = edgeCnt++;&#125;int dfs_sum(int u) &#123;    if (nodeType[u] == 0) &#123;        return fileSizeVal[u];    &#125;    int size = 0;    for (int e = headAdj[u]; e != -1; e = nextEdge[e]) &#123;        int v = toEdge[e];        size += dfs_sum(v);    &#125;    return size;&#125;int main() &#123;    for(int i=0; i&lt;MAXN; i++) headAdj[i] = -1;         edgeCnt = 0;    scanf(&quot;%d&quot;, &amp;n);        for (int i = 1; i &lt;= n; i++) &#123;        int t, x;        scanf(&quot;%d&quot;, &amp;t);                 if (t == 0) &#123;            nodeType[i] = 0;            scanf(&quot;%d&quot;, &amp;x);             fileSizeVal[i] = x;        &#125; else &#123;            nodeType[i] = 1;            int k;            scanf(&quot;%d&quot;, &amp;k);             for (int j = 0; j &lt; k; j++) &#123;                int v;                scanf(&quot;%d&quot;, &amp;v);                add_edge(i, v);            &#125;        &#125;    &#125;    int q;    scanf(&quot;%d&quot;, &amp;q);    while (q--) &#123;        int id;        scanf(&quot;%d&quot;, &amp;id);        int ans = dfs_sum(id);        printf(&quot;%d\n&quot;, ans);    &#125;    return 0;&#125;
+output
+8
+Output
+电梯移动总楼层数
+
+
+
 题目分析
-T1 唯一可能卡住的点是代码中的
-long long，要用两个寄存器来表示一个 long long
-型变量，那么如何比较两个 long long
-变量的大小呢？设两个数分别是a=\{a1,a0\},b=\{b1,b0\}，那么 a&gt;b 不是 a1&gt;b1 \&amp;\&amp; a0&gt;b0，而应该是
-a1&gt;b1||a1==b1\&amp;\&amp;a0&gt;b0，和字典序类似。
-T3 的话，while
-循环见的次数不太多，我一开始写错了，其它的地方都是直接翻译就行。
-助教问答
-以下为部分问题：
-
-MIPS 编程中宏的作用
-我是否采用直接翻译 C 代码的方法？
-一些寄存器的含义，$ra、HI、LO、PC
-等
-
+T1
+就是常规的状态机，可能的难点是寄存器赋初值，我用的两个异或门，还有一些其他的方式，好像还有人直接将输入减
+7，反正都可以。T2 没什么难度，一般而言这种组合逻辑都是最简单的。
+T3 这道题，我用的方法很复杂，设从小到大排序后各层人数是 num_{a_0},num_{a_1},num_{a_2},num_{a_3}
+，那么结果就是 |a_3-a_0|+|a_3-a_2|+|a_2-a_1|
+，我卡在了根据排序后的值对应到其数组下标上，注意到题干说每层人数不同，我就将排序后的四个值与排序前的四个值相比较，如果某两个相等，那就找到其下标了，然后用这个思路构造了一系列复杂的模块，最终也AC了。结束后看到群里八仙过海，各显神通，有一个做法很巧妙：就是直接将
+i 拼接到 num_i
+的后面，变成一个10位的数，但排序时只比前8位，这样排序后就能直接得到其原数组下标，类似于
+C 语言中的结构体排序吧。
 笔者的话
-编写 MIPS
-代码，每个人都有自己的方法，我比较习惯于一字不差的翻译，将每一行 C
-代码都直接翻译成
-MIPS，而不会加一些优化之类的，这样的好处是一般不会出错。由于 MIPS
-语言可读性太差，因此我一般会使用 .eqv
-来重命名某些寄存器，比如 T1 中 C 代码出现了 n, x, y
-等变量，那么我就会直接
-.eqv n,$s0，.eqv x,$s1，.eqv y,$s2
-等，这样的话不必书写复杂的寄存器名，而是直接用其对应的变量名就好了。宏也是一个提高代码可读性的方法，下面是我用的宏，上机开始前可以先将这些模版默写出来：
-.macro readInt(%int)	li $v0,5	syscall	move %int,$v0.end_macro.macro printInt(%int)	move $a0,%int	li $v0,1	syscall.end_macro.macro printStr(%str)	move $a0,%str	li $v0,4	syscall.end_macro.macro index(%ans,%i,%j,%n)	mult %i,%n	mflo %ans	add %ans,%ans,%j	sll %ans,%ans,2.end_macro.macro return0	li $v0,10	syscall.end_macro.macro for(%reg,%begin,%end,%for,%for_end)	move %reg,%begin	%for:		slt $t7,%reg,%end		beq $t7,$0,%for_end.end_macro.macro for_end(%reg,%for,%for_end)		add %reg,%reg,1		j %for	%for_end:.end_macro.macro push(%r)	add $sp,$sp,-4	sw %r,($sp).end_macro.macro pop(%r)	lw %r,($sp)	add $sp,$sp,4.end_macro
-P2
-的一个重难点就是递归函数的编写，关于寄存器保护有一套原则，但是鉴于人们经常出错，有人选择直接将
-32
-个寄存器全部保护起来，总之如果始终不知道应该保护哪些，就只能采用这种方法了。
-另外写汇编代码时有很多细节，稍不注意就错了，且 debug 难度也很大，所以
-P2 很多人都没有过，不过也问题不大，P3 之前对分数影响微乎其微。
+有一个细节一定要注意，就是 Comparator 的
+Numeric Type 属性，一定要改成 Unsigned 而不是
+2's Complement，T1 和 T3 我都因为这一个点而 WA
+过。课前准备的话，可以多看看 Logisim 里面的元件，Bit Finder
+等冷门元件也是考到过的。还有建议将电路模块化，我的习惯是专门弄两个子电路来负责次态逻辑和输出逻辑，这两个都是组合逻辑，这样顶层只有状态转移逻辑，简洁而不容易错。
 ]]></content>
       <categories>
         <category>计算机组成</category>
       </categories>
       <tags>
-        <tag>MIPS</tag>
+        <tag>Logisim</tag>
         <tag>CO</tag>
       </tags>
   </entry>
@@ -494,276 +573,681 @@ testbench，不要因为某题简单就不写，因为最后助教会一一检�
       </tags>
   </entry>
   <entry>
-    <title>BUAA-CO P0上机</title>
-    <url>/2025/10/13/BUAA-CO%20P0%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为
-Logisim，一般是一道组合逻辑和两道时序逻辑，时序逻辑中一个是有限状态机。
+    <title>BUAA-CO P2上机</title>
+    <url>/2025/10/27/BUAA-CO%20P2%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 MIPS 汇编语言，三道题目一般至少两道会给参考 C
+代码，考验 MIPS 代码的编写能力。
 课上题目
-T1 起伏数列
+T1 工厂选址
 任务描述
-我们需要在 Logisim 中设计一个 Moore
-型有限状态机，用于实时监测输入数列的波动趋势。输入 a 为 5 位无符号整数。
-数列的初始值默认为 a_0 =
-7。即复位后，读入的第一个数据 a_1 将与 7 进行比较。
+假设你正在编写城市规划核心功能。需要在给定的 n 个候选坐标点 (x,
+y) 中，筛选出一个符合特定条件的点用于建造工厂。
+筛选条件：
+
+象限限制：候选点必须位于平面直角坐标系的
+第二象限 或
+第四象限（不包含坐标轴）。
+面积最大化：该点向两坐标轴作垂线，与原点 (0,0)
+所围成的矩形面积必须是所有满足条件点中最大的。
+
+你需要编写 MIPS 汇编程序实现该逻辑，输出选定点的坐标。
 判定逻辑
-设当前输入为 a_{m}，上一周期输入为
-a_{m-1}（题目保证相邻输入不相等）：
+有效性判定：
+对于输入坐标 (x,
+y)，该点有效当且仅当满足以下二者之一：
 
-若 a_{m} &gt;
-a_{m-1}，记为“起”；
-若 a_{m} &lt;
-a_{m-1}，记为“伏”。
+第二象限：x &lt; 0 且 y &gt; 0
+第四象限：x &gt; 0 且 y &lt; 0
+注：位于第一、三象限或坐标轴上的点应直接忽略。
 
-我们需要检测的目标模式是 “起 \rightarrow 起 \rightarrow 伏 \rightarrow 起”。
-状态机支持循环检测，即当前成功匹配序列的最后一个“起”，可以作为下一个序列的开头。
-当且仅当最近四个周期的变化趋势严格满足“起起伏起”时，输出
-output 为 1，其他情况 output 默认为 0。
-样例
-串行输入串为：(7)8901215，则状态机输出为：(0)0001001。
-接口列表
+优化目标：
+计算矩形面积 Area = |x| \times
+|y|。
 
+若存在多个点的面积同为最大值，输出 输入顺序最靠前
+的那一组坐标。
+题目保证输入中至少存在一个满足条件的点。
 
+数据规模：
 
-端口名
-位宽
-方向
-功能描述
+n \le 1000
+0 \le |x|, |y| \le 10^9
 
+输入输出格式
+输入格式：
 
+第 1 行：输入一个整数 n，代表坐标总数。
+随后的 2n
+行：依次输入每个点的坐标信息。对于第 i
+个点（0 \le i &lt; n），先输入 x_i，再输入 y_i
 
+输出格式：
 
-a
-5
-I
-输入
+输出一行，包含两个整数 x 和 y（即选定点的坐标），中间用一个空格分隔。
 
-
-clk
-1
-I
-时钟信号
-
-
-reset
-1
-I
-异步复位信号
-
-
-output
-1
-O
-结果
-
-
-
-T2 二进制移位计算器
+输入样例：
+416-47-9-118-8
+输出样例：
+16 -4
+参考代码 (C语言)
+#include &lt;stdio.h&gt;int main(void) &#123;    int n;    scanf(&quot;%d&quot;, &amp;n);    long long best_area = 0;    int best_x = 0, best_y = 0;    for (int i = 0; i &lt; n; i++) &#123;        int x, y;        scanf(&quot;%d%d&quot;, &amp;x, &amp;y);        if (x == 0 || y == 0) continue;        if ((x &gt; 0 &amp;&amp; y &gt; 0) || (x &lt; 0 &amp;&amp; y &lt; 0)) continue;        int ax = x &gt;= 0 ? x : -x;        int ay = y &gt;= 0 ? y : -y;                long long area = (long long) ax * ay;        if (area &gt; best_area) &#123;            best_area = area;            best_x = x;            best_y = y;        &#125;    &#125;    printf(&quot;%d %d\n&quot;, best_x, best_y);    return 0;&#125;
+T2 K 递增
 任务描述
-我们需要在 Logisim 中设计一个 Mealy
-型有限状态机，实现一个支持特定移位运算的二进制计算器。
-系统基于 8 位无符号整数
-进行运算。在每个时钟周期，系统接收 2 位的操作码 op 和 8
-位的操作数
-operand，根据当前内部寄存器的值进行“左移一位”后，再与输入操作数进行运算，并更新寄存器状态。
-运算逻辑
-设当前寄存器内的值为 Reg，输入的操作数为 Val，运算结果记为 Result。
-所有运算均在 8 位
-宽度下进行，计算结果若溢出则自动截断（保留低 8 位）。
+使用 MIPS 汇编语言编写程序，计算将给定数组转换为 K
+递增数组 所需的最少操作次数。
+K 递增定义：
+给定一个下标从 0 开始、包含 n
+个正整数的数组 arr，以及一个正整数
+k。
+如果对于每个满足 k \le i \le n-1
+的下标 i，都有 arr[i-k] \le arr[i]，那么称 arr 是 K 递增的。
+输入输出格式
+输入格式：
 
+第 1 行：输入一个整数 n，表示数组大小 (1
+\le n \le 20)。
+第 2 行 至 第 n+1
+行：每行输入一个整数，依次为数组 arr
+的元素。
+第 n+2 行：输入一个整数 k，表示 K 递增的参数 (1 \le k \le n-1)。
 
+输出格式：
 
+输出一个整数，表示使数组成为 K 递增数组所需的最少操作次数。
 
-
-
-
-
-op
-功能描述
-逻辑表达式
-
-
-
-
-00
-复位：将寄存器清零
-Result = 0
-
-
-01
-移位加：左移一位后加上操作数
-Result = (Reg \ll 1) + Val
-
-
-10
-移位减：左移一位后减去操作数
-Result = (Reg \ll 1) - Val
-
-
-11
-移位异或：左移一位后与操作数异或
-Result = (Reg \ll 1) \oplus
-Val
-
-
-
-约束条件
-
-初始状态：计算器初始状态寄存器值为
-8'h00。
-复位控制：本模块不设置独立的
-reset 引脚，复位功能完全通过输入 op = 00
-实现。
-状态机类型：要求使用 Mealy
-型状态机。
-
-接口列表
-
-
-
-端口名
-位宽
-方向
-功能描述
-
-
-
-
-op
-2
-Input
-操作码
-
-
-operand
-8
-Input
-操作数
-
-
-clk
-1
-Input
-时钟信号
-
-
-result
-8
-Output
-当前周期的计算结果
-
-
-
-T3 智能电梯
-任务描述
-我们需要在 Logisim
-中设计一个组合电路，用于计算智能电梯在特定乘客分布下的总运行距离。
-系统共有 4 个楼层（第 0、1、2、3
-层）。输入包含电梯的初始位置和各层当前的乘客数量。电路需模拟电梯的贪心调度策略，计算出清空所有乘客所需的总移动楼层数。
-调度逻辑
-
-初始状态：电梯起始楼层由输入信号 from
-指定。起始楼层的乘客被视为立即进入电梯，因此在计算后续路径时，起始层的剩余乘客数视为
-0。
-目标选择：电梯总是优先前往当前剩余乘客最多（且不为
-0）的楼层。
-运行过程：
-
-从当前层移动至目标层，累加移动距离：Distance = |Target - Current|。
-到达后，该层乘客全部上梯，该层剩余乘客数变为 0。
-重复上述过程，直到所有楼层的乘客都被接走（所有 num 均为 0）。
-
-数据保证：输入的各层乘客数 num0 ~
-num3 互不相同，且初始值均大于 0。
-
-编码约定
-
-楼层距离：从第 n
-层移动到第 m 层，距离为 |m - n|。
-初始位置：输入 from 采用 4
-位独热码 格式：
-
-0001 \rightarrow 第 0
-层
-0010 \rightarrow 第 1
-层
-0100 \rightarrow 第 2
-层
-1000 \rightarrow 第 3
-层
-
-
-接口列表
-
-
-
-端口名
-位宽
-方向
-功能描述
-
-
-
-
-from
+输入样例 1：
+5543211
+输出样例 1：
 4
-Input
-初始楼层 (One-Hot)
+输入样例 2：
+65342612
+输出样例 2：
+3
+参考代码 (C语言)
+#include &lt;stdio.h&gt;#define MAX_N 20int computeLIS(int *subseq, int m) &#123;    if (m == 0) return 0;    int dp[MAX_N];    int maxLen = 1;    for (int i = 0; i &lt; m; i++) &#123;        dp[i] = 1;    &#125;    for (int i = 1; i &lt; m; i++) &#123;        for (int j = 0; j &lt; i; j++) &#123;            if (subseq[i] &gt;= subseq[j]) &#123;                if (dp[j] + 1 &gt; dp[i]) &#123;                    dp[i] = dp[j] + 1;                &#125;            &#125;        &#125;        maxLen = maxLen &gt; dp[i] ? maxLen : dp[i];    &#125;    return maxLen;&#125;int kIncreasing(int* arr, int arrSize, int k) &#123;    int ans = 0;    for (int i = 0; i &lt; k; i++) &#123;        int subseq[MAX_N];        int m = 0;        for (int j = i; j &lt; arrSize; j += k) &#123;            subseq[m++] = arr[j];        &#125;        int lisLen = computeLIS(subseq, m);        ans += (m - lisLen);    &#125;    return ans;&#125;int main() &#123;    int n, k;    scanf(&quot;%d&quot;, &amp;n);    int arr[MAX_N];    for (int i = 0; i &lt; n; i++) &#123;        scanf(&quot;%d&quot;, &amp;arr[i]);    &#125;    scanf(&quot;%d&quot;, &amp;k);    printf(&quot;%d&quot;, kIncreasing(arr, n, k));        return 0; &#125;
+T3 文件夹大小
+任务描述
+给定一个项目的目录树结构，树中的每个节点要么是文件，要么是文件夹。请实现一个
+MIPS 汇编程序，支持对文件系统的多次查询。
+对于每次查询给定的节点编号，你需要计算并输出该节点的
+“子树总大小”：
+
+若该节点为文件，则输出其自身大小。
+若该节点为文件夹，则输出该文件夹内所有内容（包含直接子文件、子文件夹及其递归包含的所有文件）的大小之和。
+注：文件夹本身的大小视为 0。
+
+输入输出格式
+输入格式：
+
+第 1 行：一个整数 n，表示节点总数（编号 1 \sim n）。
+节点描述部分：接下来按编号从小到大（先描述节点
+1，再描述节点 2…）依次输入 n
+个节点的详细信息。对于每个节点：
+
+先输入一行整数 type（0 或
+1）。
+若 type = 0
+(文件)：
+
+下一行输入一个整数 size，表示文件大小。
+
+若 type = 1
+(文件夹)：
+
+下一行输入一个整数 k，表示子节点数量。
+再接下来输入 k
+个整数，依次代表子节点的编号。
 
 
-num0
-8
-Input
-第 0 层乘客数
+查询部分：
+
+输入一个整数 q，表示查询次数。
+接下来 q 行，每行一个整数 id，表示要查询的节点编号（保证 id 合法）。
 
 
-num1
-8
-Input
-第 1 层乘客数
+输出格式：
 
+对每个查询输出一行整数，表示该节点对应的子树总大小。
 
-num2
-8
-Input
-第 2 层乘客数
+约束与样例
+约束条件：
 
+1 \le n \le 150
+文件大小 0 \le size \le 10^6
+所有文件大小总和 \le 10^9
+总边数 \le 800
+查询次数 q \le 60
 
-num3
-8
-Input
-第 3 层乘客数
-
-
-output
-8
-Output
-电梯移动总楼层数
-
-
-
+输入样例：
+5122 30100114020013135
+输出样例：
+120201
+参考代码 (C语言)
+#include &lt;stdio.h&gt;#define MAXN 155#define MAXE 805int n;int nodeType[MAXN];     // 0: 文件, 1: 文件夹int fileSizeVal[MAXN];  // 文件大小(文件夹为0)int headAdj[MAXN];      // 邻接表头int toEdge[MAXE], nextEdge[MAXE];int edgeCnt;void add_edge(int u, int v) &#123;    toEdge[edgeCnt] = v;    nextEdge[edgeCnt] = headAdj[u];    headAdj[u] = edgeCnt++;&#125;int dfs_sum(int u) &#123;    if (nodeType[u] == 0) &#123;        return fileSizeVal[u];    &#125;    int size = 0;    for (int e = headAdj[u]; e != -1; e = nextEdge[e]) &#123;        int v = toEdge[e];        size += dfs_sum(v);    &#125;    return size;&#125;int main() &#123;    for(int i=0; i&lt;MAXN; i++) headAdj[i] = -1;         edgeCnt = 0;    scanf(&quot;%d&quot;, &amp;n);        for (int i = 1; i &lt;= n; i++) &#123;        int t, x;        scanf(&quot;%d&quot;, &amp;t);                 if (t == 0) &#123;            nodeType[i] = 0;            scanf(&quot;%d&quot;, &amp;x);             fileSizeVal[i] = x;        &#125; else &#123;            nodeType[i] = 1;            int k;            scanf(&quot;%d&quot;, &amp;k);             for (int j = 0; j &lt; k; j++) &#123;                int v;                scanf(&quot;%d&quot;, &amp;v);                add_edge(i, v);            &#125;        &#125;    &#125;    int q;    scanf(&quot;%d&quot;, &amp;q);    while (q--) &#123;        int id;        scanf(&quot;%d&quot;, &amp;id);        int ans = dfs_sum(id);        printf(&quot;%d\n&quot;, ans);    &#125;    return 0;&#125;
 题目分析
-T1
-就是常规的状态机，可能的难点是寄存器赋初值，我用的两个异或门，还有一些其他的方式，好像还有人直接将输入减
-7，反正都可以。T2 没什么难度，一般而言这种组合逻辑都是最简单的。
-T3 这道题，我用的方法很复杂，设从小到大排序后各层人数是 num_{a_0},num_{a_1},num_{a_2},num_{a_3}
-，那么结果就是 |a_3-a_0|+|a_3-a_2|+|a_2-a_1|
-，我卡在了根据排序后的值对应到其数组下标上，注意到题干说每层人数不同，我就将排序后的四个值与排序前的四个值相比较，如果某两个相等，那就找到其下标了，然后用这个思路构造了一系列复杂的模块，最终也AC了。结束后看到群里八仙过海，各显神通，有一个做法很巧妙：就是直接将
-i 拼接到 num_i
-的后面，变成一个10位的数，但排序时只比前8位，这样排序后就能直接得到其原数组下标，类似于
-C 语言中的结构体排序吧。
+T1 唯一可能卡住的点是代码中的
+long long，要用两个寄存器来表示一个 long long
+型变量，那么如何比较两个 long long
+变量的大小呢？设两个数分别是a=\{a1,a0\},b=\{b1,b0\}，那么 a&gt;b 不是 a1&gt;b1 \&amp;\&amp; a0&gt;b0，而应该是
+a1&gt;b1||a1==b1\&amp;\&amp;a0&gt;b0，和字典序类似。
+T3 的话，while
+循环见的次数不太多，我一开始写错了，其它的地方都是直接翻译就行。
+助教问答
+以下为部分问题：
+
+MIPS 编程中宏的作用
+我是否采用直接翻译 C 代码的方法？
+一些寄存器的含义，$ra、HI、LO、PC
+等
+
 笔者的话
-有一个细节一定要注意，就是 Comparator 的
-Numeric Type 属性，一定要改成 Unsigned 而不是
-2's Complement，T1 和 T3 我都因为这一个点而 WA
-过。课前准备的话，可以多看看 Logisim 里面的元件，Bit Finder
-等冷门元件也是考到过的。还有建议将电路模块化，我的习惯是专门弄两个子电路来负责次态逻辑和输出逻辑，这两个都是组合逻辑，这样顶层只有状态转移逻辑，简洁而不容易错。
+编写 MIPS
+代码，每个人都有自己的方法，我比较习惯于一字不差的翻译，将每一行 C
+代码都直接翻译成
+MIPS，而不会加一些优化之类的，这样的好处是一般不会出错。由于 MIPS
+语言可读性太差，因此我一般会使用 .eqv
+来重命名某些寄存器，比如 T1 中 C 代码出现了 n, x, y
+等变量，那么我就会直接
+.eqv n,$s0，.eqv x,$s1，.eqv y,$s2
+等，这样的话不必书写复杂的寄存器名，而是直接用其对应的变量名就好了。宏也是一个提高代码可读性的方法，下面是我用的宏，上机开始前可以先将这些模版默写出来：
+.macro readInt(%int)	li $v0,5	syscall	move %int,$v0.end_macro.macro printInt(%int)	move $a0,%int	li $v0,1	syscall.end_macro.macro printStr(%str)	move $a0,%str	li $v0,4	syscall.end_macro.macro index(%ans,%i,%j,%n)	mult %i,%n	mflo %ans	add %ans,%ans,%j	sll %ans,%ans,2.end_macro.macro return0	li $v0,10	syscall.end_macro.macro for(%reg,%begin,%end,%for,%for_end)	move %reg,%begin	%for:		slt $t7,%reg,%end		beq $t7,$0,%for_end.end_macro.macro for_end(%reg,%for,%for_end)		add %reg,%reg,1		j %for	%for_end:.end_macro.macro push(%r)	add $sp,$sp,-4	sw %r,($sp).end_macro.macro pop(%r)	lw %r,($sp)	add $sp,$sp,4.end_macro
+P2
+的一个重难点就是递归函数的编写，关于寄存器保护有一套原则，但是鉴于人们经常出错，有人选择直接将
+32
+个寄存器全部保护起来，总之如果始终不知道应该保护哪些，就只能采用这种方法了。
+另外写汇编代码时有很多细节，稍不注意就错了，且 debug 难度也很大，所以
+P2 很多人都没有过，不过也问题不大，P3 之前对分数影响微乎其微。
 ]]></content>
       <categories>
         <category>计算机组成</category>
       </categories>
       <tags>
         <tag>CO</tag>
+        <tag>MIPS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO P3上机</title>
+    <url>/2025/11/03/BUAA-CO%20P3%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Logisim 实现单周期 CPU。
+课上题目
+T1 revi
+revi-rs-rt-imm16
+RTL
+temp &lt;- GPR[rs]result &lt;- temp[31-imm16:0]||reverse(temp[31:32-imm16])GPR[rt] &lt;- result
+T2 blz
+blz-rs-rt-offset
+RTL
+temp1 &lt;- count_leading_zeros(GPR[rs])temp2 &lt;- count_leading_zeros(GPR[rt])if (temp1 == temp2)     PC &lt;- PC + 4 + sign_ext(offset||00)else if (temp1 &gt; temp2)    PC &lt;- PC + 4    GPR[rs] &lt;- temp1else    PC &lt;- PC + 4    GPR[rs] &lt;- temp2
+T3 lwf
+lwf-base-rt-offset
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]filter &lt;- memword &amp; GPR[rt]ones &lt;- count_ones(filter)if (ones % 2 == 0)    GPR[rt] &lt;- memwordelse    GPR[(rt+1) % 32] &lt;- memword
+题目分析
+总的来说难度都不大，只要考前充分理解了 CPU 的数据通路，理解单周期 CPU
+是怎么跑那几条指令的，那么应该就能通过了。
+T1 需要将一个数翻转，我是用两个 Splitter
+反向拼接，就是手动修改每个端口的值有点繁琐。T2
+需要求前导零的个数，应该用 Bit Adder
+元件，如果想不到这个元件那难度就大了。有一个 Logisim
+的易错点，一个模块加了新的输出端口后，那么原端口的位置可能都会发生变化，这就导致在顶层连好的线实际上都断开了。这次上机时我们机房延长到了
+21:30 结束，从 P4 开始就只有两小时了。并注意，在 P3
+及之后，每个题目都要写测试程序（用新指令写一些汇编程序），虽然大部分人都是做完之后才写测试程序吧。
+助教问答
+以下为部分问题：
+
+看看测试程序和设计文档
+我评测机的设计思路，编写过程中出现了哪些错误，如何得到 Logisim
+的结果，评测机中代码生成的逻辑是什么，评测机是否测出我 CPU
+的问题，数据强度如何
+我 CPU 中 CTRL 模块的设计思路，0 号寄存器恒等于 0 是如何实现的
+
+笔者的话
+从 P3 开始就该开发 CPU
+了，每次上机的题目基本上都是运算类、跳转类、访存类各一道。上机之前一定要对
+CPU
+进行充分的测试，学有余力可以自己写评测机，往届学长也搞了一些评测机，可以直接拿来用，比如
+COT
+等。上机时可以先裸交一发，如果能过一些点就说明课下的设计基本是没问题的，否则就要先改课下的
+bug（虽然上机两小时内独立发现并修复 bug 非常难）。
+P3 仍然是使用 Logisim，建议适当利用
+Tunnel，用的太少，导线会太乱；用太多就不容易理清接线关系。另外在
+CTRL（控制模块）中，由 Instr
+生成对应的指令独热码时，不要用与门阵列，可以直接用
+Comparator 的，很简洁。另外可以提前给 CPU
+加一些要求之外的指令，比如
+j、jal、jr、jalr，加上这几个后，对跳转类指令的理解就更加深入了。还有学长加过
+lh、lb、sh、sb
+等指令，不过加这几个指令的工作量比较大，建议量力而行。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
         <tag>Logisim</tag>
+        <tag>CO</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO P6上机</title>
+    <url>/2025/12/01/BUAA-CO%20P6%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Verilog 实现流水线 CPU。
+第一次课上题目
+T1 mygo
+mygo-rs-rt
+RTL
+function pattern_value(g):    return count_leading_zeros(g) * 2 + count_ones(g)function characteristic_code(A):    sum &lt;- 0    for i in 0..7:        g &lt;- A[4*i+3 : 4*i]        sum &lt;- sum + pattern_value(g) * (i + 1)    return sum    MDU_Start(Busy_Cycles = 5)temp1 &lt;- characteristic_code(GPR[rs])temp2 &lt;- characteristic_code(GPR[rt])if (temp1 &gt; temp2)    HI &lt;- GPR[rs]    LO &lt;- GPR[rt]else if (temp1 &lt; temp2)    HI &lt;- GPR[rt]    LO &lt;- GPR[rs]else    HI &lt;- GPR[rs] ^ GPR[rt]    LO &lt;- GPR[rs] ^ GPR[rt]
+T2 jalx
+jalx-rs-rt-offset
+RTL
+temp &lt;- GPR[rs] ^ GPR[rt]x &lt;- temp[4:0]// Find the largest perfect square less than or equal to xwhile (!is_perfect_square(x))    x &lt;- x - 1GPR[x] &lt;- PC + 8PC &lt;- PC + 4 + sign_ext(offset||00)
+T3 lbo
+lbo-base-rt-offset
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]byte &lt;- vAddr[1:0]temp &lt;- memword[8*byte+7 : 8*byte]for i in 0..3:    temp1 &lt;- GPR[rt][8*i+7 : 8*i]    if (temp != temp1)        if (count_ones(temp) &gt; count_ones(temp1))            GPR[rt][8*i+7 : 8*i] &lt;- temp
+第二次课上题目
+T1 mujica
+mujica-rs-rt-imm16
+RTL
+ext32 &lt;- sign_ext(imm16)cnt1 &lt;- count_ones(imm16)if (cnt1 % 2 == 0)    temp &lt;- GPR[rs] &amp; ext32    GPR[rt] &lt;- temp + GPR[rt]else    temp &lt;- GPR[rs] | ext32    GPR[rt] &lt;- temp ^ GPR[rt]
+T2 botto
+botto-rs-rt-offset
+RTL
+function hamming_distance(x, y):    return count_ones(x ^ y)    hd &lt;- hamming_distance(GPR[rs], GPR[rt])if (hd &lt; 8)    PC &lt;- PC + 4 + sign_ext(offset||00)    GPR[rt] &lt;- hdelse if (hd &lt;= 24)    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rt] &gt;&gt;&gt; hdelse    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rs] | GPR[rt]
+T3 lwcm
+lwcm-base-rt-offset
+本题要求在 M 级维护一个 32 位寄存器 WD，复位值为
+32'h0。
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]if (memword == WD)    GPR[rt] &lt;- memwordelse    GPR[26] &lt;- memwordWD &lt;- memword
+题目分析
+第一次上机的 T1
+是乘除指令的变体，在乘除槽中添加相关运算，难度应该不算大，但是笔者最终也没有通过，可能是当时现场写的
+count_leading_zeros
+等函数，比较着急导致细节写错了吧。因此可以提前把这些函数都加到 CPU
+中，具体模板在上篇文章末。
+T2 做起来比较棘手，当时我看名字是 jalx，就一直当成
+jalr 的变体做的，但事后发现其实更像是 bltzal
+的变体，只不过无条件跳转而已，最终我很多点都 TLE 了，没有通过。T3
+比较简单。
+第二次上机明显比第一次简单，T1
+不涉及乘除槽，还是普通的运算类，需要注意这个题同时涉及了
+GPR[rs]、GPR[rt] 和 ext32，因此可以在 ALU 中再加一个输入端口。
+T2 有一个细节就是写入的寄存器地址可能是 rs 或者
+rt，而写入寄存器地址只有得到寄存器值之后才能确定，因此可以在 E
+级刚开始加一个特判，将正确的地址修正回来，本题阻塞逻辑我没有改，仅仅将新指令分到
+branch 类，然后自动采用的 b 类阻塞方式。T3
+是常见的条件访存类型，关于阻塞，我是判断如果 D 级需要用 rt 或者 26
+号寄存器值，才考虑阻塞。
+助教问答
+以下为部分问题：
+
+看看测试程序和设计文档
+讲解第二题的思路
+讲解乘除槽的实现思路
+我的评测机是如何写的
+
+笔者的话
+P6 相对 P5，CPU
+主要的修改点是增加了几条新指令、乘除槽、存储器外置，总体难度不大。上机的题型只有运算类题目可能出乘除相关的，其余两道和
+P5 差不多，一般而言简单一些。到了 P5、P6
+挂的人肯定就多了起来，不过也不用担心，每人有 3 次挂 P 的机会，只要通关
+P7，实验部分成绩就都差不多。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+        <tag>Verilog</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO P4上机</title>
+    <url>/2025/11/10/BUAA-CO%20P4%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Verilog 实现单周期 CPU。
+课上题目
+T1 brc
+brc-rs-rt-rd
+RTL
+temp &lt;- GPR[rs][4:0]if (temp &lt; 25 &amp;&amp; count_ones(GPR[rt][temp+7:temp]) % 2 == 0)    GPR[rd] &lt;- reverse(GPR[rt])else    GPR[rd] &lt;- GPR[rt]
+T2 cabc
+cabc-rs-rt-offset
+RTL
+cross1 &lt;- GPR[rs][23:16]||GPR[rt][7:0]||GPR[rs][31:24]||GPR[rt][15:8]cross2 &lt;- GPR[rt][7:0]||GPR[rs][23:16]||GPR[rt][31:24]||GPR[rs][15:8]xor_result &lt;- cross1 ^ cross2cnt1 &lt;- count_zeros(xor_result[31:16])cnt2 &lt;- count_zeros(xor_result[15:0])if (cnt1 == cnt2)    PC &lt;- PC + 4 + sign_ext(offset||00)else    GPR[rt] &lt;- xor_result
+T3 lhboc
+lhboc-base-rt-offset
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]temp1 &lt;- count_ones(memword[15:0])temp2 &lt;- count_ones(memword[31:16])if (temp1 &gt;= temp2)    GPR[rt] &lt;- sign_ext(memword[15:0])else    GPR[rt] &lt;- sign_ext(memword[31:16])
+题目分析
+T1 是运算类指令，新加一个 ALUOp 的取值，然后在 ALU
+中加入对应的计算逻辑。T2 是跳转类指令的变体，可以仿照 beq
+来添加，但注意不跳转时还要写寄存器。T3 是访存类指令，仿照
+lw 来做，本质就是对 lw
+回写寄存器的数据加了一些处理而已。
+助教问答
+以下为部分问题：
+
+看看测试程序和设计文档
+CTRL 模块的实现思路，EXT 输入的来源是什么，beq 指令的数据通路
+Verilog 中使用什么函数读取机器码
+我的评测机是不是全自动的？评测机生成的汇编程序是否有效？如何保证
+sw 和 lw 指令的地址偏移量是合法的？
+
+笔者的话
+从 P4 开始就要迭代开发 Verilog CPU 了，P4 课下就是直接将 P3
+的电路转化成 Verilog 代码，难度不大。还是可以自己加一些额外的指令，比如
+j、jalr
+等。另外可以提前预留出接口，比如将新加的指令提前命名成 new0
+变量，新加的信号命名成 newSign
+并连接到对应的模块等等，上机时直接修改就行了。
+添加每一个新指令，我一般都是从
+CTRL（控制模块）开始，每设置一个控制信号的值，就在对应的模块中增加新逻辑，如
+NPCOp 对应 NPC 模块，DMWr 对应
+DM，这样不容易漏。另外也有学长建议过使用 git
+来管理版本，学有余力也可以尝试。上机时间紧，且我对 git
+的掌握尚不熟练，所以我没有尝试过。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+        <tag>Verilog</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO P7上机</title>
+    <url>/2025/12/08/BUAA-CO%20P7%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Verilog 实现 MIPS 微系统，支持中断和异常。
+课上题目
+T1~T4
+都是课下强测，分别是功能强测、异常强测、中断强测、冲突强测。
+T5 monitor
+在 P7 系统中（DM 范围 0x0000 ~
+0x2fff），新增一套内存监视控制机制。需在 CP0
+中扩展三个专用寄存器，并增加一条专用配置指令 monitor，配合
+sw 指令实现对特定内存区间的写入保护。
+1. 新增 CP0 寄存器
+系统复位后，以下三个寄存器均置为 0。
+
+
+
+
+
+
+
+
+
+编号
+寄存器名
+功能描述
+读写权限
+
+
+
+
+18
+DMBoundaryHI
+监视区间上界
+mfc0 可读；仅 monitor 可写
+
+
+19
+DMBoundaryLO
+监视区间下界
+mfc0 可读；仅 monitor 可写
+
+
+20
+DMEnable
+监视使能控制字
+mfc0 可读；仅 monitor 可写
+
+
+
+
+mtc0：仅能写入原有的 12-15 号寄存器（SR, Cause,
+EPC, PrID ），写入 18-20 号寄存器无效。
+monitor：仅能写入 18-20 号寄存器，写入 12-15
+号寄存器无效。
+mfc0：可读取上述所有寄存器。
+
+2. 逻辑定义
+使能信号生成
+DMEnable
+寄存器的值并不直接作为使能信号，需进行位统计比较：
+high_ones &lt;- count_ones(DMEnable[31:16])low_ones &lt;- count_ones(DMEnable[15:0])Monitor_Active &lt;- (high_ones &gt; low_ones)
+区间检查逻辑
+受监视的内存区间为 [DMBoundaryLO, DMBoundaryHI)。
+对于 sw
+指令，写入操作涉及的所有字节都必须位于该区间内才算合法。
+3. 指令与异常描述
+指令一：monitor
+monitor-rt-rd
+RTL：
+if (rd==18 &amp;&amp; GPR[rt] &gt;= DMBoundaryLO) ||(rd==19 &amp;&amp; GPR[rt] &lt;= DMBoundaryHI) || (rd==20）	CP0[rd] &lt;- GPR[rt]else if (rd==18 &amp;&amp; !GPR[rt] &gt;= DMBoundaryLO) ||(rd==19 &amp;&amp; !GPR[rt] &lt;= DMBoundaryHI)	SignalException(AdES)
+该指令用于更新 CP0
+的扩展寄存器。在写入时需进行合法性检查：更新后必须满足
+DMBoundaryLO \le
+DMBoundaryHI。如果写入操作导致该条件不满足，则不进行更新并触发异常。
+指令二：sw
+sw-base-rt-offset
+RTL：
+vAddr &lt;- GPR[base] + sign_ext(offset)high_ones &lt;- count_ones(DMEnable[31:16])low_ones &lt;- count_ones(DMEnable[15:0])Monitor_Active &lt;- (high_ones &gt; low_ones)is_in_range &lt;- (CP0[19] &lt;= vAddr) &amp;&amp; ((vAddr + 3) &lt; CP0[18])if (vAddr[1:0] != 00) || (Monitor_Active &amp;&amp; !is_in_range)    SignalException(AdES)else    memory[vAddr] &lt;- GPR[rt]
+当监视功能开启时，sw 指令需检查目标地址是否越界。
+题目分析
+T5 很复杂，但难度可能略低于去年的 withdraw。可能的一个难点是
+sw 的全部字节地址，其实就是 [vaddr, vaddr+3] 这个区间。我
+debug 许久才发现是一个条件中少加了括号，和 &amp;&amp; 和
+|| 的优先级有关，最终虚惊一场。
+助教问答
+以下为部分问题：
+
+看看测试程序和设计文档
+我是如何处理多个流水级、多条指令产生的异常的优先级的？
+如何判断一条指令是否处于延迟槽？
+我做这道题过程中遇到了什么问题
+我对计组课程有没有什么建议
+
+笔者的话
+P7 的课下可谓是最后一舞，笔者感觉比 P5
+还难。代码具体写法可以多参考一下 dalao
+的博客，此处只谈一些注意事项。通过 P7
+课下的弱测的难度就很大，每人刚写出来的代码往往都有数不清的
+bug，这时候就可以再次借助评测机了，不过 P7 和 MARS
+对拍就不合适了，只能找同学或者学长的 CPU
+来对拍，只有对拍几千轮都没有问题，那才敢比较放心。
+上机是 5 道做对 4
+道就算通过。开始后很拼手速，前四个题都是直接提交，如果有过不了的，那就需要现场
+debug。第五题一般是加新指令或者新异常，也可能两个都有，课下一定要充分理解每个异常是怎么产生和传递的，这样课上才能得心应手。另外
+P7 很多人会选择手动 gap，即只通过四道，会选择下周再试一次，因为 P7
+对成绩影响似乎大一点。还有一个细节，就是 handler.asm
+的代码也要打包提交（具体代码参考往届博客，反正这个自己写估计不太可能），不然用
+ISE 仿真时应该就没法处理异常的情况，也就很难 debug
+了（没错，我就忘交了）。
+P7
+结束了，那实验部分就告一段落，该开始理论部分的学习了。理论部分如果老师讲的浅，可以看其他老师班
+PPT，或者直接看王道书，王道上可以参考的主要就是存储系统，剩下的数制、流水线、总线、IO
+等也可以稍微参考，讲的都比较深，有些需要自己做取舍。另外 961
+的计组部分也可以做一做，仅有的两套往年题比较常规，去年的题量和难度感觉还是很大的，所以也做好心理准备（）
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+        <tag>Verilog</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO Pre上机</title>
+    <url>/2025/09/29/BUAA-CO%20Pre%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节主要是掌握三个工具，三道题目依次为 Logisim、Verilog、MIPS。
+课上题目
+T1 推箱子
+任务描述
+我们需要在 Logisim
+中设计一个软电路来模拟简易的推箱子游戏。游戏地图构建在一个二维平面直角坐标系中，范围是
+0 \le x, y \le 5 的正方形区域（共 6 \times 6 个点）。
+箱子的起始位置（包括 Reset 后）固定在 (0,0)，目标位置固定在 (5,5)。
+地图中包含 6 个固定的障碍点，分别为：(1,1)、(1,2)、(2,1)、(3,4)、(4,3)、(4,4)。
+控制逻辑
+系统输入 (dx, dy)
+表示箱子的移动变化量，且保证只会出现 (0,0)、(1,0)
+或 (0,1) 这三种情况。
+设当前坐标为 (x, y)，则预期坐标为
+(x+dx, y+dy)：
+
+如果预期坐标合法（即在地图边界内且不是障碍），则在下一周期将箱子移动到该位置；
+如果预期坐标非法（越界或撞墙），则箱子保持原地不动，并将报错信号
+flag 置为 1（持续一个周期）。
+
+输出判定
+
+当箱子成功到达目标点 (5,5)
+时，输出信号 out 为 1，否则为 0。
+flag 信号默认为 0，仅在尝试非法移动时置为 1。
+
+接口列表
+
+输入：clk (时钟), reset
+(复位), dx (x位移), dy (y位移)
+输出：out (到达目标),
+flag (非法移动报错)
+
+T2 翻涌数字
+题目描述
+将 32 位输入 a 视为 8 个 4
+位宽的数，分别命名为 a_0, a_1, \dots,
+a_7（其中a_i = a[(i + 1) \cdot 4 - 1 :
+i \cdot 4]）。
+对每一个 a_i
+进行前缀和计算，公式如下：
+a_i = \sum_{j=0}^{i} a_j
+计算规则
+
+溢出处理：若累加结果超过 4 位，仅保留低 4 位（即对
+16 取模）。
+输出格式：将计算后的 a_i 按原顺序拼接，作为 32 位输出
+out。
+
+样例
+
+输入：32'h11111111
+输出：32'h87654321
+
+接口列表
+
+输入：a[31:0]
+输出：out[31:0]
+
+T3 子矩阵提取
+题目描述
+编写 MIPS 汇编程序，从一个 4 \times
+4 的大矩阵 A 中，提取以 (i, j) 为左上角、大小为 m \times n 的子矩阵。
+输入格式
+输入共 20 行，均通过 syscall 读取整数：
+
+第 1-16 行：依次输入大矩阵 A 的元素 t（按行优先顺序，即第 0 行第 0 列、第 0 行第
+1 列……）。
+第 17 行：子矩阵行数 m (1 \le m \le
+4)。
+第 18 行：子矩阵列数 n (1 \le n \le
+4)。
+第 19 行：起始行坐标 i (0 \le i \le
+3)。
+第 20 行：起始列坐标 j (0 \le j \le
+3)。
+
+输出格式
+
+合法提取：输出 m \times
+n 的子矩阵。共 m 行，每行 n 个元素，元素间用空格分隔。
+越界报错：若子矩阵超出大矩阵边界，仅输出字符串
+Out of bounds。
+
+约定与约束
+
+矩阵索引从 0 开始。
+请勿使用 .globl main。
+程序结束时必须使用以下代码：
+li $v0, 10syscall
+
+测试样例
+
+样例 1
+
+Input:
+123456789101112131415162211
+Output:
+6 710 11
+
+样例 2
+
+Input:
+432187651211109131415163222
+Output:
+Out of bounds
+
+
+题目分析
+T1
+是状态机问题，题干可能看上去比较新颖。一定不要自己搭组合电路，而是用
+Logisim 的 Analyze Circuit
+功能，输入真值表，自动产生对应的组合电路。还有可以多多利用 Logisim
+的子电路功能，将具体的组合逻辑放到子电路，从而使顶端模块清爽、简洁。还要注意
+flag 置 1 要持续一周期，因此在它前面还要加一个寄存器。
+T2 比较简单，使用 for 循环即可，但是 for
+循环似乎很多人都忘了怎么写了（也包括我在内），不用循环的话直接展开也不难。还有如果定义成
+4 位的变量，Verilog 似乎默认会自动取模，因此模 16 也可以不写。
+T3 中规中矩，一定要多利用宏，例如
+readInt、printInt、printStr
+等，for
+循环也可以封装成宏。但本题我犯了一个错误：我定义了一个
+printStr 宏函数，这个函数会在内部在 .data
+段中定义一个字符串，可能是由于字节不对齐的原因，使用这个函数后之后的地址可能不是
+4 的整数倍，因此程序不能正确运行，修改后就成功 AC
+了。因此尽量不要在函数内部定义字符串，而是在 .data
+里面定义好，并且先定义数组，再定义字符串，就可以尽量避免这种字节不对齐的问题。
+笔者的话
+Pre
+上机不占分，主要是熟悉一下形式，这次是只有做出三道才算通过，建议上机前再读一遍指导书，基本的知识点要牢记，比如状态机设计、Verilog
+中 for 循环的写法、MIPS 编程等等。还有，前几次上机 21:00
+后还可以继续做到 22:00，同时可以查看每道题的提示，因此不用太过担心。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>Logisim</tag>
+        <tag>CO</tag>
+        <tag>Verilog</tag>
+        <tag>MIPS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO 推荐题目汇总</title>
+    <url>/2025/12/09/BUAA-CO%20%E6%8E%A8%E8%8D%90%E9%A2%98%E7%9B%AE%E6%B1%87%E6%80%BB/</url>
+    <content><![CDATA[可能有些人会感到，计组有时没题可做了，即使在往届博客上看到题目，也没有相关的评测环境，难以确定是否做对，HDLBits
+上的题画风又不太一致，但其实 cscore 上就有很多的题目可以访问。
+比如某题目的网址如下：
+http://cscore.buaa.edu.cn/#/problem?ProblemId=334&amp;PieId=1338
+PieId 应该是每届和每届都不同，2406 对应的是 1338。ProblemId
+是题目编号，没有规律可言，但同一个 ProblemId
+似乎每届都能访问到题目。我们便可以先查到本届的 PieId，再按顺序遍历
+ProblemId（当然也可以直接访问我提供的
+ProblemId），如果打开了题目就将其截图或其他形式保存下来，从而就有很多题目可以做并评测了。
+可惜的是，笔者直到 P5
+时才在往届博客中看到这个方法，因此很多之前的题目都没用了，而 P6
+及以后的题又爬不到，因此这些题只能流传下去了（）
+源码和题目获取
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
       </tags>
   </entry>
   <entry>
@@ -844,119 +1328,491 @@ MARS 对每条写 GRF 或者 DM
       </tags>
   </entry>
   <entry>
-    <title>BUAA-CO P4上机</title>
-    <url>/2025/11/10/BUAA-CO%20P4%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Verilog 实现单周期 CPU。
-课上题目
-T1 brc
-brc-rs-rt-rd
-RTL
-temp &lt;- GPR[rs][4:0]if (temp &lt; 25 &amp;&amp; count_ones(GPR[rt][temp+7:temp]) % 2 == 0)    GPR[rd] &lt;- reverse(GPR[rt])else    GPR[rd] &lt;- GPR[rt]
-T2 cabc
-cabc-rs-rt-offset
-RTL
-cross1 &lt;- GPR[rs][23:16]||GPR[rt][7:0]||GPR[rs][31:24]||GPR[rt][15:8]cross2 &lt;- GPR[rt][7:0]||GPR[rs][23:16]||GPR[rt][31:24]||GPR[rs][15:8]xor_result &lt;- cross1 ^ cross2cnt1 &lt;- count_zeros(xor_result[31:16])cnt2 &lt;- count_zeros(xor_result[15:0])if (cnt1 == cnt2)    PC &lt;- PC + 4 + sign_ext(offset||00)else    GPR[rt] &lt;- xor_result
-T3 lhboc
-lhboc-base-rt-offset
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]temp1 &lt;- count_ones(memword[15:0])temp2 &lt;- count_ones(memword[31:16])if (temp1 &gt;= temp2)    GPR[rt] &lt;- sign_ext(memword[15:0])else    GPR[rt] &lt;- sign_ext(memword[31:16])
-题目分析
-T1 是运算类指令，新加一个 ALUOp 的取值，然后在 ALU
-中加入对应的计算逻辑。T2 是跳转类指令的变体，可以仿照 beq
-来添加，但注意不跳转时还要写寄存器。T3 是访存类指令，仿照
-lw 来做，本质就是对 lw
-回写寄存器的数据加了一些处理而已。
-助教问答
-以下为部分问题：
+    <title>BUAA-ML 往年考题汇总</title>
+    <url>/2026/07/01/BUAA-ML%20%E5%BE%80%E5%B9%B4%E8%80%83%E9%A2%98%E6%B1%87%E6%80%BB/</url>
+    <content><![CDATA[写在前面
+本文将往年本研考题按知识模块归类，只保留了与期末复习范围一致的题目。
+转载来源：
+本科：
 
-看看测试程序和设计文档
-CTRL 模块的实现思路，EXT 输入的来源是什么，beq 指令的数据通路
-Verilog 中使用什么函数读取机器码
-我的评测机是不是全自动的？评测机生成的汇编程序是否有效？如何保证
-sw 和 lw 指令的地址偏移量是合法的？
+本2021
+本2023
+本2025
 
-笔者的话
-从 P4 开始就要迭代开发 Verilog CPU 了，P4 课下就是直接将 P3
-的电路转化成 Verilog 代码，难度不大。还是可以自己加一些额外的指令，比如
-j、jalr
-等。另外可以提前预留出接口，比如将新加的指令提前命名成 new0
-变量，新加的信号命名成 newSign
-并连接到对应的模块等等，上机时直接修改就行了。
-添加每一个新指令，我一般都是从
-CTRL（控制模块）开始，每设置一个控制信号的值，就在对应的模块中增加新逻辑，如
-NPCOp 对应 NPC 模块，DMWr 对应
-DM，这样不容易漏。另外也有学长建议过使用 git
-来管理版本，学有余力也可以尝试。上机时间紧，且我对 git
-的掌握尚不熟练，所以我没有尝试过。
+研究生：
+
+研2019
+研2020（需要收费，完整内容见这里）
+研2020(1)（需要收费，完整内容见这里）
+研2023
+研2024
+研2024(1)
+研2025
+
+分类器性能度量
+本2025 题1
+写出混淆矩阵，解释 TP、FP、TN、FN
+的定义。给出预测值和真实值，计算查准率、查全率和 F1 值。
+研2023 题1
+给出一个混淆矩阵。
+
+说明 TP、FP、TN、FN 的含义。
+计算 Precision、Recall 和 F1 值。
+
+研2024 题2
+写出混淆矩阵，解释 Precision 和 Recall
+的计算方法，说明查准率、查全率两个指标之间的关系，并给出 F1
+度量的计算公式。
+研2024 题3
+介绍线性分类模型、Fisher
+准则、感知机准则、最小二乘准则、逻辑回归和支持向量机的基本思想，并说明支持向量机与一般线性分类器的区别。
+贝叶斯决策
+本2021 题2
+基于最小错误率和最小风险进行贝叶斯决策。
+本2023 题1
+题干给出先验概率和决策损失表。
+
+根据最小错误率贝叶斯决策进行分类。
+根据最小风险贝叶斯决策进行决策。
+
+本2025 题2
+给出 c_1、c_2
+和决策损失表，使用最小错误率和最小风险进行决策。
+研2019 题1
+进行贝叶斯决策，分别基于最小风险和最小方差进行决策。
+研2024 题1
+给出相关数据，分别根据最小错误率贝叶斯决策和最小风险贝叶斯决策进行计算。
+研2025 题1
+给出先验概率、类条件概率和决策损失函数 \lambda。
+
+使用最小错误率进行决策。
+使用最小风险进行决策。
+
+感知机准则
+本2021 题1
+使用感知机准则求判别函数。
+本2023 题4
+题干给出 x_1,x_2,x_3,x_4,a_1,b_1
+的值，且 x_1,x_2 \in A，x_3,x_4 \in
+B。使用梯度下降法求感知机准则函数，并给出 a,b 的最终值。
+本2025 题3
+使用感知机准则求判别函数。
+
+
+本2025 感知机题图 1
+
+
+
+本2025 感知机题图 2
+
+研2023 题5
+给出两个二维正样本、两个二维负样本，以及初始向量 a,b。学习率为
+1，使用感知机准则进行迭代计算。
+研2024 题5
+给出两个二维正样本、两个二维负样本和初始权重向量，写出增广形式，并使用感知机准则写出所有迭代步骤和最终结果。说明梯度下降失效问题的原因及解决办法。
+支持向量机 SVM
+本2021 题5
+介绍 SVM 模型，并说明核函数的作用。
+本2023 题2
+简述支持向量机（SVM）的原理，说明遇到噪声和线性不可分时应该如何解决。
+本2025 题4
+解释支持向量机 SVM 的思想，解释核函数的作用。
+研2019 题3
+说明 SVM 的基本思想、模型表达式、软间隔和硬间隔的物理含义，以及如何用
+SVM 解决非线性问题。
+研2020 题2
+说明 SVM
+的基本思路、模型公式、软间隔、硬间隔、如何处理离群点和噪声，以及如何处理非线性样本分类。
+研2023 题2
+说明支持向量机的原理、模型表达式，说明如何处理噪声和离群点，以及如何解决非线性问题。
+研2025 题4
+
+从几何解析的角度描述参数 w 和 b 的意义。
+说明惩罚系数和松弛变量的作用。
+
+决策树与 ID3
+本2021 题6
+给出 12 行数据和 3 个属性列，根据 ID3
+算法构建一棵决策树，并说明决策树避免过拟合的两种方法。
+本2023 题3
+题干给出一张特征表。
+
+使用 ID3
+算法构造一个决策树，并使用构造的决策树判断一个实例的分类结果。
+如何解决决策树的过拟合问题？简述一种解决办法的原理及其缺点。
+
+本2025 题5
+根据三种属性（口味：甜、咸、酸；温度：冷、热；分量：大、中、小）对 12
+个样本构建 ID3 决策树，分析 ID3
+的缺点，举出两种缓解过拟合的方法（预剪枝算法、后剪枝算法），并选择其中一种说明优劣。
+研2019 题2
+说明 ID3 和 C4.5 的区别，说明预剪枝和后剪枝的基本思想及优缺点。
+研2019 题6
+说明什么是过拟合，以及解决过拟合的方法。
+研2020 题1
+使用 ID3
+算法构建决策树，对宇宙星球或近地卫星是否适合生存进行分类。另一份同年回忆版给出的近地卫星题干为：2077
+年人类发射近地卫星，一共发射 800
+颗，根据大小和轨道远近，有着不同的宜居条件（“是”表示宜居），表格如下。
+
+
+
+数量
+大小
+轨道
+是否宜居
+
+
+
+
+30
+大
+远
+是
+
+
+130
+大
+近
+是
+
+
+48
+小
+远
+是
+
+
+161
+小
+近
+是
+
+
+20
+大
+远
+否
+
+
+170
+大
+近
+否
+
+
+11
+小
+远
+否
+
+
+230
+小
+近
+否
+
+
+
+构建一个 ID3
+决策树，要求写出详细计算过程，并画出决策树，标出每个结点的正类、负类样本数量和分支结点对应的属性，并标出叶子结点最终属于哪个类别。
+研2023 题4
+第一问：使用 ID3 算法计算并构造一棵决策树。第二问：说明 ID3
+算法的缺点，并列举改进算法。
+研2024 题7
+使用 ID3 算法手动构建一棵决策树。说明 ID3
+算法的优缺点，以及如何改进。
+研2025 题8
+判断学生是否会加入算法竞赛集训队。题干给出 4
+个属性：GPA（高、中、低）、感兴趣程度（高、一般、低）、时间（充足、一般、紧张）、编程能力（高、中、低）。
+
+按照 ID3 流程生成决策树。
+给定一个同学的属性，判断他是否会加入。
+简述预剪枝和后剪枝的方法及优缺点。
+
+BP 反向传播算法
+本2021 题7
+推导 BP 算法中权值的更新公式。
+本2023 题8
+如下图所示，推导神经网络中 w_{md} 和
+w_{km} 的更新公式。
+
+
+本2023 BP 神经网络结构图
+
+本2025 题8
+包含一层隐藏层的前馈神经网络如图所示，其中给定训练集：
+
+D=\{(x_1,t_1),(x_2,t_2),\ldots,(x_N,t_N)\},\quad
+x_i\in\mathbb{R}^{D},\quad t_i\in\mathbb{R}^{K}
+
+隐藏层激活函数为 h(x)，输出层激活函数为 \sigma(x)。y_n 表示第 n
+个样本 x_n 对应的神经网络输出向量：
+
+y_n=[y_{n1},\ldots,y_{nk},\ldots,y_{nK}]^T
+
+准则函数为：
+
+E_n(w)=\frac{1}{2}\sum_{k=1}^{K}(y_{nk}-t_{nk})^2
+
+网络包含 D 个输入神经元、K 个输出神经元，以及 M
+个隐层神经元。试推导反向传播算法中对每一层权值参数 w_{md} 与 w_{km} 的更新。
+
+
+本2025 BP 神经网络示意图
+
+研2019 题8
+给出一个 4\times 4\times 4\times 3
+的全连接神经网络，推导反向传播算法，并以第二层的第三个节点为例进行说明。
+研2020 题8
+推导三层 BP
+神经网络的误差反向传播过程。以下图为例，推导反向传播（back
+prop）的主要思想，要求写出详细过程，其中 i 为输入层，k 为输出层，且 layer j 和 layer k
+均有 Sigmoid 函数作为激活函数。
+
+
+BP 神经网络示意图
+
+研2023 题8
+给出一个三层神经网络，计算 BP 流程。
+研2024 题9
+给出的神经网络有两个隐藏层，其中有一层有权重，输出层有激活函数。推导神经网络的反向传播过程。要求先写正向传播表达式，再反向求偏导，并注意推导式中求和符号的含义。
+研2025 题9
+给定带有一个隐藏层的前馈全连接神经网络，隐藏层和输出层都有激活函数。
+
+推导第一层和第二层参数 w
+如何更新。
+说明动量 SGD 和 Adam 如何解决陷入局部极值点或震荡的问题。
+简述为什么会出现梯度消失，以及如何缓解这一现象。
+
+K-means
+本2021 题4
+写出 K-means 算法，说明其不足，并写出它的一种改进。
+本2023 题6
+简述 K-means 算法原理。K-means 算法有什么缺点？给出一种改进方法。
+本2025 题6
+描述 K-means 算法流程，分析劣势并给出一种改进方法（K-means++）。
+研2023 题7
+给出 K-means 算法的基本流程。给出一个包含 10 个点的表格和 3
+个中心点，使用 K-means 进行计算。
+研2024 题4
+介绍 K-means 模型，写出模型的计算过程。
+研2025 题2
+
+使用数学语言描述 K-means 的流程。
+执行一遍 K-means 流程：给定 4 个二维点的坐标，初始化 2
+个二维中心点，要求迭代执行 2 次。
+说明 K-means 的缺陷以及解决办法（K-means++）。
+
+PCA 与 LDA / Fisher 准则
+本2021 题3
+利用 PCA 算法将给定的五个二维向量降到一维。简述 PCA 算法和 LDA
+算法的基本思想，并说明两者的区别。
+本2023 题5
+简述 PCA 和 LDA（Fisher 准则）的原理和区别。
+研2019 题7
+基于最小均方误差思想推导 PCA 算法，并写出计算步骤。
+研2020 题6
+写出主成分分析（Principal Component Analysis,
+PCA）的基本思想，并从最大方差思想推导其结果。
+研2023 题6
+基于最小均方误差推导 PCA 主成分分析，并给出 PCA 算法的基本流程。
+研2024 题8
+介绍
+PCA，解释什么是基于最大方差和基于最小均方误差的思想，并从最大方差思想推导
+PCA。掌握最大方差和最小均方误差的计算方法，能用数学语言描述和推导。
+研2025 题3
+
+简述最大方差、最小均方误差的主要思想。
+写出 PCA
+的一般求解过程，包括求协方差矩阵、最大特征值对应的特征向量等。
+说明 PCA 与 LDA 的关系与区别。
+
+集成学习
+本2023 题7
+简述集成学习的基本思想，简述 Boosting 和 Bagging 的原理和区别。
+本2025 题7
+描述 AdaBoosting
+串行学习流程，分析随机森林的学习器，并说明如何实现多样化的学习器。
+研2020 题3
+说明集成学习的基本思想，并分别以串行化的 Boosting 和并行化的 Bagging
+解释其原理。
+研2023 题3
+说明集成学习的原理，并介绍 AdaBoost 和 Random Forest
+的串行、并行思想。
+研2024 题6
+说明集成学习的思想，介绍 Boosting 和 Bagging
+两种方法，并说明模型的采样、结构和输出形式。
+研2025 题7
+
+叙述集成学习的思想。
+简述 Boosting 和 Bagging 的执行流程。
+
+深度学习与开放题
+本2021 题8
+谈谈机器学习在某领域的应用，如医疗、金融、电商、交通等。
+本2023 题9
+现如今购物 App
+的推荐算法总是会根据用户的浏览记录，向用户推荐感兴趣的商品，使用户陷入“信息茧房”中。
+
+如何使用机器学习优化产品业务？
+从算法的角度，简述如何规避“信息茧房”。
+
+本2025 题9
+文生视频用到了什么技术？说明其可能的挑战和潜在问题。
+研2019 题9
+给出机器学习和深度学习的联系，说明二者各有什么优缺点，并谈谈你认为未来深度学习会如何发展。
+研2020 题9
+结合本课程内容谈谈你对深度学习的理解，说明深度学习模型存在什么问题，并谈谈你对深度学习未来发展方向的预测。
+研2023 题9
+结合所学内容，给出大模型的应用，以及大模型未来的挑战和方向。
+研2024 题10
+谈谈人工智能的潜在应用及挑战。
+研2024(1) 题9
+说明机器学习如何在大模型中应用。
 ]]></content>
       <categories>
-        <category>计算机组成</category>
+        <category>机器学习</category>
       </categories>
       <tags>
-        <tag>CO</tag>
-        <tag>Verilog</tag>
+        <tag>ML</tag>
       </tags>
   </entry>
   <entry>
-    <title>BUAA-CO P3上机</title>
-    <url>/2025/11/03/BUAA-CO%20P3%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Logisim 实现单周期 CPU。
-课上题目
-T1 revi
-revi-rs-rt-imm16
-RTL
-temp &lt;- GPR[rs]result &lt;- temp[31-imm16:0]||reverse(temp[31:32-imm16])GPR[rt] &lt;- result
-T2 blz
-blz-rs-rt-offset
-RTL
-temp1 &lt;- count_leading_zeros(GPR[rs])temp2 &lt;- count_leading_zeros(GPR[rt])if (temp1 == temp2)     PC &lt;- PC + 4 + sign_ext(offset||00)else if (temp1 &gt; temp2)    PC &lt;- PC + 4    GPR[rs] &lt;- temp1else    PC &lt;- PC + 4    GPR[rs] &lt;- temp2
-T3 lwf
-lwf-base-rt-offset
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]filter &lt;- memword &amp; GPR[rt]ones &lt;- count_ones(filter)if (ones % 2 == 0)    GPR[rt] &lt;- memwordelse    GPR[(rt+1) % 32] &lt;- memword
-题目分析
-总的来说难度都不大，只要考前充分理解了 CPU 的数据通路，理解单周期 CPU
-是怎么跑那几条指令的，那么应该就能通过了。
-T1 需要将一个数翻转，我是用两个 Splitter
-反向拼接，就是手动修改每个端口的值有点繁琐。T2
-需要求前导零的个数，应该用 Bit Adder
-元件，如果想不到这个元件那难度就大了。有一个 Logisim
-的易错点，一个模块加了新的输出端口后，那么原端口的位置可能都会发生变化，这就导致在顶层连好的线实际上都断开了。这次上机时我们机房延长到了
-21:30 结束，从 P4 开始就只有两小时了。并注意，在 P3
-及之后，每个题目都要写测试程序（用新指令写一些汇编程序），虽然大部分人都是做完之后才写测试程序吧。
-助教问答
-以下为部分问题：
+    <title>BUAA-OO U2学习与反思</title>
+    <url>/2026/04/26/BUAA-OO%20U2%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
+    <content><![CDATA[第二单元 OO 学习与反思
+一、同步块的设置和锁的选择
+锁的设置与演变
 
-看看测试程序和设计文档
-我评测机的设计思路，编写过程中出现了哪些错误，如何得到 Logisim
-的结果，评测机中代码生成的逻辑是什么，评测机是否测出我 CPU
-的问题，数据强度如何
-我 CPU 中 CTRL 模块的设计思路，0 号寄存器恒等于 0 是如何实现的
+第五次作业：一开始，为了稳妥，我把主要的同步块都放在了共享的
+BaseQueue 里，
+offer、take、isEmpty
+这些方法全加上了
+synchronized。这时候逻辑比较简单，锁住队列本身就能解决大部分并发读写的问题，线程等待也是靠
+wait() 和 notifyAll()
+在队列对象上完成。
+第六次作业：到了第六次作业，加了检修机制和自由分配电梯的逻辑。我在各个电梯井
+ElevatorThread
+里加了一些状态控制，由于状态会被电梯和调度器同时访问，我在通知电梯改变状态的时候，借用了电梯专属的
+processQueue 的锁来做 notifyAll。此时调度器
+DispatchThread 拿 scheduleQueue
+的锁，电梯拿自己的 processQueue
+锁，分工明确，基本没有问题。
+第七次作业：这次的重点是换乘层 F2 的防撞。我给
+ElevatorShaft 专门加了个显式的公平锁
+ReentrantLock f2Lock。当任意一轿厢需要进入 F2
+层时，必须在执行 moveOneFloor 前通过
+f2Lock.lock()
+获取锁，离开后释放锁。同时，我将处理语句精简为仅包含进入、停留和离开 F2
+层的动作，使锁的粒度最小，保证安全的同时最大化了电梯的效率。
 
-笔者的话
-从 P3 开始就该开发 CPU
-了，每次上机的题目基本上都是运算类、跳转类、访存类各一道。上机之前一定要对
-CPU
-进行充分的测试，学有余力可以自己写评测机，往届学长也搞了一些评测机，可以直接拿来用，比如
-COT
-等。上机时可以先裸交一发，如果能过一些点就说明课下的设计基本是没问题的，否则就要先改课下的
-bug（虽然上机两小时内独立发现并修复 bug 非常难）。
-P3 仍然是使用 Logisim，建议适当利用
-Tunnel，用的太少，导线会太乱；用太多就不容易理清接线关系。另外在
-CTRL（控制模块）中，由 Instr
-生成对应的指令独热码时，不要用与门阵列，可以直接用
-Comparator 的，很简洁。另外可以提前给 CPU
-加一些要求之外的指令，比如
-j、jal、jr、jalr，加上这几个后，对跳转类指令的理解就更加深入了。还有学长加过
-lh、lb、sh、sb
-等指令，不过加这几个指令的工作量比较大，建议量力而行。
+锁与同步块内处理语句的关系
+随着作业迭代，我逐渐体会到，锁的作用不仅仅是“互斥”，更是为了保证同步块内的一组处理语句原子性地维护某个对象的属性，我们不能把紧密关联的操作拆分到不同的同步块中。
+
+队列的存取操作：在执行 offer 和
+take
+时，“检查队列状态”、“修改队列元素”、“唤醒等待线程”必须包裹在同一个
+synchronized
+块中。如果将检查和取数分开，就可能出现两个线程同时判断队列非空，然后试图取出同一个请求的危险情况。
+状态修改与通知的绑定：在 hw6
+中，调度器往电梯派发新请求或下发指令时，“修改共享状态”和“调用
+notifyAll()”这两步处理语句必须在同一个同步块内完成。如果先修改状态，出锁后再去
+notifyAll，这期间电梯可能恰好去检查状态并因错过了通知而陷入无休止的等待。
+多条件检查的原子性：在 hw7 的 F2
+防撞逻辑中，“检查对向轿厢是否占用 F2”以及“登记当前轿厢即将进入
+F2”这两步处理语句，必须包裹在同一个 f2Lock
+的临界区内。如果检查和登记被拆分，两部轿厢可能在同一时刻都发现 F2
+空闲，并同时进入 F2 发生碰撞。
+
+二、调度器设计
+调度器交互设计
+我的代码采用了层次化的调度架构：InputThread -&gt;
+ScheduleQueue -&gt; DispatchThread -&gt;
+ProcessQueue -&gt;
+ElevatorThread，如下图所示。
+调度器 DispatchThread
+作为中枢，一旦有新乘客请求，就将其从 ScheduleQueue
+中取出，并通过策略类 ShadowDispatchStrategy
+为其分配最合适的电梯，最后将乘客放入对应电梯的 ProcessQueue
+中，并通过 notifyAll()
+唤醒处于等待状态的电梯。这种设计实现了调度与执行的解耦，调度器不需要干预电梯的运行状态，只需通过队列进行基于数据的交互。
+调度策略与性能指标
+
+运行策略：单部电梯采用了经典的 LOOK
+算法，在当前方向上有请求时继续运行，否则反转方向，能有效减少不必要的移动时间。
+分配策略：从第六次作业开始，我实现了“影子电梯”策略。在分配乘客时，系统会深拷贝每一部电梯的当前状态，在后台通过模拟该电梯运行完所有请求以及所需的代价。
+多指标权衡：我影子电梯的代价函数综合考虑了运行时间和耗电量。时间代价根据模拟运行到达目标层的时间计算，耗电量代价则根据模拟过程中的
+ARRIVE、OPEN/CLOSE
+次数计算，最终将指标加权求和，寻找代价最小的电梯进行分配。针对可能的维护和双轿厢改造与回收，调度器会给这些电梯一些惩罚，避免将新乘客分配给它们。
+
+三、bug分析与debug方法
+出现过的bug
+我只有 hw7 互测中被人发现了bug。错误的输出部分如下：
+[49.8510]RECYCLE-ACCEPT-7[49.8520]RECYCLE-BEGIN-7[49.8530]RECEIVE-100-7
+原因是副轿厢 7 已经进入了 RECYCLE_BEGIN 状态，却还
+RECEIVE
+了新乘客。经过我的排查，发现我的调度器在计算代价的时候，副轿厢 7
+的状态可能还是正常的（或者正好处于
+REC_ACCEPT）。调度器决定把乘客分给 7
+号，但是在它计算完、准备输出接受信息的微小时间间隙里，副轿厢 7
+直接把乘客清空、关门，并输出了 RECYCLE-BEGIN
+改变了状态。等调度器输出 RECEIVE 的时候，副轿厢 7
+已经变成不可接收请求的状态了。总的来说，是因为我电梯调度和输出
+RECEIVE
+并没有被包裹在同一个原子操作里，导致被其他线程修改了状态。
+多线程程序的debug方法
+经历了这三次作业，我总结出了一套多线程调试方法：
+
+理清共享对象边界：在排查问题前，先明确哪些对象会被多个线程同时读写。对于不共享的局部状态，交由电梯线程独占推进即可，不需要过度担心并发。
+重点排查线程唤醒逻辑：可以利用输出语句检查
+wait() 和 notifyAll()
+的配对情况。特别关注如输入关闭、状态转换等边界事件，看看是否在这些特殊时刻漏了唤醒，导致线程睡死。
+针对输出日志反推状态：多线程由于难以稳定地单步断点调试，我们往往去参考输出日志。我会检查
+RECEIVE、IN、OUT
+是否成对出现，电梯的各种输出顺序是否符合题意。对报错的特定行，我根据前面的输出反推当时各个线程所处的状态。
+搭建评测机：我依旧会搭建评测机来进行高强度的生成请求。一旦评测报告错误，立马固定测试用例，保留当时的输入输出，然后再进行针对性的排查。
+
+四、线程安全与层次化设计
+线程安全
+线程安全不是随意在方法上加 synchronized
+就能实现，滥用锁反而会导致性能下降和死锁。我感觉，理清数据流动的模型是保障线程安全的前提。U2
+中，只有队列被多个线程共享，因此只需将队列封装为线程安全的类。对于电梯内部的载重、当前楼层等状态，只由电梯线程自己修改，天然是线程安全的，不需要额外加锁。同时，一定要保持锁的获取顺序一致，并避免在同步块内调用耗时的方法。
+层次化设计
+层次化设计也有效降低了系统的耦合度。从数据流向上，我的架构可以划分为“输入层
+-&gt; 分派层 -&gt;
+执行层”。从类的结构上，我将“执行动作（ElevatorThread）”、“运行策略（MoveStrategy）”和“分配策略（ShadowDispatchStrategy）”严格剥离。面对
+hw7
+的复杂需求，由于具备良好的层次结构，我只需在电梯井层面维护两部电梯，并引入题干中新增的几个状态，而无需重构底层移动和开关门等逻辑。
+五、大模型使用心得
+
+模型名称：Gemini
+任务分工：我负责架构设计和核心状态机的定义等，并编写主要的核心代码，只有不太熟悉的地方，如
+synchronized
+等多线程相关代码的写法，才会询问大模型。写完后，大模型负责帮我检查代码逻辑和
+debug，比如说影子电梯深拷贝代码等。
+复杂任务中的优势：在面临多线程电梯这样复杂的任务时，大模型的逻辑梳理能力非常突出。当我描述双轿厢改造流程时，它能迅速生成清晰的状态机框架；在排查死锁时，把相关输入输出描述给大模型，它思考后往往能一针见血地指出问题。
+面临的困难：大模型由于缺乏整体代码库的上下文，有时会“自作主张”地引入一些不需要的类，如果直接复制粘贴，极易引入隐蔽的
+bug。
+总体感受：大模型是一位极为高效的助手，但多线程代码的底线还是必须由我们把控。只有自己深刻理解了并发机制，才能审查
+AI 代码，将其转化为真正的生产力。
+
+六、第二单元的体验与建议
+真实感受
+第二单元的电梯作业无疑是 OO
+中思维跨度最大的一环，从串行转向并发是一个痛苦但也充满成就感的过程。hw6
+中，我设计影子电梯调优耗费了大量精力，第七次作业的双轿厢逻辑中我也遇到了很多的细节问题，比如说在
+F2
+换乘的写法等。但最终看着电梯高效地运送着乘客而不发生任何死锁，这种获得感也是难以言喻的。
+课程建议
+希望能稍微介绍一下相关电梯调度名词具体是什么意思，比如量子电梯、自由竞争等，网上相关的资料也很少。
 ]]></content>
       <categories>
-        <category>计算机组成</category>
+        <category>面向对象</category>
       </categories>
       <tags>
-        <tag>CO</tag>
-        <tag>Logisim</tag>
+        <tag>Java</tag>
+        <tag>OO</tag>
       </tags>
   </entry>
   <entry>
@@ -1424,403 +2280,11 @@ AST
 BigInteger 来防溢出。
 ]]></content>
       <categories>
-        <category>OO</category>
+        <category>面向对象</category>
       </categories>
       <tags>
         <tag>Java</tag>
         <tag>OO</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO P6上机</title>
-    <url>/2025/12/01/BUAA-CO%20P6%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Verilog 实现流水线 CPU。
-第一次课上题目
-T1 mygo
-mygo-rs-rt
-RTL
-function pattern_value(g):    return count_leading_zeros(g) * 2 + count_ones(g)function characteristic_code(A):    sum &lt;- 0    for i in 0..7:        g &lt;- A[4*i+3 : 4*i]        sum &lt;- sum + pattern_value(g) * (i + 1)    return sum    MDU_Start(Busy_Cycles = 5)temp1 &lt;- characteristic_code(GPR[rs])temp2 &lt;- characteristic_code(GPR[rt])if (temp1 &gt; temp2)    HI &lt;- GPR[rs]    LO &lt;- GPR[rt]else if (temp1 &lt; temp2)    HI &lt;- GPR[rt]    LO &lt;- GPR[rs]else    HI &lt;- GPR[rs] ^ GPR[rt]    LO &lt;- GPR[rs] ^ GPR[rt]
-T2 jalx
-jalx-rs-rt-offset
-RTL
-temp &lt;- GPR[rs] ^ GPR[rt]x &lt;- temp[4:0]// Find the largest perfect square less than or equal to xwhile (!is_perfect_square(x))    x &lt;- x - 1GPR[x] &lt;- PC + 8PC &lt;- PC + 4 + sign_ext(offset||00)
-T3 lbo
-lbo-base-rt-offset
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]byte &lt;- vAddr[1:0]temp &lt;- memword[8*byte+7 : 8*byte]for i in 0..3:    temp1 &lt;- GPR[rt][8*i+7 : 8*i]    if (temp != temp1)        if (count_ones(temp) &gt; count_ones(temp1))            GPR[rt][8*i+7 : 8*i] &lt;- temp
-第二次课上题目
-T1 mujica
-mujica-rs-rt-imm16
-RTL
-ext32 &lt;- sign_ext(imm16)cnt1 &lt;- count_ones(imm16)if (cnt1 % 2 == 0)    temp &lt;- GPR[rs] &amp; ext32    GPR[rt] &lt;- temp + GPR[rt]else    temp &lt;- GPR[rs] | ext32    GPR[rt] &lt;- temp ^ GPR[rt]
-T2 botto
-botto-rs-rt-offset
-RTL
-function hamming_distance(x, y):    return count_ones(x ^ y)    hd &lt;- hamming_distance(GPR[rs], GPR[rt])if (hd &lt; 8)    PC &lt;- PC + 4 + sign_ext(offset||00)    GPR[rt] &lt;- hdelse if (hd &lt;= 24)    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rt] &gt;&gt;&gt; hdelse    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rs] | GPR[rt]
-T3 lwcm
-lwcm-base-rt-offset
-本题要求在 M 级维护一个 32 位寄存器 WD，复位值为
-32'h0。
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]if (memword == WD)    GPR[rt] &lt;- memwordelse    GPR[26] &lt;- memwordWD &lt;- memword
-题目分析
-第一次上机的 T1
-是乘除指令的变体，在乘除槽中添加相关运算，难度应该不算大，但是笔者最终也没有通过，可能是当时现场写的
-count_leading_zeros
-等函数，比较着急导致细节写错了吧。因此可以提前把这些函数都加到 CPU
-中，具体模板在上篇文章末。
-T2 做起来比较棘手，当时我看名字是 jalx，就一直当成
-jalr 的变体做的，但事后发现其实更像是 bltzal
-的变体，只不过无条件跳转而已，最终我很多点都 TLE 了，没有通过。T3
-比较简单。
-第二次上机明显比第一次简单，T1
-不涉及乘除槽，还是普通的运算类，需要注意这个题同时涉及了
-GPR[rs]、GPR[rt] 和 ext32，因此可以在 ALU 中再加一个输入端口。
-T2 有一个细节就是写入的寄存器地址可能是 rs 或者
-rt，而写入寄存器地址只有得到寄存器值之后才能确定，因此可以在 E
-级刚开始加一个特判，将正确的地址修正回来，本题阻塞逻辑我没有改，仅仅将新指令分到
-branch 类，然后自动采用的 b 类阻塞方式。T3
-是常见的条件访存类型，关于阻塞，我是判断如果 D 级需要用 rt 或者 26
-号寄存器值，才考虑阻塞。
-助教问答
-以下为部分问题：
-
-看看测试程序和设计文档
-讲解第二题的思路
-讲解乘除槽的实现思路
-我的评测机是如何写的
-
-笔者的话
-P6 相对 P5，CPU
-主要的修改点是增加了几条新指令、乘除槽、存储器外置，总体难度不大。上机的题型只有运算类题目可能出乘除相关的，其余两道和
-P5 差不多，一般而言简单一些。到了 P5、P6
-挂的人肯定就多了起来，不过也不用担心，每人有 3 次挂 P 的机会，只要通关
-P7，实验部分成绩就都差不多。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>CO</tag>
-        <tag>Verilog</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO 推荐题目汇总</title>
-    <url>/2025/12/09/BUAA-CO%20%E6%8E%A8%E8%8D%90%E9%A2%98%E7%9B%AE%E6%B1%87%E6%80%BB/</url>
-    <content><![CDATA[可能有些人会感到，计组有时没题可做了，即使在往届博客上看到题目，也没有相关的评测环境，难以确定是否做对，HDLBits
-上的题画风又不太一致，但其实 cscore 上就有很多的题目可以访问。
-比如某题目的网址如下：
-http://cscore.buaa.edu.cn/#/problem?ProblemId=334&amp;PieId=1338
-PieId 应该是每届和每届都不同，2406 对应的是 1338。ProblemId
-是题目编号，没有规律可言，但同一个 ProblemId
-似乎每届都能访问到题目。我们便可以先查到本届的 PieId，再按顺序遍历
-ProblemId（当然也可以直接访问我提供的
-ProblemId），如果打开了题目就将其截图或其他形式保存下来，从而就有很多题目可以做并评测了。
-可惜的是，笔者直到 P5
-时才在往届博客中看到这个方法，因此很多之前的题目都没用了，而 P6
-及以后的题又爬不到，因此这些题只能流传下去了（）
-源码和题目获取
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>CO</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO P7上机</title>
-    <url>/2025/12/08/BUAA-CO%20P7%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Verilog 实现 MIPS 微系统，支持中断和异常。
-课上题目
-T1~T4
-都是课下强测，分别是功能强测、异常强测、中断强测、冲突强测。
-T5 monitor
-在 P7 系统中（DM 范围 0x0000 ~
-0x2fff），新增一套内存监视控制机制。需在 CP0
-中扩展三个专用寄存器，并增加一条专用配置指令 monitor，配合
-sw 指令实现对特定内存区间的写入保护。
-1. 新增 CP0 寄存器
-系统复位后，以下三个寄存器均置为 0。
-
-
-
-
-
-
-
-
-
-编号
-寄存器名
-功能描述
-读写权限
-
-
-
-
-18
-DMBoundaryHI
-监视区间上界
-mfc0 可读；仅 monitor 可写
-
-
-19
-DMBoundaryLO
-监视区间下界
-mfc0 可读；仅 monitor 可写
-
-
-20
-DMEnable
-监视使能控制字
-mfc0 可读；仅 monitor 可写
-
-
-
-
-mtc0：仅能写入原有的 12-15 号寄存器（SR, Cause,
-EPC, PrID ），写入 18-20 号寄存器无效。
-monitor：仅能写入 18-20 号寄存器，写入 12-15
-号寄存器无效。
-mfc0：可读取上述所有寄存器。
-
-2. 逻辑定义
-使能信号生成
-DMEnable
-寄存器的值并不直接作为使能信号，需进行位统计比较：
-high_ones &lt;- count_ones(DMEnable[31:16])low_ones &lt;- count_ones(DMEnable[15:0])Monitor_Active &lt;- (high_ones &gt; low_ones)
-区间检查逻辑
-受监视的内存区间为 [DMBoundaryLO, DMBoundaryHI)。
-对于 sw
-指令，写入操作涉及的所有字节都必须位于该区间内才算合法。
-3. 指令与异常描述
-指令一：monitor
-monitor-rt-rd
-RTL：
-if (rd==18 &amp;&amp; GPR[rt] &gt;= DMBoundaryLO) ||(rd==19 &amp;&amp; GPR[rt] &lt;= DMBoundaryHI) || (rd==20）	CP0[rd] &lt;- GPR[rt]else if (rd==18 &amp;&amp; !GPR[rt] &gt;= DMBoundaryLO) ||(rd==19 &amp;&amp; !GPR[rt] &lt;= DMBoundaryHI)	SignalException(AdES)
-该指令用于更新 CP0
-的扩展寄存器。在写入时需进行合法性检查：更新后必须满足
-DMBoundaryLO \le
-DMBoundaryHI。如果写入操作导致该条件不满足，则不进行更新并触发异常。
-指令二：sw
-sw-base-rt-offset
-RTL：
-vAddr &lt;- GPR[base] + sign_ext(offset)high_ones &lt;- count_ones(DMEnable[31:16])low_ones &lt;- count_ones(DMEnable[15:0])Monitor_Active &lt;- (high_ones &gt; low_ones)is_in_range &lt;- (CP0[19] &lt;= vAddr) &amp;&amp; ((vAddr + 3) &lt; CP0[18])if (vAddr[1:0] != 00) || (Monitor_Active &amp;&amp; !is_in_range)    SignalException(AdES)else    memory[vAddr] &lt;- GPR[rt]
-当监视功能开启时，sw 指令需检查目标地址是否越界。
-题目分析
-T5 很复杂，但难度可能略低于去年的 withdraw。可能的一个难点是
-sw 的全部字节地址，其实就是 [vaddr, vaddr+3] 这个区间。我
-debug 许久才发现是一个条件中少加了括号，和 &amp;&amp; 和
-|| 的优先级有关，最终虚惊一场。
-助教问答
-以下为部分问题：
-
-看看测试程序和设计文档
-我是如何处理多个流水级、多条指令产生的异常的优先级的？
-如何判断一条指令是否处于延迟槽？
-我做这道题过程中遇到了什么问题
-我对计组课程有没有什么建议
-
-笔者的话
-P7 的课下可谓是最后一舞，笔者感觉比 P5
-还难。代码具体写法可以多参考一下 dalao
-的博客，此处只谈一些注意事项。通过 P7
-课下的弱测的难度就很大，每人刚写出来的代码往往都有数不清的
-bug，这时候就可以再次借助评测机了，不过 P7 和 MARS
-对拍就不合适了，只能找同学或者学长的 CPU
-来对拍，只有对拍几千轮都没有问题，那才敢比较放心。
-上机是 5 道做对 4
-道就算通过。开始后很拼手速，前四个题都是直接提交，如果有过不了的，那就需要现场
-debug。第五题一般是加新指令或者新异常，也可能两个都有，课下一定要充分理解每个异常是怎么产生和传递的，这样课上才能得心应手。另外
-P7 很多人会选择手动 gap，即只通过四道，会选择下周再试一次，因为 P7
-对成绩影响似乎大一点。还有一个细节，就是 handler.asm
-的代码也要打包提交（具体代码参考往届博客，反正这个自己写估计不太可能），不然用
-ISE 仿真时应该就没法处理异常的情况，也就很难 debug
-了（没错，我就忘交了）。
-P7
-结束了，那实验部分就告一段落，该开始理论部分的学习了。理论部分如果老师讲的浅，可以看其他老师班
-PPT，或者直接看王道书，王道上可以参考的主要就是存储系统，剩下的数制、流水线、总线、IO
-等也可以稍微参考，讲的都比较深，有些需要自己做取舍。另外 961
-的计组部分也可以做一做，仅有的两套往年题比较常规，去年的题量和难度感觉还是很大的，所以也做好心理准备（）
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>CO</tag>
-        <tag>Verilog</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-OO U3学习与反思</title>
-    <url>/2026/06/02/BUAA-OO%20U3%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
-    <content><![CDATA[第三单元 OO 学习与反思
-一、JML 和规格驱动开发
-JML 契约式设计
-JML 本质上是在 Java 接口外面再套一层形式化约束。它通过
-requires、ensures、assignable 和
-signals
-等，明确了方法的前置条件、后置条件、可修改状态以及异常抛出条件。相比于自然语言，JML
-可以准确地约束方法的规格。在 OOP
-中，它作为实现者与调用者之间的契约，消除了语义上的歧义。
-规格驱动开发
-这一单元最明显的变化就是写代码前先看规格。规格开发的主要优势有：
-1. 实现自由度与结果约束：只要对外状态满足
-ensures，内部用
-HashMap、TreeSet，还是自己写容器，都可以。比如有的方法
-JML
-写得像全局遍历，但实现时完全没必要照着翻译成循环。只要返回值和状态变化对，内部可以做缓存，也可以增量维护。
-2. 测试驱动：JML 为测试提供了清晰的依据。通过直接对照
-ensures 和 signals
-子句，可以很容易地推导出测试的分支和边界情况，从而编写出高覆盖率的单元测试。
-二、JUnit 测试经验总结
-在本单元的测试中，我针对 JML
-的完整性进行验证，包括正常结果返回、状态变化以及异常情况，体现在以下三个方法的测试中：
-queryMutualFollowingSum 的测试里，我没有复用 src
-里动态维护 mutualFollowingSum
-的逻辑，而是单独写了一套双重遍历节点的朴素算法。这样测出来才有意义。数据覆盖了空图、单向关注、对称互关、不成环这些情况，主要用来确认边增删之后缓存计数没有跑偏。
-测 cleanSpamComments
-时，麻烦点在副作用。这个方法会改评论列表，所以调用前要先做快照。测试除了看删除数量和关键字最大出现次数，还要看剩下的评论顺序是否保持，playCount、likes
-这类无关属性有没有被动到。针对字符串匹配，我补了通配符边界词和重叠匹配，以确保严格符合题目要求。
-recommendNthUp 更偏排序规则。测试覆盖了
-rank 非法、候选集为空、分数相同按 ID
-排序、排除自己和已关注用户等情况。它是纯查询方法，所以我还测了连续调用后内部状态不变。
-三、三次作业的迭代
-第一次作业：社交图谱与视频推送
-第一次作业主要是基础的用户社交图谱和视频推送。为了保证查询效率，我在
-Network 里用 HashMap 管理 userMap
-和 videoMap。
-在用户关系维护方面，我直接在 User 类中使用两个
-HashMap（following 和
-followers）来记录关注和被关注关系，以此替代低效的全局查找。queryMutualFollowingSum
-我没有每次重新算，而是在 followUser 和
-unfollowUser 里动态维护
-mutualFollowingSum，查询时就是 O(1)。
-视频接收这里，receivedVideos 经常要头插，所以我写了一个
-IndexedList。另外，User 里维护长度为 4 的
-followerAgeCounts 数组，以此在 O(1)
-的时间内返回各个年龄段粉丝的占比。
-第二次作业：互动状态与缓存
-第二次作业引入了点赞、投币、视频热度等互动状态。难点不是某个单独方法，而是一次操作会牵连多个对象。比如投币要改用户余额、视频硬币数、UP
-主硬币数，还要在 User 的 contributions Map
-里更新贡献度。
-为了少做全量查询，我在 User 里维护了
-watchedVideos、likedVideos 等集合，也用
-contributions 存各个用户的贡献度。Video
-里添加评论时用 commentIdSet
-防重。cleanSpamComments 用双指针配合
-comments.subList().clear()
-清理，避免一边遍历一边频繁删除。清理过的关键字用
-cleanKeywords 记下来，防止重复计算。
-queryLongestDecSeq 是这一阶段比较容易 TLE 的点。我用了
-longestDirty 脏位和 longestDecSeqCache
-缓存。图结构没变就直接返回缓存；只要关注关系变化，就把脏位打上，从而保证了平均情况下的高查询效率。
-第三次作业：热度推荐与模块化
-第三次作业加了推荐相关方法，代码量已经快超 500
-行了（不过好像听说代码风格测试并不卡500行？），我在 Network
-里尽量只做调度，把具体状态维护放回实体类。
-queryMostPopularVideo 用了
-Map&lt;String, TreeSet&lt;Video&gt;&gt; typeHotRank。TreeSet
-按 heat 和 id
-排序。凡是会影响视频热度的操作，更新前先从对应 TreeSet
-里移除，改完热度再插回去。这样每种类型的视频都能保持有序，查询最热视频时不用临时排序。
-User 的 influence
-也没有每次遍历所有上传视频，而是在热度变化时通过回调增量更新
-influences 数组。recommendNthUp
-用了类似快速选择的策略，避免全量排序。写完这块以后最大的感觉就是：推荐逻辑不难，难的是别让它把前面维护好的状态一起拖慢。
-
-
-社交网络
-
-四、如何发现迭代中的方法和容器变化
-在历次作业中，准确找出需要修改的方法和容器是很重要的一环。我发现不能只看新增加的方法，已有的老方法在规格上也可能发生了变化。
-首先是对比接口暴露的状态模型。比如在第三次作业中，UserInterface
-的模型描述里新增了关于不同类型视频的数量统计要求。看到这个新增的模型属性，我就在
-User 类中新增了一个 typeCounts
-数组，在每次观看视频时同步更新它。
-其次是检查副作用 assignable
-的变化。有时候老方法的代码核心逻辑没变，但在新版本中允许修改的变量范围变大了。比如有的方法原本只修改自身属性，后来允许修改其他类的集合。如果漏看了这部分
-assignable
-的扩展，只按原来的逻辑写，就会导致数据没有同步更新。
-另外就是对比方法签名。如果返回类型或参数数量如果变了，原来调用的地方和涉及的数据存储格式基本都需要做相应的修改，这一点编译器通常会报错提示，但也需要我们去更新相关的代码链路。
-五、如何发现性能瓶颈
-JML
-只描述结果要求，不会考虑底层的计算开销。如果直接把规格翻译成循环，强测里基本迟早会出事。
-我会先看量词复杂度。如果 JML 里出现了多重嵌套的 \exists
-和 \forall，或者要求计算全局的
-\sum，把它直接写成嵌套循环一般就会达到 O(N²)
-以上的复杂度。遇到这类方法，我会在本地造一些比较大的数据来测试它的执行时间。
-然后看读写频率。对于像互相关注总数、粉丝年龄分布这种查询次数远大于修改次数的属性，每次查询都重新计算显然太慢了。我选择在关注、取关等操作发生时顺便更新这些值。就像代码里维护
-bestContributorId 一样，通过增量维护把复杂度降下来。
-图算法更适合缓存。像 queryLongestDecSeq
-这种方法每次计算开销很大，我采用了带脏位的缓存机制。不过使用缓存时必须保证状态的一致性，也就是在任何会改变图结构的方法里，都要记得把
-longestDirty 设为
-true，防止出现缓存和实际状态不符的问题。
-六、Bug 与原因分析
-得益于规格驱动开发的严谨性，在三次作业的中测、强测和互测环节中，我的代码都没有被测出
-Bug。期间还发生了一个小插曲：在 hw10
-的强测中，由于评测机波动，第六个数据点最初被误判为错误，好在后续重测后证实了那只是评测机自身的问题。这虽然让我虚惊一场，但也最终证明了代码的正确性。
-不过在本地开发迭代的过程中，我也踩过一些坑。这些经历让我意识到规格开发中有几个很容易出错的地方：
-1. 遗漏副作用：在 hw10
-迭代过程中，增加投币功能时，不仅要修改视频本身的
-coins，还需要同步增加该视频上传者的 coins
-以及记录 contribution。起初我没有仔细对照 JML 中新增的
-assignable
-语句，只修改了视频侧，结果状态不同步。多对象更新基本可以当成一个小事务处理，不能有一丝遗漏。
-2. 异常抛出顺序：JML
-规格中异常不仅有明确的判断先后顺序，构造异常时传入的 ID
-参数也有严格要求。最初我在抛出异常时未按规则排序，或者传入的 ID
-顺序错位，导致 JUnit 测试中捕获到的异常信息不匹配。
-七、大模型使用体会
-这一单元里，我更愿意把大语言模型当规格阅读助手和评测机生成器，而不是直接写最终代码的工具。我使用的
-Code Agent 主要是 Codex 。
-它的显著优势在于：可以快速把长篇的 JML
-翻译成自然语言、列出可能的边界条件、提醒某个方法需要检查哪些副作用，还可以帮助生成繁琐的
-JUnit 单元测试。使用这些 Agent
-来开展自动化测试、批量构造测试样例等还是很方便的，极大地提高了效率。对于版本变更比对，将新旧版本的接口文件发给它，它能迅速列出所有变更点，比肉眼比对高效得多。
-但大模型的局限性也很明显：它往往倾向于直译
-JML，给出“看起来正确但慢”的朴素实现，完全忽略强测中的性能压力。要想让大模型设计出好的架构或是恰当的设计模式，需要我们提供极高质量的提示词。因此我经常使用一些提示词优化器来优化我的输入，向大模型更精准地传达意图，从而引导其输出更优的方案。
-八、JML“击鼓传花”研讨课感悟
-在第二次研讨课上的 JML
-“击鼓传花”游戏中，我获得了许多关于团队协作的启发。
-在本次活动中，我所在的链路题目是计算两个正整数的最大公约数。初始的自然语言需求明确规定了接收正整数
-a 和 b，前置条件为大于 0，且在输入小于等于 0 时抛出
-IllegalArgumentException 异常。
-1. 发现的 JML Bug
-在从 JML 翻译回自然语言，或者从 NL 编写 JML
-的过程中，很容易出理解的偏差。例如在我们组其他同学的链路中，就出现了：
-- 边界条件遗漏或变形：有的同学在 JML
-转自然语言时遗漏了边界条件，把 &gt;= 0 错误地记作了
-&gt; 0。或者对于某些特殊边界，原本要求返回“空
-Map”，在传递中却被替换成了“返回 null”。
--
-逻辑符号被忽视：在转述过程中，某些逻辑非符号（!）极容易被忽视，导致某一处表述出现明显的语义反转和偏离。
--
-异常触发条件写错：自然语言表述的异常抛出条件由于不够严谨，导致后续在写
-signals 子句时发生偏离。
-2. 需求与边界在传递中的变化
-游戏过程中，需求和边界常常会发生不可逆的变化。不过，因为我出的 gcd
-题目数学逻辑比较纯粹，大家都不容易搞错，所以我们这条链路取得了 5
-分满分。这也让我体会到：只要初始的需求足够严谨，后面传错的概率就小很多。有些自然语言觉得理所当然的条件，必须得像数学公式一样一条条严格约束，不然很容易产生误解。
-3. 多人组队编程的建议与措施
-为了在未来的多人开发中统一对需求的理解，我认为应该采取以下措施：
-- 统一接口规范：JML
-的核心在于提供接口规范，而不是强制所有人写出一样的代码。我们只要求大家的实现符合一个统一的接口，至于方法内部实现只要没有性能瓶颈，无需强行统一。
--
-严格定义初始需求：在动手编码前，需求分析必须做到形式化般的严谨。即便是看似简单的自然语言，也要杜绝任何歧义，明确写出前提和异常分支。
--
-多重细致校验：在代码编写时，必须进行细致的逻辑复盘，严防类似遗漏
-! 等低级错误造成雪崩。
-]]></content>
-      <categories>
-        <category>OO</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>OO</tag>
-        <tag>JML</tag>
       </tags>
   </entry>
   <entry>
@@ -2934,832 +3398,6 @@ A/B 测试：结合 A/B
       </tags>
   </entry>
   <entry>
-    <title>BUAA-OS Lab1上机</title>
-    <url>/2026/04/01/BUAA-OS%20Lab1%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 MOS 内核的启动，主要包含 ELF 文件结构、格式化 IO
-的实现等，整体内容较分散。
-课上题目
-Exam
-点击查看题面
-这道题将 ELF
-进行了一些扩展，形式依旧是代码填空，甚至很多答案都直接在题干里明确写出来了，感谢课程组（）
-Extra
-点击查看题面
-这道题要求实现一个 scank，类似于
-printk，主要难点在于输入位置的推进方式。最初尝试直接对局部变量
-ch 递增，后来参考辅助函数才意识到应使用回调函数
-in 读取下一个字符，最终通过。
-笔者的话
-Lab1 一般主要考 ELF 解析以及格式化
-IO。后者可以是增加一些新的转义符（比如 %k），在理解了
-printk
-的调用链路、掌握基本的字符串处理后便容易解决；也可能是更难的形式，如写入到字符串、内存等，这就相当考验
-C 语言指针的功底了。
-]]></content>
-      <categories>
-        <category>操作系统</category>
-      </categories>
-      <tags>
-        <tag>OS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-OO U2学习与反思</title>
-    <url>/2026/04/26/BUAA-OO%20U2%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
-    <content><![CDATA[第二单元 OO 学习与反思
-一、同步块的设置和锁的选择
-锁的设置与演变
-
-第五次作业：一开始，为了稳妥，我把主要的同步块都放在了共享的
-BaseQueue 里，
-offer、take、isEmpty
-这些方法全加上了
-synchronized。这时候逻辑比较简单，锁住队列本身就能解决大部分并发读写的问题，线程等待也是靠
-wait() 和 notifyAll()
-在队列对象上完成。
-第六次作业：到了第六次作业，加了检修机制和自由分配电梯的逻辑。我在各个电梯井
-ElevatorThread
-里加了一些状态控制，由于状态会被电梯和调度器同时访问，我在通知电梯改变状态的时候，借用了电梯专属的
-processQueue 的锁来做 notifyAll。此时调度器
-DispatchThread 拿 scheduleQueue
-的锁，电梯拿自己的 processQueue
-锁，分工明确，基本没有问题。
-第七次作业：这次的重点是换乘层 F2 的防撞。我给
-ElevatorShaft 专门加了个显式的公平锁
-ReentrantLock f2Lock。当任意一轿厢需要进入 F2
-层时，必须在执行 moveOneFloor 前通过
-f2Lock.lock()
-获取锁，离开后释放锁。同时，我将处理语句精简为仅包含进入、停留和离开 F2
-层的动作，使锁的粒度最小，保证安全的同时最大化了电梯的效率。
-
-锁与同步块内处理语句的关系
-随着作业迭代，我逐渐体会到，锁的作用不仅仅是“互斥”，更是为了保证同步块内的一组处理语句原子性地维护某个对象的属性，我们不能把紧密关联的操作拆分到不同的同步块中。
-
-队列的存取操作：在执行 offer 和
-take
-时，“检查队列状态”、“修改队列元素”、“唤醒等待线程”必须包裹在同一个
-synchronized
-块中。如果将检查和取数分开，就可能出现两个线程同时判断队列非空，然后试图取出同一个请求的危险情况。
-状态修改与通知的绑定：在 hw6
-中，调度器往电梯派发新请求或下发指令时，“修改共享状态”和“调用
-notifyAll()”这两步处理语句必须在同一个同步块内完成。如果先修改状态，出锁后再去
-notifyAll，这期间电梯可能恰好去检查状态并因错过了通知而陷入无休止的等待。
-多条件检查的原子性：在 hw7 的 F2
-防撞逻辑中，“检查对向轿厢是否占用 F2”以及“登记当前轿厢即将进入
-F2”这两步处理语句，必须包裹在同一个 f2Lock
-的临界区内。如果检查和登记被拆分，两部轿厢可能在同一时刻都发现 F2
-空闲，并同时进入 F2 发生碰撞。
-
-二、调度器设计
-调度器交互设计
-我的代码采用了层次化的调度架构：InputThread -&gt;
-ScheduleQueue -&gt; DispatchThread -&gt;
-ProcessQueue -&gt;
-ElevatorThread，如下图所示。
-调度器 DispatchThread
-作为中枢，一旦有新乘客请求，就将其从 ScheduleQueue
-中取出，并通过策略类 ShadowDispatchStrategy
-为其分配最合适的电梯，最后将乘客放入对应电梯的 ProcessQueue
-中，并通过 notifyAll()
-唤醒处于等待状态的电梯。这种设计实现了调度与执行的解耦，调度器不需要干预电梯的运行状态，只需通过队列进行基于数据的交互。
-调度策略与性能指标
-
-运行策略：单部电梯采用了经典的 LOOK
-算法，在当前方向上有请求时继续运行，否则反转方向，能有效减少不必要的移动时间。
-分配策略：从第六次作业开始，我实现了“影子电梯”策略。在分配乘客时，系统会深拷贝每一部电梯的当前状态，在后台通过模拟该电梯运行完所有请求以及所需的代价。
-多指标权衡：我影子电梯的代价函数综合考虑了运行时间和耗电量。时间代价根据模拟运行到达目标层的时间计算，耗电量代价则根据模拟过程中的
-ARRIVE、OPEN/CLOSE
-次数计算，最终将指标加权求和，寻找代价最小的电梯进行分配。针对可能的维护和双轿厢改造与回收，调度器会给这些电梯一些惩罚，避免将新乘客分配给它们。
-
-三、bug分析与debug方法
-出现过的bug
-我只有 hw7 互测中被人发现了bug。错误的输出部分如下：
-[49.8510]RECYCLE-ACCEPT-7[49.8520]RECYCLE-BEGIN-7[49.8530]RECEIVE-100-7
-原因是副轿厢 7 已经进入了 RECYCLE_BEGIN 状态，却还
-RECEIVE
-了新乘客。经过我的排查，发现我的调度器在计算代价的时候，副轿厢 7
-的状态可能还是正常的（或者正好处于
-REC_ACCEPT）。调度器决定把乘客分给 7
-号，但是在它计算完、准备输出接受信息的微小时间间隙里，副轿厢 7
-直接把乘客清空、关门，并输出了 RECYCLE-BEGIN
-改变了状态。等调度器输出 RECEIVE 的时候，副轿厢 7
-已经变成不可接收请求的状态了。总的来说，是因为我电梯调度和输出
-RECEIVE
-并没有被包裹在同一个原子操作里，导致被其他线程修改了状态。
-多线程程序的debug方法
-经历了这三次作业，我总结出了一套多线程调试方法：
-
-理清共享对象边界：在排查问题前，先明确哪些对象会被多个线程同时读写。对于不共享的局部状态，交由电梯线程独占推进即可，不需要过度担心并发。
-重点排查线程唤醒逻辑：可以利用输出语句检查
-wait() 和 notifyAll()
-的配对情况。特别关注如输入关闭、状态转换等边界事件，看看是否在这些特殊时刻漏了唤醒，导致线程睡死。
-针对输出日志反推状态：多线程由于难以稳定地单步断点调试，我们往往去参考输出日志。我会检查
-RECEIVE、IN、OUT
-是否成对出现，电梯的各种输出顺序是否符合题意。对报错的特定行，我根据前面的输出反推当时各个线程所处的状态。
-搭建评测机：我依旧会搭建评测机来进行高强度的生成请求。一旦评测报告错误，立马固定测试用例，保留当时的输入输出，然后再进行针对性的排查。
-
-四、线程安全与层次化设计
-线程安全
-线程安全不是随意在方法上加 synchronized
-就能实现，滥用锁反而会导致性能下降和死锁。我感觉，理清数据流动的模型是保障线程安全的前提。U2
-中，只有队列被多个线程共享，因此只需将队列封装为线程安全的类。对于电梯内部的载重、当前楼层等状态，只由电梯线程自己修改，天然是线程安全的，不需要额外加锁。同时，一定要保持锁的获取顺序一致，并避免在同步块内调用耗时的方法。
-层次化设计
-层次化设计也有效降低了系统的耦合度。从数据流向上，我的架构可以划分为“输入层
--&gt; 分派层 -&gt;
-执行层”。从类的结构上，我将“执行动作（ElevatorThread）”、“运行策略（MoveStrategy）”和“分配策略（ShadowDispatchStrategy）”严格剥离。面对
-hw7
-的复杂需求，由于具备良好的层次结构，我只需在电梯井层面维护两部电梯，并引入题干中新增的几个状态，而无需重构底层移动和开关门等逻辑。
-五、大模型使用心得
-
-模型名称：Gemini
-任务分工：我负责架构设计和核心状态机的定义等，并编写主要的核心代码，只有不太熟悉的地方，如
-synchronized
-等多线程相关代码的写法，才会询问大模型。写完后，大模型负责帮我检查代码逻辑和
-debug，比如说影子电梯深拷贝代码等。
-复杂任务中的优势：在面临多线程电梯这样复杂的任务时，大模型的逻辑梳理能力非常突出。当我描述双轿厢改造流程时，它能迅速生成清晰的状态机框架；在排查死锁时，把相关输入输出描述给大模型，它思考后往往能一针见血地指出问题。
-面临的困难：大模型由于缺乏整体代码库的上下文，有时会“自作主张”地引入一些不需要的类，如果直接复制粘贴，极易引入隐蔽的
-bug。
-总体感受：大模型是一位极为高效的助手，但多线程代码的底线还是必须由我们把控。只有自己深刻理解了并发机制，才能审查
-AI 代码，将其转化为真正的生产力。
-
-六、第二单元的体验与建议
-真实感受
-第二单元的电梯作业无疑是 OO
-中思维跨度最大的一环，从串行转向并发是一个痛苦但也充满成就感的过程。hw6
-中，我设计影子电梯调优耗费了大量精力，第七次作业的双轿厢逻辑中我也遇到了很多的细节问题，比如说在
-F2
-换乘的写法等。但最终看着电梯高效地运送着乘客而不发生任何死锁，这种获得感也是难以言喻的。
-课程建议
-希望能稍微介绍一下相关电梯调度名词具体是什么意思，比如量子电梯、自由竞争等，网上相关的资料也很少。
-]]></content>
-      <categories>
-        <category>OO</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>OO</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-ML 往年考题汇总</title>
-    <url>/2026/07/01/BUAA-ML%20%E5%BE%80%E5%B9%B4%E8%80%83%E9%A2%98%E6%B1%87%E6%80%BB/</url>
-    <content><![CDATA[写在前面
-本文将往年本研考题按知识模块归类，只保留了与期末复习范围一致的题目。
-转载来源：
-本科：
-
-本2021
-本2023
-本2025
-
-研究生：
-
-研2019
-研2020（需要收费，完整内容见这里）
-研2020(1)（需要收费，完整内容见这里）
-研2023
-研2024
-研2024(1)
-研2025
-
-分类器性能度量
-本2025 题1
-写出混淆矩阵，解释 TP、FP、TN、FN
-的定义。给出预测值和真实值，计算查准率、查全率和 F1 值。
-研2023 题1
-给出一个混淆矩阵。
-
-说明 TP、FP、TN、FN 的含义。
-计算 Precision、Recall 和 F1 值。
-
-研2024 题2
-写出混淆矩阵，解释 Precision 和 Recall
-的计算方法，说明查准率、查全率两个指标之间的关系，并给出 F1
-度量的计算公式。
-研2024 题3
-介绍线性分类模型、Fisher
-准则、感知机准则、最小二乘准则、逻辑回归和支持向量机的基本思想，并说明支持向量机与一般线性分类器的区别。
-贝叶斯决策
-本2021 题2
-基于最小错误率和最小风险进行贝叶斯决策。
-本2023 题1
-题干给出先验概率和决策损失表。
-
-根据最小错误率贝叶斯决策进行分类。
-根据最小风险贝叶斯决策进行决策。
-
-本2025 题2
-给出 c_1、c_2
-和决策损失表，使用最小错误率和最小风险进行决策。
-研2019 题1
-进行贝叶斯决策，分别基于最小风险和最小方差进行决策。
-研2024 题1
-给出相关数据，分别根据最小错误率贝叶斯决策和最小风险贝叶斯决策进行计算。
-研2025 题1
-给出先验概率、类条件概率和决策损失函数 \lambda。
-
-使用最小错误率进行决策。
-使用最小风险进行决策。
-
-感知机准则
-本2021 题1
-使用感知机准则求判别函数。
-本2023 题4
-题干给出 x_1,x_2,x_3,x_4,a_1,b_1
-的值，且 x_1,x_2 \in A，x_3,x_4 \in
-B。使用梯度下降法求感知机准则函数，并给出 a,b 的最终值。
-本2025 题3
-使用感知机准则求判别函数。
-
-
-本2025 感知机题图 1
-
-
-
-本2025 感知机题图 2
-
-研2023 题5
-给出两个二维正样本、两个二维负样本，以及初始向量 a,b。学习率为
-1，使用感知机准则进行迭代计算。
-研2024 题5
-给出两个二维正样本、两个二维负样本和初始权重向量，写出增广形式，并使用感知机准则写出所有迭代步骤和最终结果。说明梯度下降失效问题的原因及解决办法。
-支持向量机 SVM
-本2021 题5
-介绍 SVM 模型，并说明核函数的作用。
-本2023 题2
-简述支持向量机（SVM）的原理，说明遇到噪声和线性不可分时应该如何解决。
-本2025 题4
-解释支持向量机 SVM 的思想，解释核函数的作用。
-研2019 题3
-说明 SVM 的基本思想、模型表达式、软间隔和硬间隔的物理含义，以及如何用
-SVM 解决非线性问题。
-研2020 题2
-说明 SVM
-的基本思路、模型公式、软间隔、硬间隔、如何处理离群点和噪声，以及如何处理非线性样本分类。
-研2023 题2
-说明支持向量机的原理、模型表达式，说明如何处理噪声和离群点，以及如何解决非线性问题。
-研2025 题4
-
-从几何解析的角度描述参数 w 和 b 的意义。
-说明惩罚系数和松弛变量的作用。
-
-决策树与 ID3
-本2021 题6
-给出 12 行数据和 3 个属性列，根据 ID3
-算法构建一棵决策树，并说明决策树避免过拟合的两种方法。
-本2023 题3
-题干给出一张特征表。
-
-使用 ID3
-算法构造一个决策树，并使用构造的决策树判断一个实例的分类结果。
-如何解决决策树的过拟合问题？简述一种解决办法的原理及其缺点。
-
-本2025 题5
-根据三种属性（口味：甜、咸、酸；温度：冷、热；分量：大、中、小）对 12
-个样本构建 ID3 决策树，分析 ID3
-的缺点，举出两种缓解过拟合的方法（预剪枝算法、后剪枝算法），并选择其中一种说明优劣。
-研2019 题2
-说明 ID3 和 C4.5 的区别，说明预剪枝和后剪枝的基本思想及优缺点。
-研2019 题6
-说明什么是过拟合，以及解决过拟合的方法。
-研2020 题1
-使用 ID3
-算法构建决策树，对宇宙星球或近地卫星是否适合生存进行分类。另一份同年回忆版给出的近地卫星题干为：2077
-年人类发射近地卫星，一共发射 800
-颗，根据大小和轨道远近，有着不同的宜居条件（“是”表示宜居），表格如下。
-
-
-
-数量
-大小
-轨道
-是否宜居
-
-
-
-
-30
-大
-远
-是
-
-
-130
-大
-近
-是
-
-
-48
-小
-远
-是
-
-
-161
-小
-近
-是
-
-
-20
-大
-远
-否
-
-
-170
-大
-近
-否
-
-
-11
-小
-远
-否
-
-
-230
-小
-近
-否
-
-
-
-构建一个 ID3
-决策树，要求写出详细计算过程，并画出决策树，标出每个结点的正类、负类样本数量和分支结点对应的属性，并标出叶子结点最终属于哪个类别。
-研2023 题4
-第一问：使用 ID3 算法计算并构造一棵决策树。第二问：说明 ID3
-算法的缺点，并列举改进算法。
-研2024 题7
-使用 ID3 算法手动构建一棵决策树。说明 ID3
-算法的优缺点，以及如何改进。
-研2025 题8
-判断学生是否会加入算法竞赛集训队。题干给出 4
-个属性：GPA（高、中、低）、感兴趣程度（高、一般、低）、时间（充足、一般、紧张）、编程能力（高、中、低）。
-
-按照 ID3 流程生成决策树。
-给定一个同学的属性，判断他是否会加入。
-简述预剪枝和后剪枝的方法及优缺点。
-
-BP 反向传播算法
-本2021 题7
-推导 BP 算法中权值的更新公式。
-本2023 题8
-如下图所示，推导神经网络中 w_{md} 和
-w_{km} 的更新公式。
-
-
-本2023 BP 神经网络结构图
-
-本2025 题8
-包含一层隐藏层的前馈神经网络如图所示，其中给定训练集：
-
-D=\{(x_1,t_1),(x_2,t_2),\ldots,(x_N,t_N)\},\quad
-x_i\in\mathbb{R}^{D},\quad t_i\in\mathbb{R}^{K}
-
-隐藏层激活函数为 h(x)，输出层激活函数为 \sigma(x)。y_n 表示第 n
-个样本 x_n 对应的神经网络输出向量：
-
-y_n=[y_{n1},\ldots,y_{nk},\ldots,y_{nK}]^T
-
-准则函数为：
-
-E_n(w)=\frac{1}{2}\sum_{k=1}^{K}(y_{nk}-t_{nk})^2
-
-网络包含 D 个输入神经元、K 个输出神经元，以及 M
-个隐层神经元。试推导反向传播算法中对每一层权值参数 w_{md} 与 w_{km} 的更新。
-
-
-本2025 BP 神经网络示意图
-
-研2019 题8
-给出一个 4\times 4\times 4\times 3
-的全连接神经网络，推导反向传播算法，并以第二层的第三个节点为例进行说明。
-研2020 题8
-推导三层 BP
-神经网络的误差反向传播过程。以下图为例，推导反向传播（back
-prop）的主要思想，要求写出详细过程，其中 i 为输入层，k 为输出层，且 layer j 和 layer k
-均有 Sigmoid 函数作为激活函数。
-
-
-BP 神经网络示意图
-
-研2023 题8
-给出一个三层神经网络，计算 BP 流程。
-研2024 题9
-给出的神经网络有两个隐藏层，其中有一层有权重，输出层有激活函数。推导神经网络的反向传播过程。要求先写正向传播表达式，再反向求偏导，并注意推导式中求和符号的含义。
-研2025 题9
-给定带有一个隐藏层的前馈全连接神经网络，隐藏层和输出层都有激活函数。
-
-推导第一层和第二层参数 w
-如何更新。
-说明动量 SGD 和 Adam 如何解决陷入局部极值点或震荡的问题。
-简述为什么会出现梯度消失，以及如何缓解这一现象。
-
-K-means
-本2021 题4
-写出 K-means 算法，说明其不足，并写出它的一种改进。
-本2023 题6
-简述 K-means 算法原理。K-means 算法有什么缺点？给出一种改进方法。
-本2025 题6
-描述 K-means 算法流程，分析劣势并给出一种改进方法（K-means++）。
-研2023 题7
-给出 K-means 算法的基本流程。给出一个包含 10 个点的表格和 3
-个中心点，使用 K-means 进行计算。
-研2024 题4
-介绍 K-means 模型，写出模型的计算过程。
-研2025 题2
-
-使用数学语言描述 K-means 的流程。
-执行一遍 K-means 流程：给定 4 个二维点的坐标，初始化 2
-个二维中心点，要求迭代执行 2 次。
-说明 K-means 的缺陷以及解决办法（K-means++）。
-
-PCA 与 LDA / Fisher 准则
-本2021 题3
-利用 PCA 算法将给定的五个二维向量降到一维。简述 PCA 算法和 LDA
-算法的基本思想，并说明两者的区别。
-本2023 题5
-简述 PCA 和 LDA（Fisher 准则）的原理和区别。
-研2019 题7
-基于最小均方误差思想推导 PCA 算法，并写出计算步骤。
-研2020 题6
-写出主成分分析（Principal Component Analysis,
-PCA）的基本思想，并从最大方差思想推导其结果。
-研2023 题6
-基于最小均方误差推导 PCA 主成分分析，并给出 PCA 算法的基本流程。
-研2024 题8
-介绍
-PCA，解释什么是基于最大方差和基于最小均方误差的思想，并从最大方差思想推导
-PCA。掌握最大方差和最小均方误差的计算方法，能用数学语言描述和推导。
-研2025 题3
-
-简述最大方差、最小均方误差的主要思想。
-写出 PCA
-的一般求解过程，包括求协方差矩阵、最大特征值对应的特征向量等。
-说明 PCA 与 LDA 的关系与区别。
-
-集成学习
-本2023 题7
-简述集成学习的基本思想，简述 Boosting 和 Bagging 的原理和区别。
-本2025 题7
-描述 AdaBoosting
-串行学习流程，分析随机森林的学习器，并说明如何实现多样化的学习器。
-研2020 题3
-说明集成学习的基本思想，并分别以串行化的 Boosting 和并行化的 Bagging
-解释其原理。
-研2023 题3
-说明集成学习的原理，并介绍 AdaBoost 和 Random Forest
-的串行、并行思想。
-研2024 题6
-说明集成学习的思想，介绍 Boosting 和 Bagging
-两种方法，并说明模型的采样、结构和输出形式。
-研2025 题7
-
-叙述集成学习的思想。
-简述 Boosting 和 Bagging 的执行流程。
-
-深度学习与开放题
-本2021 题8
-谈谈机器学习在某领域的应用，如医疗、金融、电商、交通等。
-本2023 题9
-现如今购物 App
-的推荐算法总是会根据用户的浏览记录，向用户推荐感兴趣的商品，使用户陷入“信息茧房”中。
-
-如何使用机器学习优化产品业务？
-从算法的角度，简述如何规避“信息茧房”。
-
-本2025 题9
-文生视频用到了什么技术？说明其可能的挑战和潜在问题。
-研2019 题9
-给出机器学习和深度学习的联系，说明二者各有什么优缺点，并谈谈你认为未来深度学习会如何发展。
-研2020 题9
-结合本课程内容谈谈你对深度学习的理解，说明深度学习模型存在什么问题，并谈谈你对深度学习未来发展方向的预测。
-研2023 题9
-结合所学内容，给出大模型的应用，以及大模型未来的挑战和方向。
-研2024 题10
-谈谈人工智能的潜在应用及挑战。
-研2024(1) 题9
-说明机器学习如何在大模型中应用。
-]]></content>
-      <categories>
-        <category>机器学习</category>
-      </categories>
-      <tags>
-        <tag>ML</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO Pre上机</title>
-    <url>/2025/09/29/BUAA-CO%20Pre%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节主要是掌握三个工具，三道题目依次为 Logisim、Verilog、MIPS。
-课上题目
-T1 推箱子
-任务描述
-我们需要在 Logisim
-中设计一个软电路来模拟简易的推箱子游戏。游戏地图构建在一个二维平面直角坐标系中，范围是
-0 \le x, y \le 5 的正方形区域（共 6 \times 6 个点）。
-箱子的起始位置（包括 Reset 后）固定在 (0,0)，目标位置固定在 (5,5)。
-地图中包含 6 个固定的障碍点，分别为：(1,1)、(1,2)、(2,1)、(3,4)、(4,3)、(4,4)。
-控制逻辑
-系统输入 (dx, dy)
-表示箱子的移动变化量，且保证只会出现 (0,0)、(1,0)
-或 (0,1) 这三种情况。
-设当前坐标为 (x, y)，则预期坐标为
-(x+dx, y+dy)：
-
-如果预期坐标合法（即在地图边界内且不是障碍），则在下一周期将箱子移动到该位置；
-如果预期坐标非法（越界或撞墙），则箱子保持原地不动，并将报错信号
-flag 置为 1（持续一个周期）。
-
-输出判定
-
-当箱子成功到达目标点 (5,5)
-时，输出信号 out 为 1，否则为 0。
-flag 信号默认为 0，仅在尝试非法移动时置为 1。
-
-接口列表
-
-输入：clk (时钟), reset
-(复位), dx (x位移), dy (y位移)
-输出：out (到达目标),
-flag (非法移动报错)
-
-T2 翻涌数字
-题目描述
-将 32 位输入 a 视为 8 个 4
-位宽的数，分别命名为 a_0, a_1, \dots,
-a_7（其中a_i = a[(i + 1) \cdot 4 - 1 :
-i \cdot 4]）。
-对每一个 a_i
-进行前缀和计算，公式如下：
-a_i = \sum_{j=0}^{i} a_j
-计算规则
-
-溢出处理：若累加结果超过 4 位，仅保留低 4 位（即对
-16 取模）。
-输出格式：将计算后的 a_i 按原顺序拼接，作为 32 位输出
-out。
-
-样例
-
-输入：32'h11111111
-输出：32'h87654321
-
-接口列表
-
-输入：a[31:0]
-输出：out[31:0]
-
-T3 子矩阵提取
-题目描述
-编写 MIPS 汇编程序，从一个 4 \times
-4 的大矩阵 A 中，提取以 (i, j) 为左上角、大小为 m \times n 的子矩阵。
-输入格式
-输入共 20 行，均通过 syscall 读取整数：
-
-第 1-16 行：依次输入大矩阵 A 的元素 t（按行优先顺序，即第 0 行第 0 列、第 0 行第
-1 列……）。
-第 17 行：子矩阵行数 m (1 \le m \le
-4)。
-第 18 行：子矩阵列数 n (1 \le n \le
-4)。
-第 19 行：起始行坐标 i (0 \le i \le
-3)。
-第 20 行：起始列坐标 j (0 \le j \le
-3)。
-
-输出格式
-
-合法提取：输出 m \times
-n 的子矩阵。共 m 行，每行 n 个元素，元素间用空格分隔。
-越界报错：若子矩阵超出大矩阵边界，仅输出字符串
-Out of bounds。
-
-约定与约束
-
-矩阵索引从 0 开始。
-请勿使用 .globl main。
-程序结束时必须使用以下代码：
-li $v0, 10syscall
-
-测试样例
-
-样例 1
-
-Input:
-123456789101112131415162211
-Output:
-6 710 11
-
-样例 2
-
-Input:
-432187651211109131415163222
-Output:
-Out of bounds
-
-
-题目分析
-T1
-是状态机问题，题干可能看上去比较新颖。一定不要自己搭组合电路，而是用
-Logisim 的 Analyze Circuit
-功能，输入真值表，自动产生对应的组合电路。还有可以多多利用 Logisim
-的子电路功能，将具体的组合逻辑放到子电路，从而使顶端模块清爽、简洁。还要注意
-flag 置 1 要持续一周期，因此在它前面还要加一个寄存器。
-T2 比较简单，使用 for 循环即可，但是 for
-循环似乎很多人都忘了怎么写了（也包括我在内），不用循环的话直接展开也不难。还有如果定义成
-4 位的变量，Verilog 似乎默认会自动取模，因此模 16 也可以不写。
-T3 中规中矩，一定要多利用宏，例如
-readInt、printInt、printStr
-等，for
-循环也可以封装成宏。但本题我犯了一个错误：我定义了一个
-printStr 宏函数，这个函数会在内部在 .data
-段中定义一个字符串，可能是由于字节不对齐的原因，使用这个函数后之后的地址可能不是
-4 的整数倍，因此程序不能正确运行，修改后就成功 AC
-了。因此尽量不要在函数内部定义字符串，而是在 .data
-里面定义好，并且先定义数组，再定义字符串，就可以尽量避免这种字节不对齐的问题。
-笔者的话
-Pre
-上机不占分，主要是熟悉一下形式，这次是只有做出三道才算通过，建议上机前再读一遍指导书，基本的知识点要牢记，比如状态机设计、Verilog
-中 for 循环的写法、MIPS 编程等等。还有，前几次上机 21:00
-后还可以继续做到 22:00，同时可以查看每道题的提示，因此不用太过担心。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>MIPS</tag>
-        <tag>CO</tag>
-        <tag>Verilog</tag>
-        <tag>Logisim</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-OS Lab0上机</title>
-    <url>/2026/03/18/BUAA-OS%20Lab0%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 OS 实验中常用工具链，一个重点是 Bash 编程。
-课上题目
-Exam
-点击查看题面
-这道题初看题干可能有些疑惑，但实际上只需要填 Makefile
-中的几个空，主要考查 make 的语法以及 gcc
-等命令，难度不大。
-Extra
-点击查看题面
-Bash
-综合应用题，但实际上相比去年难度已经降低了很多，也变成代码填空的形式，主要考查常用命令，比如
-sed、awk 等。
-笔者的话
-这部分内容相对独立，主要学习 Linux
-常用命令，初次接触可能不太好全部记住，但多加使用便会越来越熟练。可以多阅读实验指导书，网上也有一些
-OJ 用来评测，适当做一些能加深巩固。这次的
-Extra，其中一个卡了我很久的细节是：如何判断一个变量字符串是否为空。我用了一个很笨的做法——将其输出到一个文件，再和另一个空文件用
-diff 对比，根据返回值来判定。考完才知道使用
-if [[ -n "$str" ]] 就可以，确实暴露出我的生疏。之后在用
-awk 时又单引号和双引号混用，导致 $
-没能正确转义，又 debug 了很久，好在最后还是按时做了出来。
-还有一个折磨人的地方：新主楼机房网络不太稳定，跳板机连接断开好几次。重新连上去后遇到了
-vim 异常退出产生的 .swp
-交换文件，一开始没处理好，丢掉了一点进度，只能重新写。做完之后一直拿 0
-分，报错提示文件结构不符合要求，最后在助教的提醒下才知道是残留的交换文件和临时文件在作祟，删掉后才通过。
-]]></content>
-      <categories>
-        <category>操作系统</category>
-      </categories>
-      <tags>
-        <tag>OS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-OOpre 课程总结</title>
-    <url>/2025/11/11/BUAA-OOpre%20%E8%AF%BE%E7%A8%8B%E6%80%BB%E7%BB%93/</url>
-    <content><![CDATA[一、架构设计
-继承与接口设计
-项目最终UML类图如下：
-
-采用模块化的思想，我的最终架构可以分为以下几个核心模块：
-1. 入口与控制层
-
-Main：程序入口，仅用于初始化Scanner、冒险者容器advs、关系管理器rm，并创建总控制器CommandUtil。
-CommandUtil：系统的总控制器。
-
-控制：负责解析所有用户命令。它从Main接收Scanner，通过switch语句分发指令（
-“aa”, “ab”, “fight”, “use” 等）。
-协作：作为协调者，调用 Adventurer
-类的业务方法和 RelationManager 的关系处理方法。
-
-
-2. 核心实体层
-
-Adventurer：管理冒险者的所有属性和行为。
-
-属性管理：管理基础属性（hitPoint,
-baseAtk, baseDef, mana,
-money）及状态（dead）。
-物品管理：
-
-items：存储冒险者拥有的所有物品。
-bottleBackpack：药水瓶背包，采用LinkedHashMap这一数据结构，通过重写removeEldestEntry方法，实现了“最多携带10个药水瓶，超出时移除最旧条目”的逻辑。
-
-技能与关系：spells
-存储学会的法术，superior和subordinates记录雇佣关系。
-行为管理：封装了addBottle,
-addEquipment, learnSpell,
-takeItem 等所有逻辑。
-
-
-3. 物品与技能系统
-
-Item
-(抽象类)：所有物品的顶层基类。
-Usable
-(接口)：定义了“可使用物品”的规范。
-Bottle
-(抽象类)：继承于Item，并实现了Usable接口。派生出HpBottle等具体药水类。
-Equipment
-(抽象类)：继承自Item。派生出Armour
-和Weapon (抽象类)。Weapon
-进一步派生出Sword 和Magicbook。
-Spell
-(抽象类)：实现了Usable接口。派生出HealSpell
-和AttackSpell。
-
-4. 关系管理模块
-
-RelationManager：负责处理冒险者间的雇佣关系，提供关系的添加、删除、死亡处理等操作。
-LrParser：配合CommandUtil
-使用的递归下降解析器，用于解析”lr”指令，并通过调用rm
-的方法建立雇佣关系。
-
-5. 工具/辅助类
-
-Factory：实现了工厂模式。提供一系列方法，如createBottle，用于创建对象实例。
-
-架构调整及考虑
-
-CommandUtil的添加：最初对指令的处理全部由Main类完成，随着指令的增加，Main类变得过于臃肿，且超出代码行数限制，因此引入该类专门负责读取和解析指令，使Main类仅仅作为程序入口。
-Factory的添加：随着迭代的进行，Bottle和Equipment等都有了多个子类，这时需要根据某一物品所属的子类名来相应地创建对象，为了降低项目的耦合度，便添加了Factory工厂类来专门创建对象。
-RelationManager的添加：第六次作业引入了雇佣关系，需要管理各个冒险者之间的关系，为避免Adventurer类中耦合度过高，引入了该类来统一完成关系的添加、删除、查询等操作。
-
-二、使用JUnit的心得体会
-
-JUnit即”Java单元测试“，指针对每一个Java类（主类除外），都编写多个测试函数来测试该类的方法是否达到了预期的功能，并测试各种不同情况下方法的稳健性，可以检测Java项目中是否存在低级的逻辑问题。
-之前的程序设计过程中，我们大多是通过构造测试数据，将程序的输出与答案进行对比，来排除程序的问题；而通过JUnit，我们可以初步检验每个类、每个方法的正确性，从而减少测试的工作量。
-JUnit促使我们思考边界情况。
-编写测试用例的过程，也是对自己代码的再次检查。我们可以测试很多种边界情况，比如正常参数、null、0等，当然前提必须是满足题干中的数据范围。这一步能提前找出很多代码漏洞，极大减少了后期调试的麻烦。
-
-三、学习OOPre的心得体会
-
-在OOPre的学习中，我掌握了Java的基本语法和常见的数据容器等。相比“原始”的C语言，Java语言明显更加现代，比如Java将C语言中复杂的指针替换成了“引用”。此外，C语言不注重类型的检查，有很多自动类型转化的例子，而Java却对此要求很严格，比如if和while的判断条件中必须是boolean类型，之前我们可能习惯了的if(a)，必须再改成if(a!=0)，此外还要多注意操作的某个对象是否为null，否则程序可能会抛出异常。
-我最大的收获是从“面向过程”到“面向对象”的思维转变。
-之前我们大多在完成一道道编程题目，仅仅追求AC，而不关注代码可读性、可扩展性等等。而现在我们要迭代开发项目，这便要求我们保持良好的代码风格，提高程序的可读性等。
-在学习工程模式等设计模式时，我也感受到开发的规范性，原来这些方法都有对应的理论支持，而不是凭空想出来的策略。比如我在第一部分架构设计中提到的Factory类，就是对“工厂模式”的一次具体实践，它帮助我将“对象的创建”与“对象的使用”解耦，降低了代码耦合度。
-在使用git的过程中，我也感受到了现代版本管理系统的强大功能，通过在终端输入指令或者图形化界面，我们便可以轻松实现一个项目的不同版本间的转换。但我的git相关知识还仅限于成功提交作业，希望在未来我能够进一步深入学习git相关知识。
-
-四、对OOPre课程的简单建议
-在听课过程中某些概念不好理解，比如“观察者模式”等，只听概念的话有一种云里雾里的感觉，希望以后多讲一些相关代码示例，从而提高学习效率。
-]]></content>
-      <categories>
-        <category>OO</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>OO</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-OS Lab2上机</title>
-    <url>/2026/04/15/BUAA-OS%20Lab2%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 MOS 内存管理。
-课上题目
-Exam
-点击查看题面
-这道题需要实现一个新的宏，用于将元素插入到双向链表的特定索引位置。难度不大，参考
-include/queue.h 中的现有宏照猫画虎即可，主体就是用
-for 循环定位到第 index 个元素后完成插入。
-Extra
-点击查看题面
-这道题要求实现一套自映射机制，难度很大，大多数人都只得到了
-pte_va() 和 pde_va() 的 30 分。
-笔者的话
-从 Lab2 开始，OS
-逐渐上难度。这一部分内容繁杂：宏形式的双向链表、虚拟内存管理的一系列函数、以及
-TLB 相关机制，整套流程理清下来我花了很长时间。
-这次的
-Extra，鉴于当时多数人对自映射理解都不深入，根据往年情况能做出来的人极少，也算是
-lmhgg 留下的一道杰作。
-]]></content>
-      <categories>
-        <category>操作系统</category>
-      </categories>
-      <tags>
-        <tag>OS</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>BUAA-OO U4学习与反思</title>
     <url>/2026/06/19/BUAA-OO%20U4%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
     <content><![CDATA[第四单元 OO 学习与反思
@@ -3909,12 +3547,374 @@ UML 细节，这些经历都锻炼了我的耐心和严谨度。
 OO！感谢这段痛并快乐着的旅程，它将成为我程序生涯中无可替代的宝贵财富！
 ]]></content>
       <categories>
-        <category>OO</category>
+        <category>面向对象</category>
       </categories>
       <tags>
         <tag>Java</tag>
         <tag>OO</tag>
         <tag>UML</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OO U3学习与反思</title>
+    <url>/2026/06/02/BUAA-OO%20U3%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
+    <content><![CDATA[第三单元 OO 学习与反思
+一、JML 和规格驱动开发
+JML 契约式设计
+JML 本质上是在 Java 接口外面再套一层形式化约束。它通过
+requires、ensures、assignable 和
+signals
+等，明确了方法的前置条件、后置条件、可修改状态以及异常抛出条件。相比于自然语言，JML
+可以准确地约束方法的规格。在 OOP
+中，它作为实现者与调用者之间的契约，消除了语义上的歧义。
+规格驱动开发
+这一单元最明显的变化就是写代码前先看规格。规格开发的主要优势有：
+1. 实现自由度与结果约束：只要对外状态满足
+ensures，内部用
+HashMap、TreeSet，还是自己写容器，都可以。比如有的方法
+JML
+写得像全局遍历，但实现时完全没必要照着翻译成循环。只要返回值和状态变化对，内部可以做缓存，也可以增量维护。
+2. 测试驱动：JML 为测试提供了清晰的依据。通过直接对照
+ensures 和 signals
+子句，可以很容易地推导出测试的分支和边界情况，从而编写出高覆盖率的单元测试。
+二、JUnit 测试经验总结
+在本单元的测试中，我针对 JML
+的完整性进行验证，包括正常结果返回、状态变化以及异常情况，体现在以下三个方法的测试中：
+queryMutualFollowingSum 的测试里，我没有复用 src
+里动态维护 mutualFollowingSum
+的逻辑，而是单独写了一套双重遍历节点的朴素算法。这样测出来才有意义。数据覆盖了空图、单向关注、对称互关、不成环这些情况，主要用来确认边增删之后缓存计数没有跑偏。
+测 cleanSpamComments
+时，麻烦点在副作用。这个方法会改评论列表，所以调用前要先做快照。测试除了看删除数量和关键字最大出现次数，还要看剩下的评论顺序是否保持，playCount、likes
+这类无关属性有没有被动到。针对字符串匹配，我补了通配符边界词和重叠匹配，以确保严格符合题目要求。
+recommendNthUp 更偏排序规则。测试覆盖了
+rank 非法、候选集为空、分数相同按 ID
+排序、排除自己和已关注用户等情况。它是纯查询方法，所以我还测了连续调用后内部状态不变。
+三、三次作业的迭代
+第一次作业：社交图谱与视频推送
+第一次作业主要是基础的用户社交图谱和视频推送。为了保证查询效率，我在
+Network 里用 HashMap 管理 userMap
+和 videoMap。
+在用户关系维护方面，我直接在 User 类中使用两个
+HashMap（following 和
+followers）来记录关注和被关注关系，以此替代低效的全局查找。queryMutualFollowingSum
+我没有每次重新算，而是在 followUser 和
+unfollowUser 里动态维护
+mutualFollowingSum，查询时就是 O(1)。
+视频接收这里，receivedVideos 经常要头插，所以我写了一个
+IndexedList。另外，User 里维护长度为 4 的
+followerAgeCounts 数组，以此在 O(1)
+的时间内返回各个年龄段粉丝的占比。
+第二次作业：互动状态与缓存
+第二次作业引入了点赞、投币、视频热度等互动状态。难点不是某个单独方法，而是一次操作会牵连多个对象。比如投币要改用户余额、视频硬币数、UP
+主硬币数，还要在 User 的 contributions Map
+里更新贡献度。
+为了少做全量查询，我在 User 里维护了
+watchedVideos、likedVideos 等集合，也用
+contributions 存各个用户的贡献度。Video
+里添加评论时用 commentIdSet
+防重。cleanSpamComments 用双指针配合
+comments.subList().clear()
+清理，避免一边遍历一边频繁删除。清理过的关键字用
+cleanKeywords 记下来，防止重复计算。
+queryLongestDecSeq 是这一阶段比较容易 TLE 的点。我用了
+longestDirty 脏位和 longestDecSeqCache
+缓存。图结构没变就直接返回缓存；只要关注关系变化，就把脏位打上，从而保证了平均情况下的高查询效率。
+第三次作业：热度推荐与模块化
+第三次作业加了推荐相关方法，代码量已经快超 500
+行了（不过好像听说代码风格测试并不卡500行？），我在 Network
+里尽量只做调度，把具体状态维护放回实体类。
+queryMostPopularVideo 用了
+Map&lt;String, TreeSet&lt;Video&gt;&gt; typeHotRank。TreeSet
+按 heat 和 id
+排序。凡是会影响视频热度的操作，更新前先从对应 TreeSet
+里移除，改完热度再插回去。这样每种类型的视频都能保持有序，查询最热视频时不用临时排序。
+User 的 influence
+也没有每次遍历所有上传视频，而是在热度变化时通过回调增量更新
+influences 数组。recommendNthUp
+用了类似快速选择的策略，避免全量排序。写完这块以后最大的感觉就是：推荐逻辑不难，难的是别让它把前面维护好的状态一起拖慢。
+
+
+社交网络
+
+四、如何发现迭代中的方法和容器变化
+在历次作业中，准确找出需要修改的方法和容器是很重要的一环。我发现不能只看新增加的方法，已有的老方法在规格上也可能发生了变化。
+首先是对比接口暴露的状态模型。比如在第三次作业中，UserInterface
+的模型描述里新增了关于不同类型视频的数量统计要求。看到这个新增的模型属性，我就在
+User 类中新增了一个 typeCounts
+数组，在每次观看视频时同步更新它。
+其次是检查副作用 assignable
+的变化。有时候老方法的代码核心逻辑没变，但在新版本中允许修改的变量范围变大了。比如有的方法原本只修改自身属性，后来允许修改其他类的集合。如果漏看了这部分
+assignable
+的扩展，只按原来的逻辑写，就会导致数据没有同步更新。
+另外就是对比方法签名。如果返回类型或参数数量如果变了，原来调用的地方和涉及的数据存储格式基本都需要做相应的修改，这一点编译器通常会报错提示，但也需要我们去更新相关的代码链路。
+五、如何发现性能瓶颈
+JML
+只描述结果要求，不会考虑底层的计算开销。如果直接把规格翻译成循环，强测里基本迟早会出事。
+我会先看量词复杂度。如果 JML 里出现了多重嵌套的 \exists
+和 \forall，或者要求计算全局的
+\sum，把它直接写成嵌套循环一般就会达到 O(N²)
+以上的复杂度。遇到这类方法，我会在本地造一些比较大的数据来测试它的执行时间。
+然后看读写频率。对于像互相关注总数、粉丝年龄分布这种查询次数远大于修改次数的属性，每次查询都重新计算显然太慢了。我选择在关注、取关等操作发生时顺便更新这些值。就像代码里维护
+bestContributorId 一样，通过增量维护把复杂度降下来。
+图算法更适合缓存。像 queryLongestDecSeq
+这种方法每次计算开销很大，我采用了带脏位的缓存机制。不过使用缓存时必须保证状态的一致性，也就是在任何会改变图结构的方法里，都要记得把
+longestDirty 设为
+true，防止出现缓存和实际状态不符的问题。
+六、Bug 与原因分析
+得益于规格驱动开发的严谨性，在三次作业的中测、强测和互测环节中，我的代码都没有被测出
+Bug。期间还发生了一个小插曲：在 hw10
+的强测中，由于评测机波动，第六个数据点最初被误判为错误，好在后续重测后证实了那只是评测机自身的问题。这虽然让我虚惊一场，但也最终证明了代码的正确性。
+不过在本地开发迭代的过程中，我也踩过一些坑。这些经历让我意识到规格开发中有几个很容易出错的地方：
+1. 遗漏副作用：在 hw10
+迭代过程中，增加投币功能时，不仅要修改视频本身的
+coins，还需要同步增加该视频上传者的 coins
+以及记录 contribution。起初我没有仔细对照 JML 中新增的
+assignable
+语句，只修改了视频侧，结果状态不同步。多对象更新基本可以当成一个小事务处理，不能有一丝遗漏。
+2. 异常抛出顺序：JML
+规格中异常不仅有明确的判断先后顺序，构造异常时传入的 ID
+参数也有严格要求。最初我在抛出异常时未按规则排序，或者传入的 ID
+顺序错位，导致 JUnit 测试中捕获到的异常信息不匹配。
+七、大模型使用体会
+这一单元里，我更愿意把大语言模型当规格阅读助手和评测机生成器，而不是直接写最终代码的工具。我使用的
+Code Agent 主要是 Codex 。
+它的显著优势在于：可以快速把长篇的 JML
+翻译成自然语言、列出可能的边界条件、提醒某个方法需要检查哪些副作用，还可以帮助生成繁琐的
+JUnit 单元测试。使用这些 Agent
+来开展自动化测试、批量构造测试样例等还是很方便的，极大地提高了效率。对于版本变更比对，将新旧版本的接口文件发给它，它能迅速列出所有变更点，比肉眼比对高效得多。
+但大模型的局限性也很明显：它往往倾向于直译
+JML，给出“看起来正确但慢”的朴素实现，完全忽略强测中的性能压力。要想让大模型设计出好的架构或是恰当的设计模式，需要我们提供极高质量的提示词。因此我经常使用一些提示词优化器来优化我的输入，向大模型更精准地传达意图，从而引导其输出更优的方案。
+八、JML“击鼓传花”研讨课感悟
+在第二次研讨课上的 JML
+“击鼓传花”游戏中，我获得了许多关于团队协作的启发。
+在本次活动中，我所在的链路题目是计算两个正整数的最大公约数。初始的自然语言需求明确规定了接收正整数
+a 和 b，前置条件为大于 0，且在输入小于等于 0 时抛出
+IllegalArgumentException 异常。
+1. 发现的 JML Bug
+在从 JML 翻译回自然语言，或者从 NL 编写 JML
+的过程中，很容易出理解的偏差。例如在我们组其他同学的链路中，就出现了：
+- 边界条件遗漏或变形：有的同学在 JML
+转自然语言时遗漏了边界条件，把 &gt;= 0 错误地记作了
+&gt; 0。或者对于某些特殊边界，原本要求返回“空
+Map”，在传递中却被替换成了“返回 null”。
+-
+逻辑符号被忽视：在转述过程中，某些逻辑非符号（!）极容易被忽视，导致某一处表述出现明显的语义反转和偏离。
+-
+异常触发条件写错：自然语言表述的异常抛出条件由于不够严谨，导致后续在写
+signals 子句时发生偏离。
+2. 需求与边界在传递中的变化
+游戏过程中，需求和边界常常会发生不可逆的变化。不过，因为我出的 gcd
+题目数学逻辑比较纯粹，大家都不容易搞错，所以我们这条链路取得了 5
+分满分。这也让我体会到：只要初始的需求足够严谨，后面传错的概率就小很多。有些自然语言觉得理所当然的条件，必须得像数学公式一样一条条严格约束，不然很容易产生误解。
+3. 多人组队编程的建议与措施
+为了在未来的多人开发中统一对需求的理解，我认为应该采取以下措施：
+- 统一接口规范：JML
+的核心在于提供接口规范，而不是强制所有人写出一样的代码。我们只要求大家的实现符合一个统一的接口，至于方法内部实现只要没有性能瓶颈，无需强行统一。
+-
+严格定义初始需求：在动手编码前，需求分析必须做到形式化般的严谨。即便是看似简单的自然语言，也要杜绝任何歧义，明确写出前提和异常分支。
+-
+多重细致校验：在代码编写时，必须进行细致的逻辑复盘，严防类似遗漏
+! 等低级错误造成雪崩。
+]]></content>
+      <categories>
+        <category>面向对象</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>OO</tag>
+        <tag>JML</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OOpre 课程总结</title>
+    <url>/2025/11/11/BUAA-OOpre%20%E8%AF%BE%E7%A8%8B%E6%80%BB%E7%BB%93/</url>
+    <content><![CDATA[一、架构设计
+继承与接口设计
+项目最终UML类图如下：
+
+采用模块化的思想，我的最终架构可以分为以下几个核心模块：
+1. 入口与控制层
+
+Main：程序入口，仅用于初始化Scanner、冒险者容器advs、关系管理器rm，并创建总控制器CommandUtil。
+CommandUtil：系统的总控制器。
+
+控制：负责解析所有用户命令。它从Main接收Scanner，通过switch语句分发指令（
+“aa”, “ab”, “fight”, “use” 等）。
+协作：作为协调者，调用 Adventurer
+类的业务方法和 RelationManager 的关系处理方法。
+
+
+2. 核心实体层
+
+Adventurer：管理冒险者的所有属性和行为。
+
+属性管理：管理基础属性（hitPoint,
+baseAtk, baseDef, mana,
+money）及状态（dead）。
+物品管理：
+
+items：存储冒险者拥有的所有物品。
+bottleBackpack：药水瓶背包，采用LinkedHashMap这一数据结构，通过重写removeEldestEntry方法，实现了“最多携带10个药水瓶，超出时移除最旧条目”的逻辑。
+
+技能与关系：spells
+存储学会的法术，superior和subordinates记录雇佣关系。
+行为管理：封装了addBottle,
+addEquipment, learnSpell,
+takeItem 等所有逻辑。
+
+
+3. 物品与技能系统
+
+Item
+(抽象类)：所有物品的顶层基类。
+Usable
+(接口)：定义了“可使用物品”的规范。
+Bottle
+(抽象类)：继承于Item，并实现了Usable接口。派生出HpBottle等具体药水类。
+Equipment
+(抽象类)：继承自Item。派生出Armour
+和Weapon (抽象类)。Weapon
+进一步派生出Sword 和Magicbook。
+Spell
+(抽象类)：实现了Usable接口。派生出HealSpell
+和AttackSpell。
+
+4. 关系管理模块
+
+RelationManager：负责处理冒险者间的雇佣关系，提供关系的添加、删除、死亡处理等操作。
+LrParser：配合CommandUtil
+使用的递归下降解析器，用于解析”lr”指令，并通过调用rm
+的方法建立雇佣关系。
+
+5. 工具/辅助类
+
+Factory：实现了工厂模式。提供一系列方法，如createBottle，用于创建对象实例。
+
+架构调整及考虑
+
+CommandUtil的添加：最初对指令的处理全部由Main类完成，随着指令的增加，Main类变得过于臃肿，且超出代码行数限制，因此引入该类专门负责读取和解析指令，使Main类仅仅作为程序入口。
+Factory的添加：随着迭代的进行，Bottle和Equipment等都有了多个子类，这时需要根据某一物品所属的子类名来相应地创建对象，为了降低项目的耦合度，便添加了Factory工厂类来专门创建对象。
+RelationManager的添加：第六次作业引入了雇佣关系，需要管理各个冒险者之间的关系，为避免Adventurer类中耦合度过高，引入了该类来统一完成关系的添加、删除、查询等操作。
+
+二、使用JUnit的心得体会
+
+JUnit即”Java单元测试“，指针对每一个Java类（主类除外），都编写多个测试函数来测试该类的方法是否达到了预期的功能，并测试各种不同情况下方法的稳健性，可以检测Java项目中是否存在低级的逻辑问题。
+之前的程序设计过程中，我们大多是通过构造测试数据，将程序的输出与答案进行对比，来排除程序的问题；而通过JUnit，我们可以初步检验每个类、每个方法的正确性，从而减少测试的工作量。
+JUnit促使我们思考边界情况。
+编写测试用例的过程，也是对自己代码的再次检查。我们可以测试很多种边界情况，比如正常参数、null、0等，当然前提必须是满足题干中的数据范围。这一步能提前找出很多代码漏洞，极大减少了后期调试的麻烦。
+
+三、学习OOPre的心得体会
+
+在OOPre的学习中，我掌握了Java的基本语法和常见的数据容器等。相比“原始”的C语言，Java语言明显更加现代，比如Java将C语言中复杂的指针替换成了“引用”。此外，C语言不注重类型的检查，有很多自动类型转化的例子，而Java却对此要求很严格，比如if和while的判断条件中必须是boolean类型，之前我们可能习惯了的if(a)，必须再改成if(a!=0)，此外还要多注意操作的某个对象是否为null，否则程序可能会抛出异常。
+我最大的收获是从“面向过程”到“面向对象”的思维转变。
+之前我们大多在完成一道道编程题目，仅仅追求AC，而不关注代码可读性、可扩展性等等。而现在我们要迭代开发项目，这便要求我们保持良好的代码风格，提高程序的可读性等。
+在学习工程模式等设计模式时，我也感受到开发的规范性，原来这些方法都有对应的理论支持，而不是凭空想出来的策略。比如我在第一部分架构设计中提到的Factory类，就是对“工厂模式”的一次具体实践，它帮助我将“对象的创建”与“对象的使用”解耦，降低了代码耦合度。
+在使用git的过程中，我也感受到了现代版本管理系统的强大功能，通过在终端输入指令或者图形化界面，我们便可以轻松实现一个项目的不同版本间的转换。但我的git相关知识还仅限于成功提交作业，希望在未来我能够进一步深入学习git相关知识。
+
+四、对OOPre课程的简单建议
+在听课过程中某些概念不好理解，比如“观察者模式”等，只听概念的话有一种云里雾里的感觉，希望以后多讲一些相关代码示例，从而提高学习效率。
+]]></content>
+      <categories>
+        <category>面向对象</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>OO</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OS Lab0上机</title>
+    <url>/2026/03/18/BUAA-OS%20Lab0%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 OS 实验中常用工具链，一个重点是 Bash 编程。
+课上题目
+Exam
+点击查看题面
+这道题初看题干可能有些疑惑，但实际上只需要填 Makefile
+中的几个空，主要考查 make 的语法以及 gcc
+等命令，难度不大。
+Extra
+点击查看题面
+Bash
+综合应用题，但实际上相比去年难度已经降低了很多，也变成代码填空的形式，主要考查常用命令，比如
+sed、awk 等。
+笔者的话
+这部分内容相对独立，主要学习 Linux
+常用命令，初次接触可能不太好全部记住，但多加使用便会越来越熟练。可以多阅读实验指导书，网上也有一些
+OJ 用来评测，适当做一些能加深巩固。这次的
+Extra，其中一个卡了我很久的细节是：如何判断一个变量字符串是否为空。我用了一个很笨的做法——将其输出到一个文件，再和另一个空文件用
+diff 对比，根据返回值来判定。考完才知道使用
+if [[ -n "$str" ]] 就可以，确实暴露出我的生疏。之后在用
+awk 时又单引号和双引号混用，导致 $
+没能正确转义，又 debug 了很久，好在最后还是按时做了出来。
+还有一个折磨人的地方：新主楼机房网络不太稳定，跳板机连接断开好几次。重新连上去后遇到了
+vim 异常退出产生的 .swp
+交换文件，一开始没处理好，丢掉了一点进度，只能重新写。做完之后一直拿 0
+分，报错提示文件结构不符合要求，最后在助教的提醒下才知道是残留的交换文件和临时文件在作祟，删掉后才通过。
+]]></content>
+      <categories>
+        <category>操作系统</category>
+      </categories>
+      <tags>
+        <tag>OS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OS Lab1上机</title>
+    <url>/2026/04/01/BUAA-OS%20Lab1%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 MOS 内核的启动，主要包含 ELF 文件结构、格式化 IO
+的实现等，整体内容较分散。
+课上题目
+Exam
+点击查看题面
+这道题将 ELF
+进行了一些扩展，形式依旧是代码填空，甚至很多答案都直接在题干里明确写出来了，感谢课程组（）
+Extra
+点击查看题面
+这道题要求实现一个 scank，类似于
+printk，主要难点在于输入位置的推进方式。最初尝试直接对局部变量
+ch 递增，后来参考辅助函数才意识到应使用回调函数
+in 读取下一个字符，最终通过。
+笔者的话
+Lab1 一般主要考 ELF 解析以及格式化
+IO。后者可以是增加一些新的转义符（比如 %k），在理解了
+printk
+的调用链路、掌握基本的字符串处理后便容易解决；也可能是更难的形式，如写入到字符串、内存等，这就相当考验
+C 语言指针的功底了。
+]]></content>
+      <categories>
+        <category>操作系统</category>
+      </categories>
+      <tags>
+        <tag>OS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OS Lab2上机</title>
+    <url>/2026/04/15/BUAA-OS%20Lab2%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 MOS 内存管理。
+课上题目
+Exam
+点击查看题面
+这道题需要实现一个新的宏，用于将元素插入到双向链表的特定索引位置。难度不大，参考
+include/queue.h 中的现有宏照猫画虎即可，主体就是用
+for 循环定位到第 index 个元素后完成插入。
+Extra
+点击查看题面
+这道题要求实现一套自映射机制，难度很大，大多数人都只得到了
+pte_va() 和 pde_va() 的 30 分。
+笔者的话
+从 Lab2 开始，OS
+逐渐上难度。这一部分内容繁杂：宏形式的双向链表、虚拟内存管理的一系列函数、以及
+TLB 相关机制，整套流程理清下来我花了很长时间。
+这次的
+Extra，鉴于当时多数人对自映射理解都不深入，根据往年情况能做出来的人极少，也算是
+lmhgg 留下的一道杰作。
+]]></content>
+      <categories>
+        <category>操作系统</category>
+      </categories>
+      <tags>
+        <tag>OS</tag>
       </tags>
   </entry>
   <entry>
@@ -3964,6 +3964,30 @@ debugf，前面加一段 #undef
 这样在任何地方直接 debugk("...")
 就能输出调试信息了，还提供了几个针对常见类型（int / uint / hex / char /
 str / ptr）的快捷宏，一行就能把变量名和值都打出来。
+]]></content>
+      <categories>
+        <category>操作系统</category>
+      </categories>
+      <tags>
+        <tag>OS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OS Lab5上机</title>
+    <url>/2026/05/27/BUAA-OS%20Lab5%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 MOS 磁盘管理与文件系统。
+课上题目
+Exam
+点击查看题面
+这道题需要实现类似于 ls
+的功能，只要掌握了读取文件的那几个函数，难度就不大。
+Extra
+点击查看题面
+这道题要求增加三个文件相关的操作，其中一个给出了完整流程，另外两个可以照葫芦画瓢，相比往年难度也不大。
+笔者的话
+Lab5 是内容最丰富的一个
+Lab：从磁盘结构，到复杂的文件系统，涉及大量函数之间的相互调用。不过实际需要熟练使用的，主要是根据路径读取文件的那几个函数，其余部分大致理解即可。另外这一节涉及好几个相似的结构体，比如
+Fd、Filefd、Open，可以把这些结构体的定义打印出来带进考场方便查阅，甚至那些复杂的函数接口也可以印出来，一定要利用好开卷考试的这个特点。
 ]]></content>
       <categories>
         <category>操作系统</category>
@@ -4073,31 +4097,7 @@ Malcolm Ricardo Collins 及其同伴为被告提起公诉。
         <category>信号处理与信息推断</category>
       </categories>
       <tags>
-        <tag>贝叶斯</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-OS Lab5上机</title>
-    <url>/2026/05/27/BUAA-OS%20Lab5%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 MOS 磁盘管理与文件系统。
-课上题目
-Exam
-点击查看题面
-这道题需要实现类似于 ls
-的功能，只要掌握了读取文件的那几个函数，难度就不大。
-Extra
-点击查看题面
-这道题要求增加三个文件相关的操作，其中一个给出了完整流程，另外两个可以照葫芦画瓢，相比往年难度也不大。
-笔者的话
-Lab5 是内容最丰富的一个
-Lab：从磁盘结构，到复杂的文件系统，涉及大量函数之间的相互调用。不过实际需要熟练使用的，主要是根据路径读取文件的那几个函数，其余部分大致理解即可。另外这一节涉及好几个相似的结构体，比如
-Fd、Filefd、Open，可以把这些结构体的定义打印出来带进考场方便查阅，甚至那些复杂的函数接口也可以印出来，一定要利用好开卷考试的这个特点。
-]]></content>
-      <categories>
-        <category>操作系统</category>
-      </categories>
-      <tags>
-        <tag>OS</tag>
+        <tag>Bayes</tag>
       </tags>
   </entry>
   <entry>
@@ -7016,7 +7016,7 @@ P(H|E) = P(H)
         <category>信号处理与信息推断</category>
       </categories>
       <tags>
-        <tag>贝叶斯</tag>
+        <tag>Bayes</tag>
       </tags>
   </entry>
 </search>
