@@ -821,6 +821,80 @@ DM，这样不容易漏。另外也有学长建议过使用 git
       </tags>
   </entry>
   <entry>
+    <title>BUAA-CO P6上机</title>
+    <url>/2025/12/01/BUAA-CO%20P6%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Verilog 实现流水线 CPU。
+第一次课上题目
+T1 mygo
+mygo-rs-rt
+RTL
+function pattern_value(g):    return count_leading_zeros(g) * 2 + count_ones(g)function characteristic_code(A):    sum &lt;- 0    for i in 0..7:        g &lt;- A[4*i+3 : 4*i]        sum &lt;- sum + pattern_value(g) * (i + 1)    return sum    MDU_Start(Busy_Cycles = 5)temp1 &lt;- characteristic_code(GPR[rs])temp2 &lt;- characteristic_code(GPR[rt])if (temp1 &gt; temp2)    HI &lt;- GPR[rs]    LO &lt;- GPR[rt]else if (temp1 &lt; temp2)    HI &lt;- GPR[rt]    LO &lt;- GPR[rs]else    HI &lt;- GPR[rs] ^ GPR[rt]    LO &lt;- GPR[rs] ^ GPR[rt]
+T2 jalx
+jalx-rs-rt-offset
+RTL
+temp &lt;- GPR[rs] ^ GPR[rt]x &lt;- temp[4:0]// Find the largest perfect square less than or equal to xwhile (!is_perfect_square(x))    x &lt;- x - 1GPR[x] &lt;- PC + 8PC &lt;- PC + 4 + sign_ext(offset||00)
+T3 lbo
+lbo-base-rt-offset
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]byte &lt;- vAddr[1:0]temp &lt;- memword[8*byte+7 : 8*byte]for i in 0..3:    temp1 &lt;- GPR[rt][8*i+7 : 8*i]    if (temp != temp1)        if (count_ones(temp) &gt; count_ones(temp1))            GPR[rt][8*i+7 : 8*i] &lt;- temp
+第二次课上题目
+T1 mujica
+mujica-rs-rt-imm16
+RTL
+ext32 &lt;- sign_ext(imm16)cnt1 &lt;- count_ones(imm16)if (cnt1 % 2 == 0)    temp &lt;- GPR[rs] &amp; ext32    GPR[rt] &lt;- temp + GPR[rt]else    temp &lt;- GPR[rs] | ext32    GPR[rt] &lt;- temp ^ GPR[rt]
+T2 botto
+botto-rs-rt-offset
+RTL
+function hamming_distance(x, y):    return count_ones(x ^ y)    hd &lt;- hamming_distance(GPR[rs], GPR[rt])if (hd &lt; 8)    PC &lt;- PC + 4 + sign_ext(offset||00)    GPR[rt] &lt;- hdelse if (hd &lt;= 24)    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rt] &gt;&gt;&gt; hdelse    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rs] | GPR[rt]
+T3 lwcm
+lwcm-base-rt-offset
+本题要求在 M 级维护一个 32 位寄存器 WD，复位值为
+32'h0。
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]if (memword == WD)    GPR[rt] &lt;- memwordelse    GPR[26] &lt;- memwordWD &lt;- memword
+题目分析
+第一次上机的 T1
+是乘除指令的变体，在乘除槽中添加相关运算，难度应该不算大，但是笔者最终也没有通过，可能是当时现场写的
+count_leading_zeros
+等函数，比较着急导致细节写错了吧。因此可以提前把这些函数都加到 CPU
+中，具体模板在上篇文章末。
+T2 做起来比较棘手，当时我看名字是 jalx，就一直当成
+jalr 的变体做的，但事后发现其实更像是 bltzal
+的变体，只不过无条件跳转而已，最终我很多点都 TLE 了，没有通过。T3
+比较简单。
+第二次上机明显比第一次简单，T1
+不涉及乘除槽，还是普通的运算类，需要注意这个题同时涉及了
+GPR[rs]、GPR[rt] 和 ext32，因此可以在 ALU 中再加一个输入端口。
+T2 有一个细节就是写入的寄存器地址可能是 rs 或者
+rt，而写入寄存器地址只有得到寄存器值之后才能确定，因此可以在 E
+级刚开始加一个特判，将正确的地址修正回来，本题阻塞逻辑我没有改，仅仅将新指令分到
+branch 类，然后自动采用的 b 类阻塞方式。T3
+是常见的条件访存类型，关于阻塞，我是判断如果 D 级需要用 rt 或者 26
+号寄存器值，才考虑阻塞。
+助教问答
+以下为部分问题：
+
+看看测试程序和设计文档
+讲解第二题的思路
+讲解乘除槽的实现思路
+我的评测机是如何写的
+
+笔者的话
+P6 相对 P5，CPU
+主要的修改点是增加了几条新指令、乘除槽、存储器外置，总体难度不大。上机的题型只有运算类题目可能出乘除相关的，其余两道和
+P5 差不多，一般而言简单一些。到了 P5、P6
+挂的人肯定就多了起来，不过也不用担心，每人有 3 次挂 P 的机会，只要通关
+P7，实验部分成绩就都差不多。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+        <tag>Verilog</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>BUAA-CO P5上机</title>
     <url>/2025/11/17/BUAA-CO%20P5%E4%B8%8A%E6%9C%BA/</url>
     <content><![CDATA[本节考查内容为 Verilog 实现流水线 CPU。
@@ -888,192 +962,6 @@ testbench 仿真得到相应输出，再用魔改版 MARS
 得到正确的输出（注意：上机时提供的课程组 MARS 和上面这个也不同，上面的
 MARS 对每条写 GRF 或者 DM
 的指令都会输出结果，而课程组提供的不能），再直接将两个输出对比，尽量不要看复杂的波形图了。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>CO</tag>
-        <tag>Verilog</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO P3上机</title>
-    <url>/2025/11/03/BUAA-CO%20P3%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Logisim 实现单周期 CPU。
-课上题目
-T1 revi
-revi-rs-rt-imm16
-RTL
-temp &lt;- GPR[rs]result &lt;- temp[31-imm16:0]||reverse(temp[31:32-imm16])GPR[rt] &lt;- result
-T2 blz
-blz-rs-rt-offset
-RTL
-temp1 &lt;- count_leading_zeros(GPR[rs])temp2 &lt;- count_leading_zeros(GPR[rt])if (temp1 == temp2)     PC &lt;- PC + 4 + sign_ext(offset||00)else if (temp1 &gt; temp2)    PC &lt;- PC + 4    GPR[rs] &lt;- temp1else    PC &lt;- PC + 4    GPR[rs] &lt;- temp2
-T3 lwf
-lwf-base-rt-offset
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]filter &lt;- memword &amp; GPR[rt]ones &lt;- count_ones(filter)if (ones % 2 == 0)    GPR[rt] &lt;- memwordelse    GPR[(rt+1) % 32] &lt;- memword
-题目分析
-总的来说难度都不大，只要考前充分理解了 CPU 的数据通路，理解单周期 CPU
-是怎么跑那几条指令的，那么应该就能通过了。
-T1 需要将一个数翻转，我是用两个 Splitter
-反向拼接，就是手动修改每个端口的值有点繁琐。T2
-需要求前导零的个数，应该用 Bit Adder
-元件，如果想不到这个元件那难度就大了。有一个 Logisim
-的易错点，一个模块加了新的输出端口后，那么原端口的位置可能都会发生变化，这就导致在顶层连好的线实际上都断开了。这次上机时我们机房延长到了
-21:30 结束，从 P4 开始就只有两小时了。并注意，在 P3
-及之后，每个题目都要写测试程序（用新指令写一些汇编程序），虽然大部分人都是做完之后才写测试程序吧。
-助教问答
-以下为部分问题：
-
-看看测试程序和设计文档
-我评测机的设计思路，编写过程中出现了哪些错误，如何得到 Logisim
-的结果，评测机中代码生成的逻辑是什么，评测机是否测出我 CPU
-的问题，数据强度如何
-我 CPU 中 CTRL 模块的设计思路，0 号寄存器恒等于 0 是如何实现的
-
-笔者的话
-从 P3 开始就该开发 CPU
-了，每次上机的题目基本上都是运算类、跳转类、访存类各一道。上机之前一定要对
-CPU
-进行充分的测试，学有余力可以自己写评测机，往届学长也搞了一些评测机，可以直接拿来用，比如
-COT
-等。上机时可以先裸交一发，如果能过一些点就说明课下的设计基本是没问题的，否则就要先改课下的
-bug（虽然上机两小时内独立发现并修复 bug 非常难）。
-P3 仍然是使用 Logisim，建议适当利用
-Tunnel，用的太少，导线会太乱；用太多就不容易理清接线关系。另外在
-CTRL（控制模块）中，由 Instr
-生成对应的指令独热码时，不要用与门阵列，可以直接用
-Comparator 的，很简洁。另外可以提前给 CPU
-加一些要求之外的指令，比如
-j、jal、jr、jalr，加上这几个后，对跳转类指令的理解就更加深入了。还有学长加过
-lh、lb、sh、sb
-等指令，不过加这几个指令的工作量比较大，建议量力而行。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>Logisim</tag>
-        <tag>CO</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO P7上机</title>
-    <url>/2025/12/08/BUAA-CO%20P7%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Verilog 实现 MIPS 微系统，支持中断和异常。
-课上题目
-T1~T4
-都是课下强测，分别是功能强测、异常强测、中断强测、冲突强测。
-T5 monitor
-在 P7 系统中（DM 范围 0x0000 ~
-0x2fff），新增一套内存监视控制机制。需在 CP0
-中扩展三个专用寄存器，并增加一条专用配置指令 monitor，配合
-sw 指令实现对特定内存区间的写入保护。
-1. 新增 CP0 寄存器
-系统复位后，以下三个寄存器均置为 0。
-
-
-
-
-
-
-
-
-
-编号
-寄存器名
-功能描述
-读写权限
-
-
-
-
-18
-DMBoundaryHI
-监视区间上界
-mfc0 可读；仅 monitor 可写
-
-
-19
-DMBoundaryLO
-监视区间下界
-mfc0 可读；仅 monitor 可写
-
-
-20
-DMEnable
-监视使能控制字
-mfc0 可读；仅 monitor 可写
-
-
-
-
-mtc0：仅能写入原有的 12-15 号寄存器（SR, Cause,
-EPC, PrID ），写入 18-20 号寄存器无效。
-monitor：仅能写入 18-20 号寄存器，写入 12-15
-号寄存器无效。
-mfc0：可读取上述所有寄存器。
-
-2. 逻辑定义
-使能信号生成
-DMEnable
-寄存器的值并不直接作为使能信号，需进行位统计比较：
-high_ones &lt;- count_ones(DMEnable[31:16])low_ones &lt;- count_ones(DMEnable[15:0])Monitor_Active &lt;- (high_ones &gt; low_ones)
-区间检查逻辑
-受监视的内存区间为 [DMBoundaryLO, DMBoundaryHI)。
-对于 sw
-指令，写入操作涉及的所有字节都必须位于该区间内才算合法。
-3. 指令与异常描述
-指令一：monitor
-monitor-rt-rd
-RTL：
-if (rd==18 &amp;&amp; GPR[rt] &gt;= DMBoundaryLO) ||(rd==19 &amp;&amp; GPR[rt] &lt;= DMBoundaryHI) || (rd==20）	CP0[rd] &lt;- GPR[rt]else if (rd==18 &amp;&amp; !GPR[rt] &gt;= DMBoundaryLO) ||(rd==19 &amp;&amp; !GPR[rt] &lt;= DMBoundaryHI)	SignalException(AdES)
-该指令用于更新 CP0
-的扩展寄存器。在写入时需进行合法性检查：更新后必须满足
-DMBoundaryLO \le
-DMBoundaryHI。如果写入操作导致该条件不满足，则不进行更新并触发异常。
-指令二：sw
-sw-base-rt-offset
-RTL：
-vAddr &lt;- GPR[base] + sign_ext(offset)high_ones &lt;- count_ones(DMEnable[31:16])low_ones &lt;- count_ones(DMEnable[15:0])Monitor_Active &lt;- (high_ones &gt; low_ones)is_in_range &lt;- (CP0[19] &lt;= vAddr) &amp;&amp; ((vAddr + 3) &lt; CP0[18])if (vAddr[1:0] != 00) || (Monitor_Active &amp;&amp; !is_in_range)    SignalException(AdES)else    memory[vAddr] &lt;- GPR[rt]
-当监视功能开启时，sw 指令需检查目标地址是否越界。
-题目分析
-T5 很复杂，但难度可能略低于去年的 withdraw。可能的一个难点是
-sw 的全部字节地址，其实就是 [vaddr, vaddr+3] 这个区间。我
-debug 许久才发现是一个条件中少加了括号，和 &amp;&amp; 和
-|| 的优先级有关，最终虚惊一场。
-助教问答
-以下为部分问题：
-
-看看测试程序和设计文档
-我是如何处理多个流水级、多条指令产生的异常的优先级的？
-如何判断一条指令是否处于延迟槽？
-我做这道题过程中遇到了什么问题
-我对计组课程有没有什么建议
-
-笔者的话
-P7 的课下可谓是最后一舞，笔者感觉比 P5
-还难。代码具体写法可以多参考一下 dalao
-的博客，此处只谈一些注意事项。通过 P7
-课下的弱测的难度就很大，每人刚写出来的代码往往都有数不清的
-bug，这时候就可以再次借助评测机了，不过 P7 和 MARS
-对拍就不合适了，只能找同学或者学长的 CPU
-来对拍，只有对拍几千轮都没有问题，那才敢比较放心。
-上机是 5 道做对 4
-道就算通过。开始后很拼手速，前四个题都是直接提交，如果有过不了的，那就需要现场
-debug。第五题一般是加新指令或者新异常，也可能两个都有，课下一定要充分理解每个异常是怎么产生和传递的，这样课上才能得心应手。另外
-P7 很多人会选择手动 gap，即只通过四道，会选择下周再试一次，因为 P7
-对成绩影响似乎大一点。还有一个细节，就是 handler.asm
-的代码也要打包提交（具体代码参考往届博客，反正这个自己写估计不太可能），不然用
-ISE 仿真时应该就没法处理异常的情况，也就很难 debug
-了（没错，我就忘交了）。
-P7
-结束了，那实验部分就告一段落，该开始理论部分的学习了。理论部分如果老师讲的浅，可以看其他老师班
-PPT，或者直接看王道书，王道上可以参考的主要就是存储系统，剩下的数制、流水线、总线、IO
-等也可以稍微参考，讲的都比较深，有些需要自己做取舍。另外 961
-的计组部分也可以做一做，仅有的两套往年题比较常规，去年的题量和难度感觉还是很大的，所以也做好心理准备（）
 ]]></content>
       <categories>
         <category>计算机组成</category>
@@ -1227,104 +1115,6 @@ Pre
         <tag>CO</tag>
         <tag>Verilog</tag>
         <tag>MIPS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO P6上机</title>
-    <url>/2025/12/01/BUAA-CO%20P6%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Verilog 实现流水线 CPU。
-第一次课上题目
-T1 mygo
-mygo-rs-rt
-RTL
-function pattern_value(g):    return count_leading_zeros(g) * 2 + count_ones(g)function characteristic_code(A):    sum &lt;- 0    for i in 0..7:        g &lt;- A[4*i+3 : 4*i]        sum &lt;- sum + pattern_value(g) * (i + 1)    return sum    MDU_Start(Busy_Cycles = 5)temp1 &lt;- characteristic_code(GPR[rs])temp2 &lt;- characteristic_code(GPR[rt])if (temp1 &gt; temp2)    HI &lt;- GPR[rs]    LO &lt;- GPR[rt]else if (temp1 &lt; temp2)    HI &lt;- GPR[rt]    LO &lt;- GPR[rs]else    HI &lt;- GPR[rs] ^ GPR[rt]    LO &lt;- GPR[rs] ^ GPR[rt]
-T2 jalx
-jalx-rs-rt-offset
-RTL
-temp &lt;- GPR[rs] ^ GPR[rt]x &lt;- temp[4:0]// Find the largest perfect square less than or equal to xwhile (!is_perfect_square(x))    x &lt;- x - 1GPR[x] &lt;- PC + 8PC &lt;- PC + 4 + sign_ext(offset||00)
-T3 lbo
-lbo-base-rt-offset
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]byte &lt;- vAddr[1:0]temp &lt;- memword[8*byte+7 : 8*byte]for i in 0..3:    temp1 &lt;- GPR[rt][8*i+7 : 8*i]    if (temp != temp1)        if (count_ones(temp) &gt; count_ones(temp1))            GPR[rt][8*i+7 : 8*i] &lt;- temp
-第二次课上题目
-T1 mujica
-mujica-rs-rt-imm16
-RTL
-ext32 &lt;- sign_ext(imm16)cnt1 &lt;- count_ones(imm16)if (cnt1 % 2 == 0)    temp &lt;- GPR[rs] &amp; ext32    GPR[rt] &lt;- temp + GPR[rt]else    temp &lt;- GPR[rs] | ext32    GPR[rt] &lt;- temp ^ GPR[rt]
-T2 botto
-botto-rs-rt-offset
-RTL
-function hamming_distance(x, y):    return count_ones(x ^ y)    hd &lt;- hamming_distance(GPR[rs], GPR[rt])if (hd &lt; 8)    PC &lt;- PC + 4 + sign_ext(offset||00)    GPR[rt] &lt;- hdelse if (hd &lt;= 24)    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rt] &gt;&gt;&gt; hdelse    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rs] | GPR[rt]
-T3 lwcm
-lwcm-base-rt-offset
-本题要求在 M 级维护一个 32 位寄存器 WD，复位值为
-32'h0。
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]if (memword == WD)    GPR[rt] &lt;- memwordelse    GPR[26] &lt;- memwordWD &lt;- memword
-题目分析
-第一次上机的 T1
-是乘除指令的变体，在乘除槽中添加相关运算，难度应该不算大，但是笔者最终也没有通过，可能是当时现场写的
-count_leading_zeros
-等函数，比较着急导致细节写错了吧。因此可以提前把这些函数都加到 CPU
-中，具体模板在上篇文章末。
-T2 做起来比较棘手，当时我看名字是 jalx，就一直当成
-jalr 的变体做的，但事后发现其实更像是 bltzal
-的变体，只不过无条件跳转而已，最终我很多点都 TLE 了，没有通过。T3
-比较简单。
-第二次上机明显比第一次简单，T1
-不涉及乘除槽，还是普通的运算类，需要注意这个题同时涉及了
-GPR[rs]、GPR[rt] 和 ext32，因此可以在 ALU 中再加一个输入端口。
-T2 有一个细节就是写入的寄存器地址可能是 rs 或者
-rt，而写入寄存器地址只有得到寄存器值之后才能确定，因此可以在 E
-级刚开始加一个特判，将正确的地址修正回来，本题阻塞逻辑我没有改，仅仅将新指令分到
-branch 类，然后自动采用的 b 类阻塞方式。T3
-是常见的条件访存类型，关于阻塞，我是判断如果 D 级需要用 rt 或者 26
-号寄存器值，才考虑阻塞。
-助教问答
-以下为部分问题：
-
-看看测试程序和设计文档
-讲解第二题的思路
-讲解乘除槽的实现思路
-我的评测机是如何写的
-
-笔者的话
-P6 相对 P5，CPU
-主要的修改点是增加了几条新指令、乘除槽、存储器外置，总体难度不大。上机的题型只有运算类题目可能出乘除相关的，其余两道和
-P5 差不多，一般而言简单一些。到了 P5、P6
-挂的人肯定就多了起来，不过也不用担心，每人有 3 次挂 P 的机会，只要通关
-P7，实验部分成绩就都差不多。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>CO</tag>
-        <tag>Verilog</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO 推荐题目汇总</title>
-    <url>/2025/12/09/BUAA-CO%20%E6%8E%A8%E8%8D%90%E9%A2%98%E7%9B%AE%E6%B1%87%E6%80%BB/</url>
-    <content><![CDATA[可能有些人会感到，计组有时没题可做了，即使在往届博客上看到题目，也没有相关的评测环境，难以确定是否做对，HDLBits
-上的题画风又不太一致，但其实 cscore 上就有很多的题目可以访问。
-比如某题目的网址如下：
-http://cscore.buaa.edu.cn/#/problem?ProblemId=334&amp;PieId=1338
-PieId 应该是每届和每届都不同，2406 对应的是 1338。ProblemId
-是题目编号，没有规律可言，但同一个 ProblemId
-似乎每届都能访问到题目。我们便可以先查到本届的 PieId，再按顺序遍历
-ProblemId（当然也可以直接访问我提供的
-ProblemId），如果打开了题目就将其截图或其他形式保存下来，从而就有很多题目可以做并评测了。
-可惜的是，笔者直到 P5
-时才在往届博客中看到这个方法，因此很多之前的题目都没用了，而 P6
-及以后的题又爬不到，因此这些题只能流传下去了（）
-源码和题目获取
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>CO</tag>
       </tags>
   </entry>
   <entry>
@@ -1679,417 +1469,343 @@ PCA。掌握最大方差和最小均方误差的计算方法，能用数学语�
       </tags>
   </entry>
   <entry>
-    <title>BUAA-OO U1学习与反思</title>
-    <url>/2026/03/31/BUAA-OO%20U1%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
-    <content><![CDATA[第一单元 OO 学习与反思
-一、 度量分析
-1. 类与复杂度分析
-基于最终的作业代码，我对核心类进行了度量分析：
-
-
-
-Class
-OCavg
-OCmax
-WMC
-
-
-
-
-ChoiceFactor
-1.5
-2
-3
-
-
-DeriveFactor
-2.5
-4
-5
-
-
-ExpFactor
-1
-1
-2
-
-
-Expr
-1.33
-2
-4
-
-
-FuncFactor
-2.67
-5
-8
-
-
-FuncFactor.RecCacheKey
-1.67
-3
-5
-
-
-FuncReg
-1
-1
-4
-
-
-FuncReg.FuncDef
-1
-1
-2
-
-
-FuncReg.RecDef
-1
-1
-15
-
-
-Lexer
-2.8
-9
-14
-
-
-MainClass
-3
-3
-3
-
-
-Mono
-4.04
-14
-105
-
-
-Number
-1
-1
-2
-
-
-Parser
-2.09
-7
-46
-
-
-Poly
-3.41
-10
-58
-
-
-Power
-2.5
-4
-5
-
-
-Processor
-2
-2
-2
-
-
-Sign
-3
-6
-9
-
-
-Term
-1.67
-3
-5
-
-
-
-根据表格可以看到，最复杂的三个类依次是
-Mono、Poly、Parser。在
-Mono
-类中，我定义了许多方法，不仅包括基本的代数运算（如求导等），还为了追求极致的最短输出长度而定义了化简方法，这在一定程度上违反了单一职责原则。Poly
-类则相对干练，主要负责加、减、乘、幂等多项式间的数学运算以及转化为字符串的
-toString。在 Parser
-中，我采用了递归下降的语法解析方式，针对每一种类型的因子和表达式都编写了解析方法，实现了较好的模块内聚。
-2. 方法复杂度分析
-结合上述类复杂度，我进一步使用工具对部分核心方法进行了度量：
-
-
-
-方法
-CogC
-ev(G)
-iv(G)
-v(G)
-
-
-
-
-Lexer.next()
-10
-2
-8
-9
-
-
-Parser.parseFactor()
-9
-7
-10
-10
-
-
-Poly.equals(Object)
-10
-8
-3
-9
-
-
-FuncFactor.solveRec(int, Poly)
-8
-2
-5
-5
-
-
-Parser.parseRecDef(Scanner)
-7
-3
-4
-5
-
-
-Mono.equals(Object)
-7
-7
-2
-8
-
-
-Poly.power(BigInteger)
-7
-3
-4
-6
-
-
-Poly.multiply(Poly)
-5
-2
-4
-5
-
-
-Mono.derive(String)
-4
-1
-5
-5
-
-
-Poly.toOptimalString(boolean)
-17
-7
-9
-12
-
-
-Mono.toOptimalString(boolean)
-21
-5
-16
-21
-
-
-
-从上表可以看出，Lexer.next() 和
-Parser.parseFactor()
-的分支极多，因为需要处理各种不同的符号和因子。同时
-Parser.parseRecDef(Scanner) 和
-FuncFactor.solveRec
-这类函数函数解析和代入时也具有中等规模的控制流复杂度。Mono
-和 Poly 的 toOptimalString
-承担了输出的任务，这些方法的控制流和圈复杂度非常高，后续如果继续迭代，应考虑将其抽离为独立的
-Printer 类。 ### 3. 类图与设计考虑
-classDiagram    class Factor    &lt;&lt;interface&gt;&gt; Factor    class Number    class Power    class ExpFactor    class FuncFactor    class ChoiceFactor    class DeriveFactor    class Expr    class Term    class Poly    class Mono    class Sign    class FuncReg    class MainClass    class Parser    class Lexer    class Processor    Factor &lt;|.. Number : 实现    Factor &lt;|.. Power : 实现    Factor &lt;|.. ExpFactor : 实现    Factor &lt;|.. FuncFactor : 实现    Factor &lt;|.. ChoiceFactor : 实现    Factor &lt;|.. DeriveFactor : 实现    Factor &lt;|.. Expr : 实现 (递归嵌套)    Expr *--  Term : 包含多个项    Term *--  Factor : 包含多个因子    Poly *--  Mono : 维护单项式 Map    Mono --&gt; Poly : 递归包含 expPoly    Mono --&gt; Sign : 使用 Sign 作为哈希键    MainClass --&gt; Parser : 调用    Parser --&gt; Lexer : 使用    Parser --&gt; Processor : 预处理    Parser ..&gt; Factor : 构建 AST 节点    FuncFactor --&gt; FuncReg : 查询函数定义    style Factor fill:#E6E6FA,stroke:#708090,stroke-width:2px    style Poly fill:#B0C4DE,stroke:#708090,stroke-width:1px    style Mono fill:#B0C4DE,stroke:#708090,stroke-width:1px
-顶层控制与解析模块
-
-MainClass：程序启动入口和全局调度者。
-Processor：预处理模块，主要负责清洗字符串中的连续正负号等。
-Lexer：词法分析器，将纯文本字符流转化为 Token 流。
-Parser：语法分析器，使用递归下降，将 Token
-流转化为抽象语法树（AST）。
-FuncReg：全局函数注册表，管理所有自定义函数及递推函数的定义。
-
-抽象语法树节点
-
-Factor ：因子接口，通过统一的 toPoly()
-方法实现了多态。
-Expr：表达式节点，由多个 Term
-的加减组合而成。
-Term：项节点，由多个 Factor
-的连乘组合而成。
-Number：常数因子节点，内部封装了大整数。
-Power：变量幂因子节点，形如 x^n 或 y^n，保存自变量符号及其指数。
-ExpFactor：指数函数因子节点，形如 (\exp(factor))^n，封装了内部表达式及外层乘方指数。
-FuncFactor：函数调用因子节点，负责查表
-FuncReg 并将具体实参代入。
-ChoiceFactor：选择式因子节点，专门保存并解析条件分支表达式
-[?:] 中的四个判断基元。
-DeriveFactor：求导算子因子节点，保存求偏导类型（dx,
-dy, grad）及其作用的表达式模块。
-
-核心引擎计算部分
-
-Poly：程序最核心的计算引擎，使用 HashMap
-维护单项式集合。它实现了多项式的各种代数运算与合并。
-Mono：最小代数运算单元，包含系数、自变量指数级别内部多层嵌套的
-exp 特征多项式。
-Sign：单项式特征类，将 Mono
-剔除系数后剩余的特征抽取为不可变属性，用作哈希键。
-
-
-二、 架构设计体验
-我在三次作业中的宏观架构演进一直保持着高度自洽，且具有良好的向后扩展能力。
-HW1：初识递归下降
-在 HW1，我紧贴指导书规范，建立了一套“词法分析 ⟶ 语法分析 ⟶ 抽象语法树
-⟶ 多项式计算”的架构。这一模型将表达式严格拆解为 Expr ⟶
-Term ⟶ Factor
-的文法节点体系。随后，我对所有层级的子节点统一落实了 toPoly
-这个方法。但在早期理解不深时，我的 Poly 更是粗犷地使用
-ArrayList 线性存储各项
-Mono，合并同类项时就稍显麻烦了，需要专门建立一个指数到系数的
-HashMap 来实现。
-HW2：引入指数函数、自定义函数与选择式因子
-HW2 引入了指数函数 exp()、自定义函数 f(x)
-以及选择式因子 [(A==B)?C:D]。现在单项式不仅有一个
-x 的指数，还包含了以 exp
-包裹的多项式。因此我主要做了以下重构：
-
-重构多项式底层：首先由于数据范围的变化，exponent
-类型需要改成大整数类，然后我将 Mono 扩展为
-Mono(BigInteger coefficient, BigInteger exponent, Poly expPoly)。此外，我还引入了内部类
-Sign ，即去掉系数后的指数和多项式部分， Poly
-类中的 ArrayList ，我也直接换成了从 Sign 到
-Mono 的 HashMap
-，这下就不需要写合并同类项方法了，而是自动实现合并。其实这里完全也可以用从
-Sign 到系数的 HashMap ，但这样的话我的 Mono
-类似乎就有点多余，因此我还是保留了看似复杂的前一种策略。
-函数代入环境字典：为了实现函数形参替换，我没有选择在字符串层次上进行字符串替换（这种应该很容易
-TLE），而是引入了环境字典
-Map&lt;String, Poly&gt; vars。在每个 AST 节点的
-toPoly 方法中传入该字典，从而实现函数调用的解析。
-
-而选择式因子对架构没有影响，按原有架构进行添加即可。
-HW3：求导、双变量与递推函数的加入
-经过 HW2 的小幅重构，面对 HW3 引入的双变量 x 和
-y、求导算子 dx/dy/grad 以及自定义递推函数
-f{n}(x)，我在架构上几乎没有改动。 对于求导算子
-DeriveFactor，我在底层的 Mono 和
-Poly 当中补充了专门的求导方法；针对 y
-的引入，仅需在 Mono 类中增加记录 y
-次幂的专门属性即可。这些新增部分在被 toPoly
-解析处理后，进行运算的依然是和 HW2
-类似的多项式，因此原本的加减乘除及输出逻辑基本不需要修改。
-新的迭代情景：引入三角函数
-如果引入三角函数因子sin(Factor) 与
-cos(Factor) ，并要求合并与化简：
-我目前的架构完全禁得住这项考验。我们只需声明 SinFactor 和
-CosFactor 实现 Factor 接口，并新增
-Parser 中的分支即可。真正的深入修改都在底层架构：我们要给
-Mono 与 Sign
-追加可以记录三角函数特征的属性。唯一的难点其实在于怎样运用诱导公式或两角和差公式等规律去对合并前的
-Poly 加以化简而已。
-
-三、 分析自己程序的 Bug
-在这三次作业的强测与互测中，我唯一被测出 Bug 的地方是在
-HW3，由于化简优化时复杂度控制不当而导致了 TLE。 -
-问题及特征：
-互测房里的同学针对我的代码逻辑，构造了一个使得代码 TLE
-的样例。我出问题的类是 Mono 中的
-toOptimalString() 方法。 - 深层原因分析：
-原因是，我设定了多项式的项数在小范围时采用状态压缩 DP。该 Hack
-样例利用大量系数相邻的大整数，项数刚好达到我规定的上界，导致程序穷举中产生超时。
-- Bug 复杂度反思：
-回看前面的方法度量分析表，toOptimalString
-的圈复杂度和认知复杂度都比较高。这说明在编写时引入了过多复杂的逻辑分支。修改这个
-bug 的策略，我目前采用的是调小项数搜索范围的上界。
-
-四、 发现别人 Bug
-所采用的策略
-在互测环节中，我主要采用了以下策略：
-
-借助 AI 搭建评测机：我使用 Python
-搭建了评测机脚本。策略是通过大量随机生成的数据测试房间内的 8
-份作业代码，然后将结果使用 Sympy
-库对比来寻找一致性。这能有效找出一些基础的逻辑错误和格式问题，但因为数据是随机生成的，较难定向构造出使得程序
-TLE 的极端数据。
-结合源码阅读定向构造：针对评测机难以覆盖的盲区，我会尝试阅读别人的代码来设计测试用例：
-
-比如看到同学处理三目运算符 [(A==B)?X:Y]
-时将两种选择都进行了计算展开再剪裁，我就会在不选的那一方构造复杂的函数嵌套，使其
-TLE。
-看到有同学采用 String.replaceAll
-这种字符串替换来处理函数代入时，便可以尝试构造多层嵌套函数，使其因耗时太长而TLE。
-
-
-
-五、 分析自己进行的优化
-我在结果长度的化简优化上主要做了以下工作： 1.
-正项优先打印： 通过遍历 Poly 中的各个
-Mono，找到第一个常数系数为正的项并放到最前面输出，去掉了开头的正负号问题，这种优化十分稳定。
-2. 提取公因数： 对于 exp(factor)
-类型，我会遍历其内部各个系数的公约数，提取至外部以缩短总体长度。 3.
-状态压缩优化：
-对于需要拆开内部的项，当项数处于我设定的小范围时，使用状压 DP
-来寻找最优解；超过范围则原样输出。
-这些优化虽然缩减了字符串长度，但在保障了代码的常规简洁性的同时，却并未百分之百保证正确性。过于追求局部最短，使得某些化简方法的圈复杂度攀升，在个别极端数据下出现了
-TLE 的情况。后续的优化应该更加注意平衡正确性与性能之间的关系。
-
-六、 大模型相关使用
-在三次作业中，我只参考了 AI
-给出的架构思路、示例代码和修改建议，并未让其直接编写我的代码。当遇到输出错误、抛异常或是搭建评测机时的各种问题，将报错结合代码抛给
-AI 排查，效果往往非常好。总之，AI
-经过提示后可以精准发现代码逻辑方面的问题，并帮忙修补漏洞。但对于时间复杂度分析和构造那些能让代码运行超时的极端数据，它由于没有全局运行环境概念，仍显力不从心，这时候人工阅读源码构造更为可靠。
-
-七、 心得体会
-经过本单元的学习，我还是收获颇丰的。一开始听说我们要进行表达式深层编译解析时，便想起原先学后缀表达式时的痛苦。但是递归下降和抽象语法树的方法极大地解耦了难度。表达式先被切分为一个个
-Token，再由 Parser 解析对应部分，最终建立 AST。这时节点统一实现的
-toPoly()
-方法发挥功能，将一切降维成多项式，自下而上依次化简计算即可。相对之前理解的后缀表达式，代码行数虽然变多了，但可读性和扩展性却实现了质的飞跃。
-关于 AI 的使用，如今的 AI 驾驭 OO
-作业可以说游刃有余了。我会借此设计架构、学习算法以及进行 Debug
-和辅助构造测试，总体效果不错。但同时也深刻体会到，面向对象编程的相关思考与代码掌控等修养，依然是无法被
-AI 工具完全替代的。
-
-八、 未来方向建议
-整体而言，我们的 OO
-课在难度递进设计上已经非常合理了，第一单元的课程安排也很完备。唯独建议在性能优化方面，可以再多给一些相关的指导提示，或者在单元结束后公布一下
-std
-标程用的具体优化方法。我还是十分好奇采用什么方法能在时间限制下将表达式化至最短的。
-
-九、 思考题
-1.
-如何检查输入是否符合要求？
-建议进行双重检查，大致如下：
-首先在预处理入口处：使用正则表达式扫描字符串，排查非法符号、不合规操作符组合（如
-** 等）。第二层在 Parser
-递归下降流程中：如果遇到偏离文法规则的分支，可以直接抛出对应的自定义异常。
-2.
-如何精确计算一个合法输入的 cost？
-通过在各个抽象语法树节点类中声明 getCost()
-方法，可以实现自顶向下的递归计算。对于基础的加减乘除和常数，直接按指导书的运算法则进行累加或相乘；对于函数调用，需要将实参代入到函数定义的
-AST
-中生成新表达式，再递归计算；对于选择式因子，必须在计算时判断条件表达式是否恒等，从而动态累加正确分支的代价；最后，由于求导等算子涉及代价的指数增长，在内部实现时需使用
-BigInteger 来防溢出。
+    <title>BUAA-CO P7上机</title>
+    <url>/2025/12/08/BUAA-CO%20P7%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Verilog 实现 MIPS 微系统，支持中断和异常。
+课上题目
+T1~T4
+都是课下强测，分别是功能强测、异常强测、中断强测、冲突强测。
+T5 monitor
+在 P7 系统中（DM 范围 0x0000 ~
+0x2fff），新增一套内存监视控制机制。需在 CP0
+中扩展三个专用寄存器，并增加一条专用配置指令 monitor，配合
+sw 指令实现对特定内存区间的写入保护。
+1. 新增 CP0 寄存器
+系统复位后，以下三个寄存器均置为 0。
+
+
+
+
+
+
+
+
+
+编号
+寄存器名
+功能描述
+读写权限
+
+
+
+
+18
+DMBoundaryHI
+监视区间上界
+mfc0 可读；仅 monitor 可写
+
+
+19
+DMBoundaryLO
+监视区间下界
+mfc0 可读；仅 monitor 可写
+
+
+20
+DMEnable
+监视使能控制字
+mfc0 可读；仅 monitor 可写
+
+
+
+
+mtc0：仅能写入原有的 12-15 号寄存器（SR, Cause,
+EPC, PrID ），写入 18-20 号寄存器无效。
+monitor：仅能写入 18-20 号寄存器，写入 12-15
+号寄存器无效。
+mfc0：可读取上述所有寄存器。
+
+2. 逻辑定义
+使能信号生成
+DMEnable
+寄存器的值并不直接作为使能信号，需进行位统计比较：
+high_ones &lt;- count_ones(DMEnable[31:16])low_ones &lt;- count_ones(DMEnable[15:0])Monitor_Active &lt;- (high_ones &gt; low_ones)
+区间检查逻辑
+受监视的内存区间为 [DMBoundaryLO, DMBoundaryHI)。
+对于 sw
+指令，写入操作涉及的所有字节都必须位于该区间内才算合法。
+3. 指令与异常描述
+指令一：monitor
+monitor-rt-rd
+RTL：
+if (rd==18 &amp;&amp; GPR[rt] &gt;= DMBoundaryLO) ||(rd==19 &amp;&amp; GPR[rt] &lt;= DMBoundaryHI) || (rd==20）	CP0[rd] &lt;- GPR[rt]else if (rd==18 &amp;&amp; !GPR[rt] &gt;= DMBoundaryLO) ||(rd==19 &amp;&amp; !GPR[rt] &lt;= DMBoundaryHI)	SignalException(AdES)
+该指令用于更新 CP0
+的扩展寄存器。在写入时需进行合法性检查：更新后必须满足
+DMBoundaryLO \le
+DMBoundaryHI。如果写入操作导致该条件不满足，则不进行更新并触发异常。
+指令二：sw
+sw-base-rt-offset
+RTL：
+vAddr &lt;- GPR[base] + sign_ext(offset)high_ones &lt;- count_ones(DMEnable[31:16])low_ones &lt;- count_ones(DMEnable[15:0])Monitor_Active &lt;- (high_ones &gt; low_ones)is_in_range &lt;- (CP0[19] &lt;= vAddr) &amp;&amp; ((vAddr + 3) &lt; CP0[18])if (vAddr[1:0] != 00) || (Monitor_Active &amp;&amp; !is_in_range)    SignalException(AdES)else    memory[vAddr] &lt;- GPR[rt]
+当监视功能开启时，sw 指令需检查目标地址是否越界。
+题目分析
+T5 很复杂，但难度可能略低于去年的 withdraw。可能的一个难点是
+sw 的全部字节地址，其实就是 [vaddr, vaddr+3] 这个区间。我
+debug 许久才发现是一个条件中少加了括号，和 &amp;&amp; 和
+|| 的优先级有关，最终虚惊一场。
+助教问答
+以下为部分问题：
+
+看看测试程序和设计文档
+我是如何处理多个流水级、多条指令产生的异常的优先级的？
+如何判断一条指令是否处于延迟槽？
+我做这道题过程中遇到了什么问题
+我对计组课程有没有什么建议
+
+笔者的话
+P7 的课下可谓是最后一舞，笔者感觉比 P5
+还难。代码具体写法可以多参考一下 dalao
+的博客，此处只谈一些注意事项。通过 P7
+课下的弱测的难度就很大，每人刚写出来的代码往往都有数不清的
+bug，这时候就可以再次借助评测机了，不过 P7 和 MARS
+对拍就不合适了，只能找同学或者学长的 CPU
+来对拍，只有对拍几千轮都没有问题，那才敢比较放心。
+上机是 5 道做对 4
+道就算通过。开始后很拼手速，前四个题都是直接提交，如果有过不了的，那就需要现场
+debug。第五题一般是加新指令或者新异常，也可能两个都有，课下一定要充分理解每个异常是怎么产生和传递的，这样课上才能得心应手。另外
+P7 很多人会选择手动 gap，即只通过四道，会选择下周再试一次，因为 P7
+对成绩影响似乎大一点。还有一个细节，就是 handler.asm
+的代码也要打包提交（具体代码参考往届博客，反正这个自己写估计不太可能），不然用
+ISE 仿真时应该就没法处理异常的情况，也就很难 debug
+了（没错，我就忘交了）。
+P7
+结束了，那实验部分就告一段落，该开始理论部分的学习了。理论部分如果老师讲的浅，可以看其他老师班
+PPT，或者直接看王道书，王道上可以参考的主要就是存储系统，剩下的数制、流水线、总线、IO
+等也可以稍微参考，讲的都比较深，有些需要自己做取舍。另外 961
+的计组部分也可以做一做，仅有的两套往年题比较常规，去年的题量和难度感觉还是很大的，所以也做好心理准备（）
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+        <tag>Verilog</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO 推荐题目汇总</title>
+    <url>/2025/12/09/BUAA-CO%20%E6%8E%A8%E8%8D%90%E9%A2%98%E7%9B%AE%E6%B1%87%E6%80%BB/</url>
+    <content><![CDATA[可能有些人会感到，计组有时没题可做了，即使在往届博客上看到题目，也没有相关的评测环境，难以确定是否做对，HDLBits
+上的题画风又不太一致，但其实 cscore 上就有很多的题目可以访问。
+比如某题目的网址如下：
+http://cscore.buaa.edu.cn/#/problem?ProblemId=334&amp;PieId=1338
+PieId 应该是每届和每届都不同，2406 对应的是 1338。ProblemId
+是题目编号，没有规律可言，但同一个 ProblemId
+似乎每届都能访问到题目。我们便可以先查到本届的 PieId，再按顺序遍历
+ProblemId（当然也可以直接访问我提供的
+ProblemId），如果打开了题目就将其截图或其他形式保存下来，从而就有很多题目可以做并评测了。
+可惜的是，笔者直到 P5
+时才在往届博客中看到这个方法，因此很多之前的题目都没用了，而 P6
+及以后的题又爬不到，因此这些题只能流传下去了（）
+源码和题目获取
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO P3上机</title>
+    <url>/2025/11/03/BUAA-CO%20P3%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Logisim 实现单周期 CPU。
+课上题目
+T1 revi
+revi-rs-rt-imm16
+RTL
+temp &lt;- GPR[rs]result &lt;- temp[31-imm16:0]||reverse(temp[31:32-imm16])GPR[rt] &lt;- result
+T2 blz
+blz-rs-rt-offset
+RTL
+temp1 &lt;- count_leading_zeros(GPR[rs])temp2 &lt;- count_leading_zeros(GPR[rt])if (temp1 == temp2)     PC &lt;- PC + 4 + sign_ext(offset||00)else if (temp1 &gt; temp2)    PC &lt;- PC + 4    GPR[rs] &lt;- temp1else    PC &lt;- PC + 4    GPR[rs] &lt;- temp2
+T3 lwf
+lwf-base-rt-offset
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]filter &lt;- memword &amp; GPR[rt]ones &lt;- count_ones(filter)if (ones % 2 == 0)    GPR[rt] &lt;- memwordelse    GPR[(rt+1) % 32] &lt;- memword
+题目分析
+总的来说难度都不大，只要考前充分理解了 CPU 的数据通路，理解单周期 CPU
+是怎么跑那几条指令的，那么应该就能通过了。
+T1 需要将一个数翻转，我是用两个 Splitter
+反向拼接，就是手动修改每个端口的值有点繁琐。T2
+需要求前导零的个数，应该用 Bit Adder
+元件，如果想不到这个元件那难度就大了。有一个 Logisim
+的易错点，一个模块加了新的输出端口后，那么原端口的位置可能都会发生变化，这就导致在顶层连好的线实际上都断开了。这次上机时我们机房延长到了
+21:30 结束，从 P4 开始就只有两小时了。并注意，在 P3
+及之后，每个题目都要写测试程序（用新指令写一些汇编程序），虽然大部分人都是做完之后才写测试程序吧。
+助教问答
+以下为部分问题：
+
+看看测试程序和设计文档
+我评测机的设计思路，编写过程中出现了哪些错误，如何得到 Logisim
+的结果，评测机中代码生成的逻辑是什么，评测机是否测出我 CPU
+的问题，数据强度如何
+我 CPU 中 CTRL 模块的设计思路，0 号寄存器恒等于 0 是如何实现的
+
+笔者的话
+从 P3 开始就该开发 CPU
+了，每次上机的题目基本上都是运算类、跳转类、访存类各一道。上机之前一定要对
+CPU
+进行充分的测试，学有余力可以自己写评测机，往届学长也搞了一些评测机，可以直接拿来用，比如
+COT
+等。上机时可以先裸交一发，如果能过一些点就说明课下的设计基本是没问题的，否则就要先改课下的
+bug（虽然上机两小时内独立发现并修复 bug 非常难）。
+P3 仍然是使用 Logisim，建议适当利用
+Tunnel，用的太少，导线会太乱；用太多就不容易理清接线关系。另外在
+CTRL（控制模块）中，由 Instr
+生成对应的指令独热码时，不要用与门阵列，可以直接用
+Comparator 的，很简洁。另外可以提前给 CPU
+加一些要求之外的指令，比如
+j、jal、jr、jalr，加上这几个后，对跳转类指令的理解就更加深入了。还有学长加过
+lh、lb、sh、sb
+等指令，不过加这几个指令的工作量比较大，建议量力而行。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>Logisim</tag>
+        <tag>CO</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OO U2学习与反思</title>
+    <url>/2026/04/26/BUAA-OO%20U2%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
+    <content><![CDATA[第二单元 OO 学习与反思
+一、同步块的设置和锁的选择
+锁的设置与演变
+
+第五次作业：一开始，为了稳妥，我把主要的同步块都放在了共享的
+BaseQueue 里，
+offer、take、isEmpty
+这些方法全加上了
+synchronized。这时候逻辑比较简单，锁住队列本身就能解决大部分并发读写的问题，线程等待也是靠
+wait() 和 notifyAll()
+在队列对象上完成。
+第六次作业：到了第六次作业，加了检修机制和自由分配电梯的逻辑。我在各个电梯井
+ElevatorThread
+里加了一些状态控制，由于状态会被电梯和调度器同时访问，我在通知电梯改变状态的时候，借用了电梯专属的
+processQueue 的锁来做 notifyAll。此时调度器
+DispatchThread 拿 scheduleQueue
+的锁，电梯拿自己的 processQueue
+锁，分工明确，基本没有问题。
+第七次作业：这次的重点是换乘层 F2 的防撞。我给
+ElevatorShaft 专门加了个显式的公平锁
+ReentrantLock f2Lock。当任意一轿厢需要进入 F2
+层时，必须在执行 moveOneFloor 前通过
+f2Lock.lock()
+获取锁，离开后释放锁。同时，我将处理语句精简为仅包含进入、停留和离开 F2
+层的动作，使锁的粒度最小，保证安全的同时最大化了电梯的效率。
+
+锁与同步块内处理语句的关系
+随着作业迭代，我逐渐体会到，锁的作用不仅仅是“互斥”，更是为了保证同步块内的一组处理语句原子性地维护某个对象的属性，我们不能把紧密关联的操作拆分到不同的同步块中。
+
+队列的存取操作：在执行 offer 和
+take
+时，“检查队列状态”、“修改队列元素”、“唤醒等待线程”必须包裹在同一个
+synchronized
+块中。如果将检查和取数分开，就可能出现两个线程同时判断队列非空，然后试图取出同一个请求的危险情况。
+状态修改与通知的绑定：在 hw6
+中，调度器往电梯派发新请求或下发指令时，“修改共享状态”和“调用
+notifyAll()”这两步处理语句必须在同一个同步块内完成。如果先修改状态，出锁后再去
+notifyAll，这期间电梯可能恰好去检查状态并因错过了通知而陷入无休止的等待。
+多条件检查的原子性：在 hw7 的 F2
+防撞逻辑中，“检查对向轿厢是否占用 F2”以及“登记当前轿厢即将进入
+F2”这两步处理语句，必须包裹在同一个 f2Lock
+的临界区内。如果检查和登记被拆分，两部轿厢可能在同一时刻都发现 F2
+空闲，并同时进入 F2 发生碰撞。
+
+二、调度器设计
+调度器交互设计
+我的代码采用了层次化的调度架构：InputThread -&gt;
+ScheduleQueue -&gt; DispatchThread -&gt;
+ProcessQueue -&gt;
+ElevatorThread，如下图所示。
+调度器 DispatchThread
+作为中枢，一旦有新乘客请求，就将其从 ScheduleQueue
+中取出，并通过策略类 ShadowDispatchStrategy
+为其分配最合适的电梯，最后将乘客放入对应电梯的 ProcessQueue
+中，并通过 notifyAll()
+唤醒处于等待状态的电梯。这种设计实现了调度与执行的解耦，调度器不需要干预电梯的运行状态，只需通过队列进行基于数据的交互。
+调度策略与性能指标
+
+运行策略：单部电梯采用了经典的 LOOK
+算法，在当前方向上有请求时继续运行，否则反转方向，能有效减少不必要的移动时间。
+分配策略：从第六次作业开始，我实现了“影子电梯”策略。在分配乘客时，系统会深拷贝每一部电梯的当前状态，在后台通过模拟该电梯运行完所有请求以及所需的代价。
+多指标权衡：我影子电梯的代价函数综合考虑了运行时间和耗电量。时间代价根据模拟运行到达目标层的时间计算，耗电量代价则根据模拟过程中的
+ARRIVE、OPEN/CLOSE
+次数计算，最终将指标加权求和，寻找代价最小的电梯进行分配。针对可能的维护和双轿厢改造与回收，调度器会给这些电梯一些惩罚，避免将新乘客分配给它们。
+
+三、bug分析与debug方法
+出现过的bug
+我只有 hw7 互测中被人发现了bug。错误的输出部分如下：
+[49.8510]RECYCLE-ACCEPT-7[49.8520]RECYCLE-BEGIN-7[49.8530]RECEIVE-100-7
+原因是副轿厢 7 已经进入了 RECYCLE_BEGIN 状态，却还
+RECEIVE
+了新乘客。经过我的排查，发现我的调度器在计算代价的时候，副轿厢 7
+的状态可能还是正常的（或者正好处于
+REC_ACCEPT）。调度器决定把乘客分给 7
+号，但是在它计算完、准备输出接受信息的微小时间间隙里，副轿厢 7
+直接把乘客清空、关门，并输出了 RECYCLE-BEGIN
+改变了状态。等调度器输出 RECEIVE 的时候，副轿厢 7
+已经变成不可接收请求的状态了。总的来说，是因为我电梯调度和输出
+RECEIVE
+并没有被包裹在同一个原子操作里，导致被其他线程修改了状态。
+多线程程序的debug方法
+经历了这三次作业，我总结出了一套多线程调试方法：
+
+理清共享对象边界：在排查问题前，先明确哪些对象会被多个线程同时读写。对于不共享的局部状态，交由电梯线程独占推进即可，不需要过度担心并发。
+重点排查线程唤醒逻辑：可以利用输出语句检查
+wait() 和 notifyAll()
+的配对情况。特别关注如输入关闭、状态转换等边界事件，看看是否在这些特殊时刻漏了唤醒，导致线程睡死。
+针对输出日志反推状态：多线程由于难以稳定地单步断点调试，我们往往去参考输出日志。我会检查
+RECEIVE、IN、OUT
+是否成对出现，电梯的各种输出顺序是否符合题意。对报错的特定行，我根据前面的输出反推当时各个线程所处的状态。
+搭建评测机：我依旧会搭建评测机来进行高强度的生成请求。一旦评测报告错误，立马固定测试用例，保留当时的输入输出，然后再进行针对性的排查。
+
+四、线程安全与层次化设计
+线程安全
+线程安全不是随意在方法上加 synchronized
+就能实现，滥用锁反而会导致性能下降和死锁。我感觉，理清数据流动的模型是保障线程安全的前提。U2
+中，只有队列被多个线程共享，因此只需将队列封装为线程安全的类。对于电梯内部的载重、当前楼层等状态，只由电梯线程自己修改，天然是线程安全的，不需要额外加锁。同时，一定要保持锁的获取顺序一致，并避免在同步块内调用耗时的方法。
+层次化设计
+层次化设计也有效降低了系统的耦合度。从数据流向上，我的架构可以划分为“输入层
+-&gt; 分派层 -&gt;
+执行层”。从类的结构上，我将“执行动作（ElevatorThread）”、“运行策略（MoveStrategy）”和“分配策略（ShadowDispatchStrategy）”严格剥离。面对
+hw7
+的复杂需求，由于具备良好的层次结构，我只需在电梯井层面维护两部电梯，并引入题干中新增的几个状态，而无需重构底层移动和开关门等逻辑。
+五、大模型使用心得
+
+模型名称：Gemini
+任务分工：我负责架构设计和核心状态机的定义等，并编写主要的核心代码，只有不太熟悉的地方，如
+synchronized
+等多线程相关代码的写法，才会询问大模型。写完后，大模型负责帮我检查代码逻辑和
+debug，比如说影子电梯深拷贝代码等。
+复杂任务中的优势：在面临多线程电梯这样复杂的任务时，大模型的逻辑梳理能力非常突出。当我描述双轿厢改造流程时，它能迅速生成清晰的状态机框架；在排查死锁时，把相关输入输出描述给大模型，它思考后往往能一针见血地指出问题。
+面临的困难：大模型由于缺乏整体代码库的上下文，有时会“自作主张”地引入一些不需要的类，如果直接复制粘贴，极易引入隐蔽的
+bug。
+总体感受：大模型是一位极为高效的助手，但多线程代码的底线还是必须由我们把控。只有自己深刻理解了并发机制，才能审查
+AI 代码，将其转化为真正的生产力。
+
+六、第二单元的体验与建议
+真实感受
+第二单元的电梯作业无疑是 OO
+中思维跨度最大的一环，从串行转向并发是一个痛苦但也充满成就感的过程。hw6
+中，我设计影子电梯调优耗费了大量精力，第七次作业的双轿厢逻辑中我也遇到了很多的细节问题，比如说在
+F2
+换乘的写法等。但最终看着电梯高效地运送着乘客而不发生任何死锁，这种获得感也是难以言喻的。
+课程建议
+希望能稍微介绍一下相关电梯调度名词具体是什么意思，比如量子电梯、自由竞争等，网上相关的资料也很少。
 ]]></content>
       <categories>
         <category>OO</category>
@@ -2097,6 +1813,176 @@ BigInteger 来防溢出。
       <tags>
         <tag>Java</tag>
         <tag>OO</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OO U3学习与反思</title>
+    <url>/2026/06/02/BUAA-OO%20U3%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
+    <content><![CDATA[第三单元 OO 学习与反思
+一、JML 和规格驱动开发
+JML 契约式设计
+JML 本质上是在 Java 接口外面再套一层形式化约束。它通过
+requires、ensures、assignable 和
+signals
+等，明确了方法的前置条件、后置条件、可修改状态以及异常抛出条件。相比于自然语言，JML
+可以准确地约束方法的规格。在 OOP
+中，它作为实现者与调用者之间的契约，消除了语义上的歧义。
+规格驱动开发
+这一单元最明显的变化就是写代码前先看规格。规格开发的主要优势有：
+1. 实现自由度与结果约束：只要对外状态满足
+ensures，内部用
+HashMap、TreeSet，还是自己写容器，都可以。比如有的方法
+JML
+写得像全局遍历，但实现时完全没必要照着翻译成循环。只要返回值和状态变化对，内部可以做缓存，也可以增量维护。
+2. 测试驱动：JML 为测试提供了清晰的依据。通过直接对照
+ensures 和 signals
+子句，可以很容易地推导出测试的分支和边界情况，从而编写出高覆盖率的单元测试。
+二、JUnit 测试经验总结
+在本单元的测试中，我针对 JML
+的完整性进行验证，包括正常结果返回、状态变化以及异常情况，体现在以下三个方法的测试中：
+queryMutualFollowingSum 的测试里，我没有复用 src
+里动态维护 mutualFollowingSum
+的逻辑，而是单独写了一套双重遍历节点的朴素算法。这样测出来才有意义。数据覆盖了空图、单向关注、对称互关、不成环这些情况，主要用来确认边增删之后缓存计数没有跑偏。
+测 cleanSpamComments
+时，麻烦点在副作用。这个方法会改评论列表，所以调用前要先做快照。测试除了看删除数量和关键字最大出现次数，还要看剩下的评论顺序是否保持，playCount、likes
+这类无关属性有没有被动到。针对字符串匹配，我补了通配符边界词和重叠匹配，以确保严格符合题目要求。
+recommendNthUp 更偏排序规则。测试覆盖了
+rank 非法、候选集为空、分数相同按 ID
+排序、排除自己和已关注用户等情况。它是纯查询方法，所以我还测了连续调用后内部状态不变。
+三、三次作业的迭代
+第一次作业：社交图谱与视频推送
+第一次作业主要是基础的用户社交图谱和视频推送。为了保证查询效率，我在
+Network 里用 HashMap 管理 userMap
+和 videoMap。
+在用户关系维护方面，我直接在 User 类中使用两个
+HashMap（following 和
+followers）来记录关注和被关注关系，以此替代低效的全局查找。queryMutualFollowingSum
+我没有每次重新算，而是在 followUser 和
+unfollowUser 里动态维护
+mutualFollowingSum，查询时就是 O(1)。
+视频接收这里，receivedVideos 经常要头插，所以我写了一个
+IndexedList。另外，User 里维护长度为 4 的
+followerAgeCounts 数组，以此在 O(1)
+的时间内返回各个年龄段粉丝的占比。
+第二次作业：互动状态与缓存
+第二次作业引入了点赞、投币、视频热度等互动状态。难点不是某个单独方法，而是一次操作会牵连多个对象。比如投币要改用户余额、视频硬币数、UP
+主硬币数，还要在 User 的 contributions Map
+里更新贡献度。
+为了少做全量查询，我在 User 里维护了
+watchedVideos、likedVideos 等集合，也用
+contributions 存各个用户的贡献度。Video
+里添加评论时用 commentIdSet
+防重。cleanSpamComments 用双指针配合
+comments.subList().clear()
+清理，避免一边遍历一边频繁删除。清理过的关键字用
+cleanKeywords 记下来，防止重复计算。
+queryLongestDecSeq 是这一阶段比较容易 TLE 的点。我用了
+longestDirty 脏位和 longestDecSeqCache
+缓存。图结构没变就直接返回缓存；只要关注关系变化，就把脏位打上，从而保证了平均情况下的高查询效率。
+第三次作业：热度推荐与模块化
+第三次作业加了推荐相关方法，代码量已经快超 500
+行了（不过好像听说代码风格测试并不卡500行？），我在 Network
+里尽量只做调度，把具体状态维护放回实体类。
+queryMostPopularVideo 用了
+Map&lt;String, TreeSet&lt;Video&gt;&gt; typeHotRank。TreeSet
+按 heat 和 id
+排序。凡是会影响视频热度的操作，更新前先从对应 TreeSet
+里移除，改完热度再插回去。这样每种类型的视频都能保持有序，查询最热视频时不用临时排序。
+User 的 influence
+也没有每次遍历所有上传视频，而是在热度变化时通过回调增量更新
+influences 数组。recommendNthUp
+用了类似快速选择的策略，避免全量排序。写完这块以后最大的感觉就是：推荐逻辑不难，难的是别让它把前面维护好的状态一起拖慢。
+
+
+社交网络
+
+四、如何发现迭代中的方法和容器变化
+在历次作业中，准确找出需要修改的方法和容器是很重要的一环。我发现不能只看新增加的方法，已有的老方法在规格上也可能发生了变化。
+首先是对比接口暴露的状态模型。比如在第三次作业中，UserInterface
+的模型描述里新增了关于不同类型视频的数量统计要求。看到这个新增的模型属性，我就在
+User 类中新增了一个 typeCounts
+数组，在每次观看视频时同步更新它。
+其次是检查副作用 assignable
+的变化。有时候老方法的代码核心逻辑没变，但在新版本中允许修改的变量范围变大了。比如有的方法原本只修改自身属性，后来允许修改其他类的集合。如果漏看了这部分
+assignable
+的扩展，只按原来的逻辑写，就会导致数据没有同步更新。
+另外就是对比方法签名。如果返回类型或参数数量如果变了，原来调用的地方和涉及的数据存储格式基本都需要做相应的修改，这一点编译器通常会报错提示，但也需要我们去更新相关的代码链路。
+五、如何发现性能瓶颈
+JML
+只描述结果要求，不会考虑底层的计算开销。如果直接把规格翻译成循环，强测里基本迟早会出事。
+我会先看量词复杂度。如果 JML 里出现了多重嵌套的 \exists
+和 \forall，或者要求计算全局的
+\sum，把它直接写成嵌套循环一般就会达到 O(N²)
+以上的复杂度。遇到这类方法，我会在本地造一些比较大的数据来测试它的执行时间。
+然后看读写频率。对于像互相关注总数、粉丝年龄分布这种查询次数远大于修改次数的属性，每次查询都重新计算显然太慢了。我选择在关注、取关等操作发生时顺便更新这些值。就像代码里维护
+bestContributorId 一样，通过增量维护把复杂度降下来。
+图算法更适合缓存。像 queryLongestDecSeq
+这种方法每次计算开销很大，我采用了带脏位的缓存机制。不过使用缓存时必须保证状态的一致性，也就是在任何会改变图结构的方法里，都要记得把
+longestDirty 设为
+true，防止出现缓存和实际状态不符的问题。
+六、Bug 与原因分析
+得益于规格驱动开发的严谨性，在三次作业的中测、强测和互测环节中，我的代码都没有被测出
+Bug。期间还发生了一个小插曲：在 hw10
+的强测中，由于评测机波动，第六个数据点最初被误判为错误，好在后续重测后证实了那只是评测机自身的问题。这虽然让我虚惊一场，但也最终证明了代码的正确性。
+不过在本地开发迭代的过程中，我也踩过一些坑。这些经历让我意识到规格开发中有几个很容易出错的地方：
+1. 遗漏副作用：在 hw10
+迭代过程中，增加投币功能时，不仅要修改视频本身的
+coins，还需要同步增加该视频上传者的 coins
+以及记录 contribution。起初我没有仔细对照 JML 中新增的
+assignable
+语句，只修改了视频侧，结果状态不同步。多对象更新基本可以当成一个小事务处理，不能有一丝遗漏。
+2. 异常抛出顺序：JML
+规格中异常不仅有明确的判断先后顺序，构造异常时传入的 ID
+参数也有严格要求。最初我在抛出异常时未按规则排序，或者传入的 ID
+顺序错位，导致 JUnit 测试中捕获到的异常信息不匹配。
+七、大模型使用体会
+这一单元里，我更愿意把大语言模型当规格阅读助手和评测机生成器，而不是直接写最终代码的工具。我使用的
+Code Agent 主要是 Codex 。
+它的显著优势在于：可以快速把长篇的 JML
+翻译成自然语言、列出可能的边界条件、提醒某个方法需要检查哪些副作用，还可以帮助生成繁琐的
+JUnit 单元测试。使用这些 Agent
+来开展自动化测试、批量构造测试样例等还是很方便的，极大地提高了效率。对于版本变更比对，将新旧版本的接口文件发给它，它能迅速列出所有变更点，比肉眼比对高效得多。
+但大模型的局限性也很明显：它往往倾向于直译
+JML，给出“看起来正确但慢”的朴素实现，完全忽略强测中的性能压力。要想让大模型设计出好的架构或是恰当的设计模式，需要我们提供极高质量的提示词。因此我经常使用一些提示词优化器来优化我的输入，向大模型更精准地传达意图，从而引导其输出更优的方案。
+八、JML“击鼓传花”研讨课感悟
+在第二次研讨课上的 JML
+“击鼓传花”游戏中，我获得了许多关于团队协作的启发。
+在本次活动中，我所在的链路题目是计算两个正整数的最大公约数。初始的自然语言需求明确规定了接收正整数
+a 和 b，前置条件为大于 0，且在输入小于等于 0 时抛出
+IllegalArgumentException 异常。
+1. 发现的 JML Bug
+在从 JML 翻译回自然语言，或者从 NL 编写 JML
+的过程中，很容易出理解的偏差。例如在我们组其他同学的链路中，就出现了：
+- 边界条件遗漏或变形：有的同学在 JML
+转自然语言时遗漏了边界条件，把 &gt;= 0 错误地记作了
+&gt; 0。或者对于某些特殊边界，原本要求返回“空
+Map”，在传递中却被替换成了“返回 null”。
+-
+逻辑符号被忽视：在转述过程中，某些逻辑非符号（!）极容易被忽视，导致某一处表述出现明显的语义反转和偏离。
+-
+异常触发条件写错：自然语言表述的异常抛出条件由于不够严谨，导致后续在写
+signals 子句时发生偏离。
+2. 需求与边界在传递中的变化
+游戏过程中，需求和边界常常会发生不可逆的变化。不过，因为我出的 gcd
+题目数学逻辑比较纯粹，大家都不容易搞错，所以我们这条链路取得了 5
+分满分。这也让我体会到：只要初始的需求足够严谨，后面传错的概率就小很多。有些自然语言觉得理所当然的条件，必须得像数学公式一样一条条严格约束，不然很容易产生误解。
+3. 多人组队编程的建议与措施
+为了在未来的多人开发中统一对需求的理解，我认为应该采取以下措施：
+- 统一接口规范：JML
+的核心在于提供接口规范，而不是强制所有人写出一样的代码。我们只要求大家的实现符合一个统一的接口，至于方法内部实现只要没有性能瓶颈，无需强行统一。
+-
+严格定义初始需求：在动手编码前，需求分析必须做到形式化般的严谨。即便是看似简单的自然语言，也要杜绝任何歧义，明确写出前提和异常分支。
+-
+多重细致校验：在代码编写时，必须进行细致的逻辑复盘，严防类似遗漏
+! 等低级错误造成雪崩。
+]]></content>
+      <categories>
+        <category>OO</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>OO</tag>
+        <tag>JML</tag>
       </tags>
   </entry>
   <entry>
@@ -3210,133 +3096,468 @@ A/B 测试：结合 A/B
       </tags>
   </entry>
   <entry>
-    <title>BUAA-OO U2学习与反思</title>
-    <url>/2026/04/26/BUAA-OO%20U2%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
-    <content><![CDATA[第二单元 OO 学习与反思
-一、同步块的设置和锁的选择
-锁的设置与演变
+    <title>BUAA-OO U1学习与反思</title>
+    <url>/2026/03/31/BUAA-OO%20U1%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
+    <content><![CDATA[第一单元 OO 学习与反思
+一、 度量分析
+1. 类与复杂度分析
+基于最终的作业代码，我对核心类进行了度量分析：
 
-第五次作业：一开始，为了稳妥，我把主要的同步块都放在了共享的
-BaseQueue 里，
-offer、take、isEmpty
-这些方法全加上了
-synchronized。这时候逻辑比较简单，锁住队列本身就能解决大部分并发读写的问题，线程等待也是靠
-wait() 和 notifyAll()
-在队列对象上完成。
-第六次作业：到了第六次作业，加了检修机制和自由分配电梯的逻辑。我在各个电梯井
-ElevatorThread
-里加了一些状态控制，由于状态会被电梯和调度器同时访问，我在通知电梯改变状态的时候，借用了电梯专属的
-processQueue 的锁来做 notifyAll。此时调度器
-DispatchThread 拿 scheduleQueue
-的锁，电梯拿自己的 processQueue
-锁，分工明确，基本没有问题。
-第七次作业：这次的重点是换乘层 F2 的防撞。我给
-ElevatorShaft 专门加了个显式的公平锁
-ReentrantLock f2Lock。当任意一轿厢需要进入 F2
-层时，必须在执行 moveOneFloor 前通过
-f2Lock.lock()
-获取锁，离开后释放锁。同时，我将处理语句精简为仅包含进入、停留和离开 F2
-层的动作，使锁的粒度最小，保证安全的同时最大化了电梯的效率。
 
-锁与同步块内处理语句的关系
-随着作业迭代，我逐渐体会到，锁的作用不仅仅是“互斥”，更是为了保证同步块内的一组处理语句原子性地维护某个对象的属性，我们不能把紧密关联的操作拆分到不同的同步块中。
 
-队列的存取操作：在执行 offer 和
-take
-时，“检查队列状态”、“修改队列元素”、“唤醒等待线程”必须包裹在同一个
-synchronized
-块中。如果将检查和取数分开，就可能出现两个线程同时判断队列非空，然后试图取出同一个请求的危险情况。
-状态修改与通知的绑定：在 hw6
-中，调度器往电梯派发新请求或下发指令时，“修改共享状态”和“调用
-notifyAll()”这两步处理语句必须在同一个同步块内完成。如果先修改状态，出锁后再去
-notifyAll，这期间电梯可能恰好去检查状态并因错过了通知而陷入无休止的等待。
-多条件检查的原子性：在 hw7 的 F2
-防撞逻辑中，“检查对向轿厢是否占用 F2”以及“登记当前轿厢即将进入
-F2”这两步处理语句，必须包裹在同一个 f2Lock
-的临界区内。如果检查和登记被拆分，两部轿厢可能在同一时刻都发现 F2
-空闲，并同时进入 F2 发生碰撞。
+Class
+OCavg
+OCmax
+WMC
 
-二、调度器设计
-调度器交互设计
-我的代码采用了层次化的调度架构：InputThread -&gt;
-ScheduleQueue -&gt; DispatchThread -&gt;
-ProcessQueue -&gt;
-ElevatorThread，如下图所示。
-调度器 DispatchThread
-作为中枢，一旦有新乘客请求，就将其从 ScheduleQueue
-中取出，并通过策略类 ShadowDispatchStrategy
-为其分配最合适的电梯，最后将乘客放入对应电梯的 ProcessQueue
-中，并通过 notifyAll()
-唤醒处于等待状态的电梯。这种设计实现了调度与执行的解耦，调度器不需要干预电梯的运行状态，只需通过队列进行基于数据的交互。
-调度策略与性能指标
 
-运行策略：单部电梯采用了经典的 LOOK
-算法，在当前方向上有请求时继续运行，否则反转方向，能有效减少不必要的移动时间。
-分配策略：从第六次作业开始，我实现了“影子电梯”策略。在分配乘客时，系统会深拷贝每一部电梯的当前状态，在后台通过模拟该电梯运行完所有请求以及所需的代价。
-多指标权衡：我影子电梯的代价函数综合考虑了运行时间和耗电量。时间代价根据模拟运行到达目标层的时间计算，耗电量代价则根据模拟过程中的
-ARRIVE、OPEN/CLOSE
-次数计算，最终将指标加权求和，寻找代价最小的电梯进行分配。针对可能的维护和双轿厢改造与回收，调度器会给这些电梯一些惩罚，避免将新乘客分配给它们。
 
-三、bug分析与debug方法
-出现过的bug
-我只有 hw7 互测中被人发现了bug。错误的输出部分如下：
-[49.8510]RECYCLE-ACCEPT-7[49.8520]RECYCLE-BEGIN-7[49.8530]RECEIVE-100-7
-原因是副轿厢 7 已经进入了 RECYCLE_BEGIN 状态，却还
-RECEIVE
-了新乘客。经过我的排查，发现我的调度器在计算代价的时候，副轿厢 7
-的状态可能还是正常的（或者正好处于
-REC_ACCEPT）。调度器决定把乘客分给 7
-号，但是在它计算完、准备输出接受信息的微小时间间隙里，副轿厢 7
-直接把乘客清空、关门，并输出了 RECYCLE-BEGIN
-改变了状态。等调度器输出 RECEIVE 的时候，副轿厢 7
-已经变成不可接收请求的状态了。总的来说，是因为我电梯调度和输出
-RECEIVE
-并没有被包裹在同一个原子操作里，导致被其他线程修改了状态。
-多线程程序的debug方法
-经历了这三次作业，我总结出了一套多线程调试方法：
 
-理清共享对象边界：在排查问题前，先明确哪些对象会被多个线程同时读写。对于不共享的局部状态，交由电梯线程独占推进即可，不需要过度担心并发。
-重点排查线程唤醒逻辑：可以利用输出语句检查
-wait() 和 notifyAll()
-的配对情况。特别关注如输入关闭、状态转换等边界事件，看看是否在这些特殊时刻漏了唤醒，导致线程睡死。
-针对输出日志反推状态：多线程由于难以稳定地单步断点调试，我们往往去参考输出日志。我会检查
-RECEIVE、IN、OUT
-是否成对出现，电梯的各种输出顺序是否符合题意。对报错的特定行，我根据前面的输出反推当时各个线程所处的状态。
-搭建评测机：我依旧会搭建评测机来进行高强度的生成请求。一旦评测报告错误，立马固定测试用例，保留当时的输入输出，然后再进行针对性的排查。
+ChoiceFactor
+1.5
+2
+3
 
-四、线程安全与层次化设计
-线程安全
-线程安全不是随意在方法上加 synchronized
-就能实现，滥用锁反而会导致性能下降和死锁。我感觉，理清数据流动的模型是保障线程安全的前提。U2
-中，只有队列被多个线程共享，因此只需将队列封装为线程安全的类。对于电梯内部的载重、当前楼层等状态，只由电梯线程自己修改，天然是线程安全的，不需要额外加锁。同时，一定要保持锁的获取顺序一致，并避免在同步块内调用耗时的方法。
-层次化设计
-层次化设计也有效降低了系统的耦合度。从数据流向上，我的架构可以划分为“输入层
--&gt; 分派层 -&gt;
-执行层”。从类的结构上，我将“执行动作（ElevatorThread）”、“运行策略（MoveStrategy）”和“分配策略（ShadowDispatchStrategy）”严格剥离。面对
-hw7
-的复杂需求，由于具备良好的层次结构，我只需在电梯井层面维护两部电梯，并引入题干中新增的几个状态，而无需重构底层移动和开关门等逻辑。
-五、大模型使用心得
 
-模型名称：Gemini
-任务分工：我负责架构设计和核心状态机的定义等，并编写主要的核心代码，只有不太熟悉的地方，如
-synchronized
-等多线程相关代码的写法，才会询问大模型。写完后，大模型负责帮我检查代码逻辑和
-debug，比如说影子电梯深拷贝代码等。
-复杂任务中的优势：在面临多线程电梯这样复杂的任务时，大模型的逻辑梳理能力非常突出。当我描述双轿厢改造流程时，它能迅速生成清晰的状态机框架；在排查死锁时，把相关输入输出描述给大模型，它思考后往往能一针见血地指出问题。
-面临的困难：大模型由于缺乏整体代码库的上下文，有时会“自作主张”地引入一些不需要的类，如果直接复制粘贴，极易引入隐蔽的
-bug。
-总体感受：大模型是一位极为高效的助手，但多线程代码的底线还是必须由我们把控。只有自己深刻理解了并发机制，才能审查
-AI 代码，将其转化为真正的生产力。
+DeriveFactor
+2.5
+4
+5
 
-六、第二单元的体验与建议
-真实感受
-第二单元的电梯作业无疑是 OO
-中思维跨度最大的一环，从串行转向并发是一个痛苦但也充满成就感的过程。hw6
-中，我设计影子电梯调优耗费了大量精力，第七次作业的双轿厢逻辑中我也遇到了很多的细节问题，比如说在
-F2
-换乘的写法等。但最终看着电梯高效地运送着乘客而不发生任何死锁，这种获得感也是难以言喻的。
-课程建议
-希望能稍微介绍一下相关电梯调度名词具体是什么意思，比如量子电梯、自由竞争等，网上相关的资料也很少。
+
+ExpFactor
+1
+1
+2
+
+
+Expr
+1.33
+2
+4
+
+
+FuncFactor
+2.67
+5
+8
+
+
+FuncFactor.RecCacheKey
+1.67
+3
+5
+
+
+FuncReg
+1
+1
+4
+
+
+FuncReg.FuncDef
+1
+1
+2
+
+
+FuncReg.RecDef
+1
+1
+15
+
+
+Lexer
+2.8
+9
+14
+
+
+MainClass
+3
+3
+3
+
+
+Mono
+4.04
+14
+105
+
+
+Number
+1
+1
+2
+
+
+Parser
+2.09
+7
+46
+
+
+Poly
+3.41
+10
+58
+
+
+Power
+2.5
+4
+5
+
+
+Processor
+2
+2
+2
+
+
+Sign
+3
+6
+9
+
+
+Term
+1.67
+3
+5
+
+
+
+根据表格可以看到，最复杂的三个类依次是
+Mono、Poly、Parser。在
+Mono
+类中，我定义了许多方法，不仅包括基本的代数运算（如求导等），还为了追求极致的最短输出长度而定义了化简方法，这在一定程度上违反了单一职责原则。Poly
+类则相对干练，主要负责加、减、乘、幂等多项式间的数学运算以及转化为字符串的
+toString。在 Parser
+中，我采用了递归下降的语法解析方式，针对每一种类型的因子和表达式都编写了解析方法，实现了较好的模块内聚。
+2. 方法复杂度分析
+结合上述类复杂度，我进一步使用工具对部分核心方法进行了度量：
+
+
+
+方法
+CogC
+ev(G)
+iv(G)
+v(G)
+
+
+
+
+Lexer.next()
+10
+2
+8
+9
+
+
+Parser.parseFactor()
+9
+7
+10
+10
+
+
+Poly.equals(Object)
+10
+8
+3
+9
+
+
+FuncFactor.solveRec(int, Poly)
+8
+2
+5
+5
+
+
+Parser.parseRecDef(Scanner)
+7
+3
+4
+5
+
+
+Mono.equals(Object)
+7
+7
+2
+8
+
+
+Poly.power(BigInteger)
+7
+3
+4
+6
+
+
+Poly.multiply(Poly)
+5
+2
+4
+5
+
+
+Mono.derive(String)
+4
+1
+5
+5
+
+
+Poly.toOptimalString(boolean)
+17
+7
+9
+12
+
+
+Mono.toOptimalString(boolean)
+21
+5
+16
+21
+
+
+
+从上表可以看出，Lexer.next() 和
+Parser.parseFactor()
+的分支极多，因为需要处理各种不同的符号和因子。同时
+Parser.parseRecDef(Scanner) 和
+FuncFactor.solveRec
+这类函数函数解析和代入时也具有中等规模的控制流复杂度。Mono
+和 Poly 的 toOptimalString
+承担了输出的任务，这些方法的控制流和圈复杂度非常高，后续如果继续迭代，应考虑将其抽离为独立的
+Printer 类。
+### 3. 类图与设计考虑
+
+classDiagram
+
+    class Factor
+    &lt;&lt;interface&gt;&gt; Factor
+
+    class Number
+    class Power
+    class ExpFactor
+    class FuncFactor
+    class ChoiceFactor
+    class DeriveFactor
+    class Expr
+
+    class Term
+    class Poly
+    class Mono
+    class Sign
+    class FuncReg
+
+    class MainClass
+    class Parser
+    class Lexer
+    class Processor
+
+    Factor &lt;|.. Number : 实现
+    Factor &lt;|.. Power : 实现
+    Factor &lt;|.. ExpFactor : 实现
+    Factor &lt;|.. FuncFactor : 实现
+    Factor &lt;|.. ChoiceFactor : 实现
+    Factor &lt;|.. DeriveFactor : 实现
+    Factor &lt;|.. Expr : 实现 (递归嵌套)
+
+    Expr *--  Term : 包含多个项
+    Term *--  Factor : 包含多个因子
+
+    Poly *--  Mono : 维护单项式 Map
+    Mono --&gt; Poly : 递归包含 expPoly
+    Mono --&gt; Sign : 使用 Sign 作为哈希键
+
+    MainClass --&gt; Parser : 调用
+    Parser --&gt; Lexer : 使用
+    Parser --&gt; Processor : 预处理
+    Parser ..&gt; Factor : 构建 AST 节点
+    FuncFactor --&gt; FuncReg : 查询函数定义
+
+    style Factor fill:#E6E6FA,stroke:#708090,stroke-width:2px
+    style Poly fill:#B0C4DE,stroke:#708090,stroke-width:1px
+    style Mono fill:#B0C4DE,stroke:#708090,stroke-width:1px
+
+顶层控制与解析模块
+
+MainClass：程序启动入口和全局调度者。
+Processor：预处理模块，主要负责清洗字符串中的连续正负号等。
+Lexer：词法分析器，将纯文本字符流转化为 Token 流。
+Parser：语法分析器，使用递归下降，将 Token
+流转化为抽象语法树（AST）。
+FuncReg：全局函数注册表，管理所有自定义函数及递推函数的定义。
+
+抽象语法树节点
+
+Factor ：因子接口，通过统一的 toPoly()
+方法实现了多态。
+Expr：表达式节点，由多个 Term
+的加减组合而成。
+Term：项节点，由多个 Factor
+的连乘组合而成。
+Number：常数因子节点，内部封装了大整数。
+Power：变量幂因子节点，形如 x^n 或 y^n，保存自变量符号及其指数。
+ExpFactor：指数函数因子节点，形如 (\exp(factor))^n，封装了内部表达式及外层乘方指数。
+FuncFactor：函数调用因子节点，负责查表
+FuncReg 并将具体实参代入。
+ChoiceFactor：选择式因子节点，专门保存并解析条件分支表达式
+[?:] 中的四个判断基元。
+DeriveFactor：求导算子因子节点，保存求偏导类型（dx,
+dy, grad）及其作用的表达式模块。
+
+核心引擎计算部分
+
+Poly：程序最核心的计算引擎，使用 HashMap
+维护单项式集合。它实现了多项式的各种代数运算与合并。
+Mono：最小代数运算单元，包含系数、自变量指数级别内部多层嵌套的
+exp 特征多项式。
+Sign：单项式特征类，将 Mono
+剔除系数后剩余的特征抽取为不可变属性，用作哈希键。
+
+
+二、 架构设计体验
+我在三次作业中的宏观架构演进一直保持着高度自洽，且具有良好的向后扩展能力。
+HW1：初识递归下降
+在 HW1，我紧贴指导书规范，建立了一套“词法分析 ⟶ 语法分析 ⟶ 抽象语法树
+⟶ 多项式计算”的架构。这一模型将表达式严格拆解为 Expr ⟶
+Term ⟶ Factor
+的文法节点体系。随后，我对所有层级的子节点统一落实了 toPoly
+这个方法。但在早期理解不深时，我的 Poly 更是粗犷地使用
+ArrayList 线性存储各项
+Mono，合并同类项时就稍显麻烦了，需要专门建立一个指数到系数的
+HashMap 来实现。
+HW2：引入指数函数、自定义函数与选择式因子
+HW2 引入了指数函数 exp()、自定义函数 f(x)
+以及选择式因子 [(A==B)?C:D]。现在单项式不仅有一个
+x 的指数，还包含了以 exp
+包裹的多项式。因此我主要做了以下重构：
+
+重构多项式底层：首先由于数据范围的变化，exponent
+类型需要改成大整数类，然后我将 Mono 扩展为
+Mono(BigInteger coefficient, BigInteger exponent, Poly expPoly)。此外，我还引入了内部类
+Sign ，即去掉系数后的指数和多项式部分， Poly
+类中的 ArrayList ，我也直接换成了从 Sign 到
+Mono 的 HashMap
+，这下就不需要写合并同类项方法了，而是自动实现合并。其实这里完全也可以用从
+Sign 到系数的 HashMap ，但这样的话我的 Mono
+类似乎就有点多余，因此我还是保留了看似复杂的前一种策略。
+函数代入环境字典：为了实现函数形参替换，我没有选择在字符串层次上进行字符串替换（这种应该很容易
+TLE），而是引入了环境字典
+Map&lt;String, Poly&gt; vars。在每个 AST 节点的
+toPoly 方法中传入该字典，从而实现函数调用的解析。
+
+而选择式因子对架构没有影响，按原有架构进行添加即可。
+HW3：求导、双变量与递推函数的加入
+经过 HW2 的小幅重构，面对 HW3 引入的双变量 x 和
+y、求导算子 dx/dy/grad 以及自定义递推函数
+f{n}(x)，我在架构上几乎没有改动。
+对于求导算子 DeriveFactor，我在底层的 Mono 和
+Poly 当中补充了专门的求导方法；针对 y
+的引入，仅需在 Mono 类中增加记录 y
+次幂的专门属性即可。这些新增部分在被 toPoly
+解析处理后，进行运算的依然是和 HW2
+类似的多项式，因此原本的加减乘除及输出逻辑基本不需要修改。
+新的迭代情景：引入三角函数
+如果引入三角函数因子sin(Factor) 与
+cos(Factor) ，并要求合并与化简：
+我目前的架构完全禁得住这项考验。我们只需声明 SinFactor 和
+CosFactor 实现 Factor 接口，并新增
+Parser 中的分支即可。真正的深入修改都在底层架构：我们要给
+Mono 与 Sign
+追加可以记录三角函数特征的属性。唯一的难点其实在于怎样运用诱导公式或两角和差公式等规律去对合并前的
+Poly 加以化简而已。
+
+三、 分析自己程序的 Bug
+在这三次作业的强测与互测中，我唯一被测出 Bug 的地方是在
+HW3，由于化简优化时复杂度控制不当而导致了 TLE。
+- 问题及特征：
+互测房里的同学针对我的代码逻辑，构造了一个使得代码 TLE
+的样例。我出问题的类是 Mono 中的
+toOptimalString() 方法。
+- 深层原因分析：
+原因是，我设定了多项式的项数在小范围时采用状态压缩 DP。该 Hack
+样例利用大量系数相邻的大整数，项数刚好达到我规定的上界，导致程序穷举中产生超时。
+- Bug 复杂度反思：
+回看前面的方法度量分析表，toOptimalString
+的圈复杂度和认知复杂度都比较高。这说明在编写时引入了过多复杂的逻辑分支。修改这个
+bug 的策略，我目前采用的是调小项数搜索范围的上界。
+
+四、 发现别人 Bug
+所采用的策略
+在互测环节中，我主要采用了以下策略：
+
+借助 AI 搭建评测机：我使用 Python
+搭建了评测机脚本。策略是通过大量随机生成的数据测试房间内的 8
+份作业代码，然后将结果使用 Sympy
+库对比来寻找一致性。这能有效找出一些基础的逻辑错误和格式问题，但因为数据是随机生成的，较难定向构造出使得程序
+TLE 的极端数据。
+结合源码阅读定向构造：针对评测机难以覆盖的盲区，我会尝试阅读别人的代码来设计测试用例：
+
+比如看到同学处理三目运算符 [(A==B)?X:Y]
+时将两种选择都进行了计算展开再剪裁，我就会在不选的那一方构造复杂的函数嵌套，使其
+TLE。
+看到有同学采用 String.replaceAll
+这种字符串替换来处理函数代入时，便可以尝试构造多层嵌套函数，使其因耗时太长而TLE。
+
+
+
+五、 分析自己进行的优化
+我在结果长度的化简优化上主要做了以下工作：
+1. 正项优先打印： 通过遍历 Poly 中的各个
+Mono，找到第一个常数系数为正的项并放到最前面输出，去掉了开头的正负号问题，这种优化十分稳定。
+2. 提取公因数： 对于 exp(factor)
+类型，我会遍历其内部各个系数的公约数，提取至外部以缩短总体长度。
+3. 状态压缩优化：
+对于需要拆开内部的项，当项数处于我设定的小范围时，使用状压 DP
+来寻找最优解；超过范围则原样输出。
+这些优化虽然缩减了字符串长度，但在保障了代码的常规简洁性的同时，却并未百分之百保证正确性。过于追求局部最短，使得某些化简方法的圈复杂度攀升，在个别极端数据下出现了
+TLE 的情况。后续的优化应该更加注意平衡正确性与性能之间的关系。
+
+六、 大模型相关使用
+在三次作业中，我只参考了 AI
+给出的架构思路、示例代码和修改建议，并未让其直接编写我的代码。当遇到输出错误、抛异常或是搭建评测机时的各种问题，将报错结合代码抛给
+AI 排查，效果往往非常好。总之，AI
+经过提示后可以精准发现代码逻辑方面的问题，并帮忙修补漏洞。但对于时间复杂度分析和构造那些能让代码运行超时的极端数据，它由于没有全局运行环境概念，仍显力不从心，这时候人工阅读源码构造更为可靠。
+
+七、 心得体会
+经过本单元的学习，我还是收获颇丰的。一开始听说我们要进行表达式深层编译解析时，便想起原先学后缀表达式时的痛苦。但是递归下降和抽象语法树的方法极大地解耦了难度。表达式先被切分为一个个
+Token，再由 Parser 解析对应部分，最终建立 AST。这时节点统一实现的
+toPoly()
+方法发挥功能，将一切降维成多项式，自下而上依次化简计算即可。相对之前理解的后缀表达式，代码行数虽然变多了，但可读性和扩展性却实现了质的飞跃。
+关于 AI 的使用，如今的 AI 驾驭 OO
+作业可以说游刃有余了。我会借此设计架构、学习算法以及进行 Debug
+和辅助构造测试，总体效果不错。但同时也深刻体会到，面向对象编程的相关思考与代码掌控等修养，依然是无法被
+AI 工具完全替代的。
+
+八、 未来方向建议
+整体而言，我们的 OO
+课在难度递进设计上已经非常合理了，第一单元的课程安排也很完备。唯独建议在性能优化方面，可以再多给一些相关的指导提示，或者在单元结束后公布一下
+std
+标程用的具体优化方法。我还是十分好奇采用什么方法能在时间限制下将表达式化至最短的。
+
+九、 思考题
+1.
+如何检查输入是否符合要求？
+建议进行双重检查，大致如下：
+首先在预处理入口处：使用正则表达式扫描字符串，排查非法符号、不合规操作符组合（如
+** 等）。第二层在 Parser
+递归下降流程中：如果遇到偏离文法规则的分支，可以直接抛出对应的自定义异常。
+2.
+如何精确计算一个合法输入的 cost？
+通过在各个抽象语法树节点类中声明 getCost()
+方法，可以实现自顶向下的递归计算。对于基础的加减乘除和常数，直接按指导书的运算法则进行累加或相乘；对于函数调用，需要将实参代入到函数定义的
+AST
+中生成新表达式，再递归计算；对于选择式因子，必须在计算时判断条件表达式是否恒等，从而动态累加正确分支的代价；最后，由于求导等算子涉及代价的指数增长，在内部实现时需使用
+BigInteger 来防溢出。
 ]]></content>
       <categories>
         <category>OO</category>
@@ -3344,6 +3565,200 @@ F2
       <tags>
         <tag>Java</tag>
         <tag>OO</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OO U4学习与反思</title>
+    <url>/2026/06/19/BUAA-OO%20U4%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
+    <content><![CDATA[第四单元 OO 学习与反思
+这学期的 OO
+课程到这里基本告一段落了。回顾四个单元，课程不仅是在考察代码能力，更是在引导我们改变开发习惯。本文主要围绕第四单元的图书馆系统，结合前三个单元的作业，对自己在架构设计、测试方法上的思维演进进行一个整体复盘，同时也会分享一下使用大模型辅助建模的实际体验。
+一、 第四单元正向建模与开发
+第四单元的任务是实现并不断扩展一个图书馆管理系统。随着迭代推进，需求一直在增加：从最初单纯的借书、还书和预约（hw13），到加入精品书架、阅读室和评分机制（hw14），最后又引入了比较繁琐的信用分、借阅期限以及续借规则（hw15）。在这一阶段，我认为正向建模的方法帮我理清楚了思路。
+1. 一阶类图：构建系统骨架
+动手敲代码之前，我们需要先在 StarUML
+里完成一阶类图。它的主要意义在于限制开发初期的随意性，强制把核心业务解耦。针对复杂的题面，我首先尝试把核心实体和场地对象分离出来：
+
+核心实体：提取了
+Reader（维护读者的状态等）和
+Book（维护单本图书的状态和流转历史）。
+业务场所：分离出了
+Bookshelf（普通书架）、BorrowAndReturnOffice（借还处）和
+AppointmentOffice（预约处）。
+
+一阶类图不仅明确了系统大概需要哪些类，还初步划定了各个类的职责。正是因为有了这层约束，我在后续写代码时，才没有把所有控制逻辑全塞给
+MainClass 或某一个庞大的 Manager
+类。这让初期的业务逻辑比较清晰。
+2.
+二阶类图：对齐实现与设计的偏差
+随着编码的深入，一阶类图中一些设计肯定会需要修改。比如在 hw14
+中加入精品书架和阅览室后，原本统一的书架类就显得不够用了，我只能在代码里拆分出
+TreasuredBookshelf、ReadingRoom 以及
+RatingOffice 来分散业务；到了 hw15，Reader
+的状态需要同时兼顾借书数量、信用分和逾期情况，不得不补充大量新字段。
+这时候二阶类图的价值就体现出来了。它要求我们把迭代后的实际架构重新反映到模型中去。通过完善二阶类图，比如细化
+LibraryManager 中
+returnBook、borrowBook
+的参数列表，我尽量确保了 UML
+模型能真实反映代码，而不是变成一份单纯的设计文档。
+二、 架构设计与模型追踪
+在第四单元的设计中，我的原则是尽量遵循单一职责和高内聚低耦合的原则。我将系统分为了这些层次：
+1. 核心架构划分
+
+实体对象（Book,
+Reader）：主要负责管理自身的数据状态。Book
+包含 ISBN 和具体的副本信息；Reader
+则把借书上限、信用分计算、逾期判断等规则封装在内部，这样可以极大减轻管理类的负担。
+业务场所对象（Bookshelf,
+TreasuredBookshelf, ReadingRoom,
+AppointmentOffice, BorrowAndReturnOffice,
+RatingOffice）：承担各个场所内的具体查询与书籍转移操作。例如
+TreasuredBookshelf 单独处理 B
+类和高分图书的管理；RatingOffice 接收用户的评分。
+统筹中枢（LibraryManager）：作为系统的调度中心，它有前面的各种场地实例和用户表。它的职责是统筹
+borrowBook、returnBook、pickBook
+等请求，并在闭馆阶段调用 arrange() 方法搬运书籍。
+
+2. 追踪关系分析
+为了通过评测，我花了不少时间在代码和模型的对齐上：
+- 类与属性的映射：UML
+模型里的每一个核心类都在代码中有完全对应的 Java 类。比如 UML 中
+LibraryManager 和
+Bookshelf、ReadingRoom 的组合或聚合关联，在
+LibraryManager.java 里都对应着成员变量的声明。
+-
+状态流转与交互的映射：在画状态机和顺序图时，我重点描述了一本书在各个场馆之间的流转路线。在实际代码中，这些状态变化是由
+LibraryManager
+的方法来驱动的。假设要归还一本应该放在精品书架的书，LibraryManager
+会先调用借还处的接收逻辑，在闭馆时把它从借还处取出来，存进
+TreasuredBookshelf。顺序图里的每一次跨对象交互，都能在代码的方法调用中找到一致的函数。
+三、 大模型辅助正向建模
+在这一单元里，我尝试了用大模型来辅助生成 UML
+的相关数据。它在处理繁琐的形式化转换时效率很高，但如果不加限制，也很容易出现理解偏差或者过度设计的问题。
+1. 实际使用中的优缺点
+
+效率提升：要把多个 Java 方法的定义手动录到 StarUML
+里是非常枯燥且易错的。我把这部分代码发给大模型，它能在很短时间内把它们翻译成标准的
+UML 格式，这就搞定了不少体力活。
+理解偏差：如果直接把作业需求扔给大模型让它设计，它往往会自作聪明地加入一些复杂的设计模式，这就把问题复杂化了。另外，在生成顺序图时，它也经常无视“跨类调用的方法必须是
+public”这个重要的代码规范。
+
+2. 引导大模型的策略
+经历了这些问题后，我总结了几条给大模型写提示词的经验：
+1.
+结构化提供背景：先让模型提取出领域里的基本名词，确定好讨论的前提，别一开始就让它输出完整设计。
+2.
+设定严格的边界：在让它生成交互逻辑时，必须把课程的特殊要求作为前提给它定死。比如明确说明：“不要使用策略模式或命令模式，直接在
+LibraryManager
+里面写分发方法”，“不同类之间相互调用时，对应的方法必须是
+public”。这样能有效规范它的发挥。
+3.
+通过极端场景验证：我会构思一些复杂的场景去测试它的逻辑。比如问它：“如果一个读者成功预约了一本
+B 类图书，但在保留期内该读者因为另一本书逾期未还导致信用分降到 80
+分以下，那他还能不能正常取走这本 B
+类图书？”通过这种极端情况，可以促使大模型暴露出它的设计漏洞。
+四、 架构设计思维的演进
+回顾整个学期的作业，我觉得自己在架构设计上的思路经历了明显的转变：
+
+第一单元（表达式解析）
+通过学习递归下降，我搭建了 Lexer 和
+Parser，并设计了表达式的树形结构（由 Expr,
+Term, Factor 派生出 FuncFactor,
+ExpFactor, ChoiceFactor 以及
+Poly,
+Mono）。这是我第一次体会到利用多态和树结构来解耦问题的好处。
+第二单元（多线程电梯）
+这个单元加入了多线程机制，我实现了
+InputThread、DispatchThread 和
+ElevatorThread，并且在 hw7
+里处理了容易冲突的双轿厢电梯（ShadowElevator 和
+ElevatorShaft）。这个过程让我意识到，好的设计不仅仅是多建几个类，关键在于如何把策略和执行分离开。通过独立出
+DispatchStrategy 和
+MoveStrategy，电梯本身变成了只负责执行动作的载体，复杂的判断交给了调度器。同时我也摸索出了怎么给
+BaseQueue 这类共享资源合理加锁，以避免死锁和轮询。
+第三单元（JML 社交网络）
+这一单元主要围绕社交网络展开，我的关注点转移到了契约式编程上。JML
+强调每个方法都要有清晰的前置和后置条件。在遵循契约的基础上，我也学着在架构里添加了一些辅助类（如
+NetworkHelper 和
+IndexedList），通过相关图算法进行空间换时间的优化，以应对大量查询可能带来的
+TLE 问题。
+第四单元（UML 图书馆）
+在最后的正向建模阶段，课程要求我们在真正编写业务逻辑前，先用类图分析静态结构，用状态图理清生命周期，用顺序图规划动态交互。这让我逐渐摆脱了拿到需求就直接写代码的习惯，开始用一种更系统的工程思路去开发。
+
+五、 测试思维的演进
+随着系统复杂度的提高，我的测试方法也跟着进行了升级：
+
+U1 自动化对拍测试
+初期主要是依靠 Python 脚本调用 SymPy
+生成大量随机表达式，然后和自己程序的输出进行对比。这算是比较典型的黑盒测试，用来找一些语法解析上的疏漏。
+U2 场景化并发施压
+在多线程环境下，普通的随机测试很难暴露出死锁或者线程竞争的问题。我开始学着人为构造一些高压场景，比如在极短的时间窗口内，向同一楼层发送大量请求，或者针对双轿厢在换乘层的会车情况进行专门的压力测试。
+U3 基于规格的等价类划分
+有了 JML 之后，测试就有了直接的参考依据。我开始根据
+requires 和 exceptional_behavior
+的说明去做等价类划分，专门针对各种抛出异常的情况、容器容量上限以及边界值编写
+JUnit 测试。这让测试变得更有系统性。
+U4 状态追踪与长序列覆盖
+图书馆系统的很多 Bug
+不会在单次操作中暴露，而是需要经过一系列长流程后才会出现。所以我的测试重心变成基于状态机的路径覆盖测试。通过对照状态图，我设计了各种包含跨日期信用分扣除、不同书架间书籍移动的长用例，重点检查对象的状态在多次运转后是否还能保持一致。
+
+六、 课程收获总结
+这学期的 OO 课程很有挑战性，带给我的收获不仅是 Java
+语法的提升，更是开发思维的转变：
+
+对复杂度的拆解能力：从一开始写大而全的方法，到后来学会用抽象语法树解析文本、用分发器隔离并发逻辑、用
+JML 明确函数边界、用 UML
+规划系统结构，我逐渐掌握了该如何一步步把复杂需求拆解成可维护的代码。
+更全面的工程意识：我逐渐改掉了以前只为让程序跑通就行的习惯。现在在写代码前，我会下意识地去考虑“这个类的职责对不对”、“资源上锁的方式会不会出问题”以及“以后要是增加新功能，现在的代码改起来方不方便”。
+排错与抗压能力：无论是长时间排查电梯死锁问题、想办法优化图查询的性能，还是在画图时一遍遍修改
+UML 细节，这些经历都锻炼了我的耐心和严谨度。
+
+总而言之，经过这四个单元的练习，面向对象对我来说不再只是一个抽象的概念，而是变成了实际解决复杂工程问题的一套方法论。再见，2026
+OO！感谢这段痛并快乐着的旅程，它将成为我程序生涯中无可替代的宝贵财富！
+]]></content>
+      <categories>
+        <category>OO</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>OO</tag>
+        <tag>UML</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OS Lab0上机</title>
+    <url>/2026/03/18/BUAA-OS%20Lab0%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 OS 实验中常用工具链，一个重点是 Bash 编程。
+课上题目
+Exam
+点击查看题面
+这道题初看题干可能有些疑惑，但实际上只需要填 Makefile
+中的几个空，主要考查 make 的语法以及 gcc
+等命令，难度不大。
+Extra
+点击查看题面
+Bash
+综合应用题，但实际上相比去年难度已经降低了很多，也变成代码填空的形式，主要考查常用命令，比如
+sed、awk 等。
+笔者的话
+这部分内容相对独立，主要学习 Linux
+常用命令，初次接触可能不太好全部记住，但多加使用便会越来越熟练。可以多阅读实验指导书，网上也有一些
+OJ 用来评测，适当做一些能加深巩固。这次的
+Extra，其中一个卡了我很久的细节是：如何判断一个变量字符串是否为空。我用了一个很笨的做法——将其输出到一个文件，再和另一个空文件用
+diff 对比，根据返回值来判定。考完才知道使用
+if [[ -n "$str" ]] 就可以，确实暴露出我的生疏。之后在用
+awk 时又单引号和双引号混用，导致 $
+没能正确转义，又 debug 了很久，好在最后还是按时做了出来。
+还有一个折磨人的地方：新主楼机房网络不太稳定，跳板机连接断开好几次。重新连上去后遇到了
+vim 异常退出产生的 .swp
+交换文件，一开始没处理好，丢掉了一点进度，只能重新写。做完之后一直拿 0
+分，报错提示文件结构不符合要求，最后在助教的提醒下才知道是残留的交换文件和临时文件在作祟，删掉后才通过。
+]]></content>
+      <categories>
+        <category>操作系统</category>
+      </categories>
+      <tags>
+        <tag>OS</tag>
       </tags>
   </entry>
   <entry>
@@ -3444,394 +3859,6 @@ JUnit促使我们思考边界情况。
       </tags>
   </entry>
   <entry>
-    <title>BUAA-OS Lab0上机</title>
-    <url>/2026/03/18/BUAA-OS%20Lab0%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 OS 实验中常用工具链，一个重点是 Bash 编程。
-课上题目
-Exam
-点击查看题面
-这道题初看题干可能有些疑惑，但实际上只需要填 Makefile
-中的几个空，主要考查 make 的语法以及 gcc
-等命令，难度不大。
-Extra
-点击查看题面
-Bash
-综合应用题，但实际上相比去年难度已经降低了很多，也变成代码填空的形式，主要考查常用命令，比如
-sed、awk 等。
-笔者的话
-这部分内容相对独立，主要学习 Linux
-常用命令，初次接触可能不太好全部记住，但多加使用便会越来越熟练。可以多阅读实验指导书，网上也有一些
-OJ 用来评测，适当做一些能加深巩固。这次的
-Extra，其中一个卡了我很久的细节是：如何判断一个变量字符串是否为空。我用了一个很笨的做法——将其输出到一个文件，再和另一个空文件用
-diff 对比，根据返回值来判定。考完才知道使用
-if [[ -n "$str" ]] 就可以，确实暴露出我的生疏。之后在用
-awk 时又单引号和双引号混用，导致 $
-没能正确转义，又 debug 了很久，好在最后还是按时做了出来。
-还有一个折磨人的地方：新主楼机房网络不太稳定，跳板机连接断开好几次。重新连上去后遇到了
-vim 异常退出产生的 .swp
-交换文件，一开始没处理好，丢掉了一点进度，只能重新写。做完之后一直拿 0
-分，报错提示文件结构不符合要求，最后在助教的提醒下才知道是残留的交换文件和临时文件在作祟，删掉后才通过。
-]]></content>
-      <categories>
-        <category>操作系统</category>
-      </categories>
-      <tags>
-        <tag>OS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-OO U3学习与反思</title>
-    <url>/2026/06/02/BUAA-OO%20U3%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
-    <content><![CDATA[第三单元 OO 学习与反思
-一、JML 和规格驱动开发
-JML 契约式设计
-JML 本质上是在 Java 接口外面再套一层形式化约束。它通过
-requires、ensures、assignable 和
-signals
-等，明确了方法的前置条件、后置条件、可修改状态以及异常抛出条件。相比于自然语言，JML
-可以准确地约束方法的规格。在 OOP
-中，它作为实现者与调用者之间的契约，消除了语义上的歧义。
-规格驱动开发
-这一单元最明显的变化就是写代码前先看规格。规格开发的主要优势有： 1.
-实现自由度与结果约束：只要对外状态满足
-ensures，内部用
-HashMap、TreeSet，还是自己写容器，都可以。比如有的方法
-JML
-写得像全局遍历，但实现时完全没必要照着翻译成循环。只要返回值和状态变化对，内部可以做缓存，也可以增量维护。
-2. 测试驱动：JML 为测试提供了清晰的依据。通过直接对照
-ensures 和 signals
-子句，可以很容易地推导出测试的分支和边界情况，从而编写出高覆盖率的单元测试。
-二、JUnit 测试经验总结
-在本单元的测试中，我针对 JML
-的完整性进行验证，包括正常结果返回、状态变化以及异常情况，体现在以下三个方法的测试中：
-queryMutualFollowingSum 的测试里，我没有复用 src
-里动态维护 mutualFollowingSum
-的逻辑，而是单独写了一套双重遍历节点的朴素算法。这样测出来才有意义。数据覆盖了空图、单向关注、对称互关、不成环这些情况，主要用来确认边增删之后缓存计数没有跑偏。
-测 cleanSpamComments
-时，麻烦点在副作用。这个方法会改评论列表，所以调用前要先做快照。测试除了看删除数量和关键字最大出现次数，还要看剩下的评论顺序是否保持，playCount、likes
-这类无关属性有没有被动到。针对字符串匹配，我补了通配符边界词和重叠匹配，以确保严格符合题目要求。
-recommendNthUp 更偏排序规则。测试覆盖了
-rank 非法、候选集为空、分数相同按 ID
-排序、排除自己和已关注用户等情况。它是纯查询方法，所以我还测了连续调用后内部状态不变。
-三、三次作业的迭代
-第一次作业：社交图谱与视频推送
-第一次作业主要是基础的用户社交图谱和视频推送。为了保证查询效率，我在
-Network 里用 HashMap 管理 userMap
-和 videoMap。
-在用户关系维护方面，我直接在 User 类中使用两个
-HashMap（following 和
-followers）来记录关注和被关注关系，以此替代低效的全局查找。queryMutualFollowingSum
-我没有每次重新算，而是在 followUser 和
-unfollowUser 里动态维护
-mutualFollowingSum，查询时就是 O(1)。
-视频接收这里，receivedVideos 经常要头插，所以我写了一个
-IndexedList。另外，User 里维护长度为 4 的
-followerAgeCounts 数组，以此在 O(1)
-的时间内返回各个年龄段粉丝的占比。
-第二次作业：互动状态与缓存
-第二次作业引入了点赞、投币、视频热度等互动状态。难点不是某个单独方法，而是一次操作会牵连多个对象。比如投币要改用户余额、视频硬币数、UP
-主硬币数，还要在 User 的 contributions Map
-里更新贡献度。
-为了少做全量查询，我在 User 里维护了
-watchedVideos、likedVideos 等集合，也用
-contributions 存各个用户的贡献度。Video
-里添加评论时用 commentIdSet
-防重。cleanSpamComments 用双指针配合
-comments.subList().clear()
-清理，避免一边遍历一边频繁删除。清理过的关键字用
-cleanKeywords 记下来，防止重复计算。
-queryLongestDecSeq 是这一阶段比较容易 TLE 的点。我用了
-longestDirty 脏位和 longestDecSeqCache
-缓存。图结构没变就直接返回缓存；只要关注关系变化，就把脏位打上，从而保证了平均情况下的高查询效率。
-第三次作业：热度推荐与模块化
-第三次作业加了推荐相关方法，代码量已经快超 500
-行了（不过好像听说代码风格测试并不卡500行？），我在 Network
-里尽量只做调度，把具体状态维护放回实体类。
-queryMostPopularVideo 用了
-Map&lt;String, TreeSet&lt;Video&gt;&gt; typeHotRank。TreeSet
-按 heat 和 id
-排序。凡是会影响视频热度的操作，更新前先从对应 TreeSet
-里移除，改完热度再插回去。这样每种类型的视频都能保持有序，查询最热视频时不用临时排序。
-User 的 influence
-也没有每次遍历所有上传视频，而是在热度变化时通过回调增量更新
-influences 数组。recommendNthUp
-用了类似快速选择的策略，避免全量排序。写完这块以后最大的感觉就是：推荐逻辑不难，难的是别让它把前面维护好的状态一起拖慢。
-
-
-社交网络
-
-四、如何发现迭代中的方法和容器变化
-在历次作业中，准确找出需要修改的方法和容器是很重要的一环。我发现不能只看新增加的方法，已有的老方法在规格上也可能发生了变化。
-首先是对比接口暴露的状态模型。比如在第三次作业中，UserInterface
-的模型描述里新增了关于不同类型视频的数量统计要求。看到这个新增的模型属性，我就在
-User 类中新增了一个 typeCounts
-数组，在每次观看视频时同步更新它。
-其次是检查副作用 assignable
-的变化。有时候老方法的代码核心逻辑没变，但在新版本中允许修改的变量范围变大了。比如有的方法原本只修改自身属性，后来允许修改其他类的集合。如果漏看了这部分
-assignable
-的扩展，只按原来的逻辑写，就会导致数据没有同步更新。
-另外就是对比方法签名。如果返回类型或参数数量如果变了，原来调用的地方和涉及的数据存储格式基本都需要做相应的修改，这一点编译器通常会报错提示，但也需要我们去更新相关的代码链路。
-五、如何发现性能瓶颈
-JML
-只描述结果要求，不会考虑底层的计算开销。如果直接把规格翻译成循环，强测里基本迟早会出事。
-我会先看量词复杂度。如果 JML 里出现了多重嵌套的 \exists
-和 \forall，或者要求计算全局的
-\sum，把它直接写成嵌套循环一般就会达到 O(N²)
-以上的复杂度。遇到这类方法，我会在本地造一些比较大的数据来测试它的执行时间。
-然后看读写频率。对于像互相关注总数、粉丝年龄分布这种查询次数远大于修改次数的属性，每次查询都重新计算显然太慢了。我选择在关注、取关等操作发生时顺便更新这些值。就像代码里维护
-bestContributorId 一样，通过增量维护把复杂度降下来。
-图算法更适合缓存。像 queryLongestDecSeq
-这种方法每次计算开销很大，我采用了带脏位的缓存机制。不过使用缓存时必须保证状态的一致性，也就是在任何会改变图结构的方法里，都要记得把
-longestDirty 设为
-true，防止出现缓存和实际状态不符的问题。
-六、Bug 与原因分析
-得益于规格驱动开发的严谨性，在三次作业的中测、强测和互测环节中，我的代码都没有被测出
-Bug。期间还发生了一个小插曲：在 hw10
-的强测中，由于评测机波动，第六个数据点最初被误判为错误，好在后续重测后证实了那只是评测机自身的问题。这虽然让我虚惊一场，但也最终证明了代码的正确性。
-不过在本地开发迭代的过程中，我也踩过一些坑。这些经历让我意识到规格开发中有几个很容易出错的地方：
-1. 遗漏副作用：在 hw10
-迭代过程中，增加投币功能时，不仅要修改视频本身的
-coins，还需要同步增加该视频上传者的 coins
-以及记录 contribution。起初我没有仔细对照 JML 中新增的
-assignable
-语句，只修改了视频侧，结果状态不同步。多对象更新基本可以当成一个小事务处理，不能有一丝遗漏。
-2. 异常抛出顺序：JML
-规格中异常不仅有明确的判断先后顺序，构造异常时传入的 ID
-参数也有严格要求。最初我在抛出异常时未按规则排序，或者传入的 ID
-顺序错位，导致 JUnit 测试中捕获到的异常信息不匹配。
-七、大模型使用体会
-这一单元里，我更愿意把大语言模型当规格阅读助手和评测机生成器，而不是直接写最终代码的工具。我使用的
-Code Agent 主要是 Codex 。
-它的显著优势在于：可以快速把长篇的 JML
-翻译成自然语言、列出可能的边界条件、提醒某个方法需要检查哪些副作用，还可以帮助生成繁琐的
-JUnit 单元测试。使用这些 Agent
-来开展自动化测试、批量构造测试样例等还是很方便的，极大地提高了效率。对于版本变更比对，将新旧版本的接口文件发给它，它能迅速列出所有变更点，比肉眼比对高效得多。
-但大模型的局限性也很明显：它往往倾向于直译
-JML，给出“看起来正确但慢”的朴素实现，完全忽略强测中的性能压力。要想让大模型设计出好的架构或是恰当的设计模式，需要我们提供极高质量的提示词。因此我经常使用一些提示词优化器来优化我的输入，向大模型更精准地传达意图，从而引导其输出更优的方案。
-八、JML“击鼓传花”研讨课感悟
-在第二次研讨课上的 JML
-“击鼓传花”游戏中，我获得了许多关于团队协作的启发。
-在本次活动中，我所在的链路题目是计算两个正整数的最大公约数。初始的自然语言需求明确规定了接收正整数
-a 和 b，前置条件为大于 0，且在输入小于等于 0 时抛出
-IllegalArgumentException 异常。
-1. 发现的 JML Bug
-在从 JML 翻译回自然语言，或者从 NL 编写 JML
-的过程中，很容易出理解的偏差。例如在我们组其他同学的链路中，就出现了： -
-边界条件遗漏或变形：有的同学在 JML
-转自然语言时遗漏了边界条件，把 &gt;= 0 错误地记作了
-&gt; 0。或者对于某些特殊边界，原本要求返回“空
-Map”，在传递中却被替换成了“返回 null”。 -
-逻辑符号被忽视：在转述过程中，某些逻辑非符号（!）极容易被忽视，导致某一处表述出现明显的语义反转和偏离。
--
-异常触发条件写错：自然语言表述的异常抛出条件由于不够严谨，导致后续在写
-signals 子句时发生偏离。
-2. 需求与边界在传递中的变化
-游戏过程中，需求和边界常常会发生不可逆的变化。不过，因为我出的 gcd
-题目数学逻辑比较纯粹，大家都不容易搞错，所以我们这条链路取得了 5
-分满分。这也让我体会到：只要初始的需求足够严谨，后面传错的概率就小很多。有些自然语言觉得理所当然的条件，必须得像数学公式一样一条条严格约束，不然很容易产生误解。
-3. 多人组队编程的建议与措施
-为了在未来的多人开发中统一对需求的理解，我认为应该采取以下措施： -
-统一接口规范：JML
-的核心在于提供接口规范，而不是强制所有人写出一样的代码。我们只要求大家的实现符合一个统一的接口，至于方法内部实现只要没有性能瓶颈，无需强行统一。
--
-严格定义初始需求：在动手编码前，需求分析必须做到形式化般的严谨。即便是看似简单的自然语言，也要杜绝任何歧义，明确写出前提和异常分支。
--
-多重细致校验：在代码编写时，必须进行细致的逻辑复盘，严防类似遗漏
-! 等低级错误造成雪崩。
-]]></content>
-      <categories>
-        <category>OO</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>OO</tag>
-        <tag>JML</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-OO U4学习与反思</title>
-    <url>/2026/06/19/BUAA-OO%20U4%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
-    <content><![CDATA[第四单元 OO 学习与反思
-这学期的 OO
-课程到这里基本告一段落了。回顾四个单元，课程不仅是在考察代码能力，更是在引导我们改变开发习惯。本文主要围绕第四单元的图书馆系统，结合前三个单元的作业，对自己在架构设计、测试方法上的思维演进进行一个整体复盘，同时也会分享一下使用大模型辅助建模的实际体验。
-一、 第四单元正向建模与开发
-第四单元的任务是实现并不断扩展一个图书馆管理系统。随着迭代推进，需求一直在增加：从最初单纯的借书、还书和预约（hw13），到加入精品书架、阅读室和评分机制（hw14），最后又引入了比较繁琐的信用分、借阅期限以及续借规则（hw15）。在这一阶段，我认为正向建模的方法帮我理清楚了思路。
-1. 一阶类图：构建系统骨架
-动手敲代码之前，我们需要先在 StarUML
-里完成一阶类图。它的主要意义在于限制开发初期的随意性，强制把核心业务解耦。针对复杂的题面，我首先尝试把核心实体和场地对象分离出来：
-
-核心实体：提取了
-Reader（维护读者的状态等）和
-Book（维护单本图书的状态和流转历史）。
-业务场所：分离出了
-Bookshelf（普通书架）、BorrowAndReturnOffice（借还处）和
-AppointmentOffice（预约处）。
-
-一阶类图不仅明确了系统大概需要哪些类，还初步划定了各个类的职责。正是因为有了这层约束，我在后续写代码时，才没有把所有控制逻辑全塞给
-MainClass 或某一个庞大的 Manager
-类。这让初期的业务逻辑比较清晰。
-2.
-二阶类图：对齐实现与设计的偏差
-随着编码的深入，一阶类图中一些设计肯定会需要修改。比如在 hw14
-中加入精品书架和阅览室后，原本统一的书架类就显得不够用了，我只能在代码里拆分出
-TreasuredBookshelf、ReadingRoom 以及
-RatingOffice 来分散业务；到了 hw15，Reader
-的状态需要同时兼顾借书数量、信用分和逾期情况，不得不补充大量新字段。
-这时候二阶类图的价值就体现出来了。它要求我们把迭代后的实际架构重新反映到模型中去。通过完善二阶类图，比如细化
-LibraryManager 中
-returnBook、borrowBook
-的参数列表，我尽量确保了 UML
-模型能真实反映代码，而不是变成一份单纯的设计文档。
-二、 架构设计与模型追踪
-在第四单元的设计中，我的原则是尽量遵循单一职责和高内聚低耦合的原则。我将系统分为了这些层次：
-1. 核心架构划分
-
-实体对象（Book,
-Reader）：主要负责管理自身的数据状态。Book
-包含 ISBN 和具体的副本信息；Reader
-则把借书上限、信用分计算、逾期判断等规则封装在内部，这样可以极大减轻管理类的负担。
-业务场所对象（Bookshelf,
-TreasuredBookshelf, ReadingRoom,
-AppointmentOffice, BorrowAndReturnOffice,
-RatingOffice）：承担各个场所内的具体查询与书籍转移操作。例如
-TreasuredBookshelf 单独处理 B
-类和高分图书的管理；RatingOffice 接收用户的评分。
-统筹中枢（LibraryManager）：作为系统的调度中心，它有前面的各种场地实例和用户表。它的职责是统筹
-borrowBook、returnBook、pickBook
-等请求，并在闭馆阶段调用 arrange() 方法搬运书籍。
-
-2. 追踪关系分析
-为了通过评测，我花了不少时间在代码和模型的对齐上： -
-类与属性的映射：UML
-模型里的每一个核心类都在代码中有完全对应的 Java 类。比如 UML 中
-LibraryManager 和
-Bookshelf、ReadingRoom 的组合或聚合关联，在
-LibraryManager.java 里都对应着成员变量的声明。 -
-状态流转与交互的映射：在画状态机和顺序图时，我重点描述了一本书在各个场馆之间的流转路线。在实际代码中，这些状态变化是由
-LibraryManager
-的方法来驱动的。假设要归还一本应该放在精品书架的书，LibraryManager
-会先调用借还处的接收逻辑，在闭馆时把它从借还处取出来，存进
-TreasuredBookshelf。顺序图里的每一次跨对象交互，都能在代码的方法调用中找到一致的函数。
-三、 大模型辅助正向建模
-在这一单元里，我尝试了用大模型来辅助生成 UML
-的相关数据。它在处理繁琐的形式化转换时效率很高，但如果不加限制，也很容易出现理解偏差或者过度设计的问题。
-1. 实际使用中的优缺点
-
-效率提升：要把多个 Java 方法的定义手动录到 StarUML
-里是非常枯燥且易错的。我把这部分代码发给大模型，它能在很短时间内把它们翻译成标准的
-UML 格式，这就搞定了不少体力活。
-理解偏差：如果直接把作业需求扔给大模型让它设计，它往往会自作聪明地加入一些复杂的设计模式，这就把问题复杂化了。另外，在生成顺序图时，它也经常无视“跨类调用的方法必须是
-public”这个重要的代码规范。
-
-2. 引导大模型的策略
-经历了这些问题后，我总结了几条给大模型写提示词的经验： 1.
-结构化提供背景：先让模型提取出领域里的基本名词，确定好讨论的前提，别一开始就让它输出完整设计。
-2.
-设定严格的边界：在让它生成交互逻辑时，必须把课程的特殊要求作为前提给它定死。比如明确说明：“不要使用策略模式或命令模式，直接在
-LibraryManager
-里面写分发方法”，“不同类之间相互调用时，对应的方法必须是
-public”。这样能有效规范它的发挥。 3.
-通过极端场景验证：我会构思一些复杂的场景去测试它的逻辑。比如问它：“如果一个读者成功预约了一本
-B 类图书，但在保留期内该读者因为另一本书逾期未还导致信用分降到 80
-分以下，那他还能不能正常取走这本 B
-类图书？”通过这种极端情况，可以促使大模型暴露出它的设计漏洞。
-四、 架构设计思维的演进
-回顾整个学期的作业，我觉得自己在架构设计上的思路经历了明显的转变：
-
-第一单元（表达式解析）
-通过学习递归下降，我搭建了 Lexer 和
-Parser，并设计了表达式的树形结构（由 Expr,
-Term, Factor 派生出 FuncFactor,
-ExpFactor, ChoiceFactor 以及
-Poly,
-Mono）。这是我第一次体会到利用多态和树结构来解耦问题的好处。
-第二单元（多线程电梯）
-这个单元加入了多线程机制，我实现了
-InputThread、DispatchThread 和
-ElevatorThread，并且在 hw7
-里处理了容易冲突的双轿厢电梯（ShadowElevator 和
-ElevatorShaft）。这个过程让我意识到，好的设计不仅仅是多建几个类，关键在于如何把策略和执行分离开。通过独立出
-DispatchStrategy 和
-MoveStrategy，电梯本身变成了只负责执行动作的载体，复杂的判断交给了调度器。同时我也摸索出了怎么给
-BaseQueue 这类共享资源合理加锁，以避免死锁和轮询。
-第三单元（JML 社交网络）
-这一单元主要围绕社交网络展开，我的关注点转移到了契约式编程上。JML
-强调每个方法都要有清晰的前置和后置条件。在遵循契约的基础上，我也学着在架构里添加了一些辅助类（如
-NetworkHelper 和
-IndexedList），通过相关图算法进行空间换时间的优化，以应对大量查询可能带来的
-TLE 问题。
-第四单元（UML 图书馆）
-在最后的正向建模阶段，课程要求我们在真正编写业务逻辑前，先用类图分析静态结构，用状态图理清生命周期，用顺序图规划动态交互。这让我逐渐摆脱了拿到需求就直接写代码的习惯，开始用一种更系统的工程思路去开发。
-
-五、 测试思维的演进
-随着系统复杂度的提高，我的测试方法也跟着进行了升级：
-
-U1 自动化对拍测试 初期主要是依靠 Python 脚本调用
-SymPy
-生成大量随机表达式，然后和自己程序的输出进行对比。这算是比较典型的黑盒测试，用来找一些语法解析上的疏漏。
-U2 场景化并发施压
-在多线程环境下，普通的随机测试很难暴露出死锁或者线程竞争的问题。我开始学着人为构造一些高压场景，比如在极短的时间窗口内，向同一楼层发送大量请求，或者针对双轿厢在换乘层的会车情况进行专门的压力测试。
-U3 基于规格的等价类划分 有了 JML
-之后，测试就有了直接的参考依据。我开始根据 requires 和
-exceptional_behavior
-的说明去做等价类划分，专门针对各种抛出异常的情况、容器容量上限以及边界值编写
-JUnit 测试。这让测试变得更有系统性。
-U4 状态追踪与长序列覆盖 图书馆系统的很多 Bug
-不会在单次操作中暴露，而是需要经过一系列长流程后才会出现。所以我的测试重心变成基于状态机的路径覆盖测试。通过对照状态图，我设计了各种包含跨日期信用分扣除、不同书架间书籍移动的长用例，重点检查对象的状态在多次运转后是否还能保持一致。
-
-六、 课程收获总结
-这学期的 OO 课程很有挑战性，带给我的收获不仅是 Java
-语法的提升，更是开发思维的转变：
-
-对复杂度的拆解能力：从一开始写大而全的方法，到后来学会用抽象语法树解析文本、用分发器隔离并发逻辑、用
-JML 明确函数边界、用 UML
-规划系统结构，我逐渐掌握了该如何一步步把复杂需求拆解成可维护的代码。
-更全面的工程意识：我逐渐改掉了以前只为让程序跑通就行的习惯。现在在写代码前，我会下意识地去考虑“这个类的职责对不对”、“资源上锁的方式会不会出问题”以及“以后要是增加新功能，现在的代码改起来方不方便”。
-排错与抗压能力：无论是长时间排查电梯死锁问题、想办法优化图查询的性能，还是在画图时一遍遍修改
-UML 细节，这些经历都锻炼了我的耐心和严谨度。
-
-总而言之，经过这四个单元的练习，面向对象对我来说不再只是一个抽象的概念，而是变成了实际解决复杂工程问题的一套方法论。再见，2026
-OO！感谢这段痛并快乐着的旅程，它将成为我程序生涯中无可替代的宝贵财富！
-]]></content>
-      <categories>
-        <category>OO</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>OO</tag>
-        <tag>UML</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-OS Lab2上机</title>
-    <url>/2026/04/15/BUAA-OS%20Lab2%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 MOS 内存管理。
-课上题目
-Exam
-点击查看题面
-这道题需要实现一个新的宏，用于将元素插入到双向链表的特定索引位置。难度不大，参考
-include/queue.h 中的现有宏照猫画虎即可，主体就是用
-for 循环定位到第 index 个元素后完成插入。
-Extra
-点击查看题面
-这道题要求实现一套自映射机制，难度很大，大多数人都只得到了
-pte_va() 和 pde_va() 的 30 分。
-笔者的话
-从 Lab2 开始，OS
-逐渐上难度。这一部分内容繁杂：宏形式的双向链表、虚拟内存管理的一系列函数、以及
-TLB 相关机制，整套流程理清下来我花了很长时间。
-这次的
-Extra，鉴于当时多数人对自映射理解都不深入，根据往年情况能做出来的人极少，也算是
-lmhgg 留下的一道杰作。
-]]></content>
-      <categories>
-        <category>操作系统</category>
-      </categories>
-      <tags>
-        <tag>OS</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>BUAA-OS Lab1上机</title>
     <url>/2026/04/01/BUAA-OS%20Lab1%E4%B8%8A%E6%9C%BA/</url>
     <content><![CDATA[本节考查内容为 MOS 内核的启动，主要包含 ELF 文件结构、格式化 IO
@@ -3862,22 +3889,26 @@ C 语言指针的功底了。
       </tags>
   </entry>
   <entry>
-    <title>BUAA-OS Lab4上机</title>
-    <url>/2026/05/20/BUAA-OS%20Lab4%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 MOS 系统调用、IPC、fork 等。
+    <title>BUAA-OS Lab2上机</title>
+    <url>/2026/04/15/BUAA-OS%20Lab2%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 MOS 内存管理。
 课上题目
 Exam
 点击查看题面
-这道题需要实现一个新的系统调用
-sys_trace_ref2，整体难度不大，只要理解了系统调用的完整链路便容易解决。
+这道题需要实现一个新的宏，用于将元素插入到双向链表的特定索引位置。难度不大，参考
+include/queue.h 中的现有宏照猫画虎即可，主体就是用
+for 循环定位到第 index 个元素后完成插入。
 Extra
 点击查看题面
-这道题要求实现脏页追踪机制，初看题面感觉难度很大，但实际上仍是代码填空的形式。开始时不必强求完全理解题面，可以跟着提示直接编写代码，在这个过程中理解也会慢慢加深。
+这道题要求实现一套自映射机制，难度很大，大多数人都只得到了
+pte_va() 和 pde_va() 的 30 分。
 笔者的话
-Lab4 的主要内容是理解系统调用的完整链路，此外 fork
-也是一大重难点。对于 Extra
-这类题目，相信很多人都能拿到一定分数，满分的人也不少。如果遇到输出和预期不符，一定要积极调试，而不是自己干着急，gdb
-和输出语句的用法可以参考我在 Lab3 博客中的介绍。
+从 Lab2 开始，OS
+逐渐上难度。这一部分内容繁杂：宏形式的双向链表、虚拟内存管理的一系列函数、以及
+TLB 相关机制，整套流程理清下来我花了很长时间。
+这次的
+Extra，鉴于当时多数人对自映射理解都不深入，根据往年情况能做出来的人极少，也算是
+lmhgg 留下的一道杰作。
 ]]></content>
       <categories>
         <category>操作系统</category>
@@ -3942,6 +3973,55 @@ str / ptr）的快捷宏，一行就能把变量名和值都打出来。
       </tags>
   </entry>
   <entry>
+    <title>BUAA-OS Lab5上机</title>
+    <url>/2026/05/27/BUAA-OS%20Lab5%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 MOS 磁盘管理与文件系统。
+课上题目
+Exam
+点击查看题面
+这道题需要实现类似于 ls
+的功能，只要掌握了读取文件的那几个函数，难度就不大。
+Extra
+点击查看题面
+这道题要求增加三个文件相关的操作，其中一个给出了完整流程，另外两个可以照葫芦画瓢，相比往年难度也不大。
+笔者的话
+Lab5 是内容最丰富的一个
+Lab：从磁盘结构，到复杂的文件系统，涉及大量函数之间的相互调用。不过实际需要熟练使用的，主要是根据路径读取文件的那几个函数，其余部分大致理解即可。另外这一节涉及好几个相似的结构体，比如
+Fd、Filefd、Open，可以把这些结构体的定义打印出来带进考场方便查阅，甚至那些复杂的函数接口也可以印出来，一定要利用好开卷考试的这个特点。
+]]></content>
+      <categories>
+        <category>操作系统</category>
+      </categories>
+      <tags>
+        <tag>OS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OS Lab4上机</title>
+    <url>/2026/05/20/BUAA-OS%20Lab4%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 MOS 系统调用、IPC、fork 等。
+课上题目
+Exam
+点击查看题面
+这道题需要实现一个新的系统调用
+sys_trace_ref2，整体难度不大，只要理解了系统调用的完整链路便容易解决。
+Extra
+点击查看题面
+这道题要求实现脏页追踪机制，初看题面感觉难度很大，但实际上仍是代码填空的形式。开始时不必强求完全理解题面，可以跟着提示直接编写代码，在这个过程中理解也会慢慢加深。
+笔者的话
+Lab4 的主要内容是理解系统调用的完整链路，此外 fork
+也是一大重难点。对于 Extra
+这类题目，相信很多人都能拿到一定分数，满分的人也不少。如果遇到输出和预期不符，一定要积极调试，而不是自己干着急，gdb
+和输出语句的用法可以参考我在 Lab3 博客中的介绍。
+]]></content>
+      <categories>
+        <category>操作系统</category>
+      </categories>
+      <tags>
+        <tag>OS</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>BUAA-信号处理与信息推断 期末考题回忆版</title>
     <url>/2026/06/15/BUAA-%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E4%B8%8E%E4%BF%A1%E6%81%AF%E6%8E%A8%E6%96%AD%20%E6%9C%9F%E6%9C%AB%E8%80%83%E9%A2%98%E5%9B%9E%E5%BF%86%E7%89%88/</url>
     <content><![CDATA[写在前面
@@ -3963,7 +4043,8 @@ str / ptr）的快捷宏，一行就能把变量名和值都打出来。
 0.7，且两次骗人事件在给定孩子诚实性的条件下相互独立。请计算在观测到孩子连续两次说谎之后，村民仍认为该孩子诚实的后验概率。
 7.
 你近日突发腹痛，就医后医生判断该症状可能由两种疾病之一引起。现已知其中一种疾病条件下出现腹痛的概率，为得出可信的鉴别诊断结论，你还需要以下哪一项额外信息？请写出所选选项并说明理由。
-A. 另一种疾病条件下出现腹痛的概率 B. 该疾病条件下出现其他症状的概率
+A. 另一种疾病条件下出现腹痛的概率
+B. 该疾病条件下出现其他症状的概率
 C. 另一种疾病条件下出现其他症状的概率
 8.
 作为一名大二/大三阶段的本科生，你面前有以下四条主要发展路径：保研本校、考研外校、出国留学、直接就业。请从中选择其一作为个人目标，运用分层描述法对实现该目标的过程进行建模，并根据个人经验设定相关概率，估算最终目标达成的概率。
@@ -4023,30 +4104,6 @@ rule）。该专家在陈述过程中未讨论各特征之间是否存在条件�
       </tags>
   </entry>
   <entry>
-    <title>BUAA-OS Lab5上机</title>
-    <url>/2026/05/27/BUAA-OS%20Lab5%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 MOS 磁盘管理与文件系统。
-课上题目
-Exam
-点击查看题面
-这道题需要实现类似于 ls
-的功能，只要掌握了读取文件的那几个函数，难度就不大。
-Extra
-点击查看题面
-这道题要求增加三个文件相关的操作，其中一个给出了完整流程，另外两个可以照葫芦画瓢，相比往年难度也不大。
-笔者的话
-Lab5 是内容最丰富的一个
-Lab：从磁盘结构，到复杂的文件系统，涉及大量函数之间的相互调用。不过实际需要熟练使用的，主要是根据路径读取文件的那几个函数，其余部分大致理解即可。另外这一节涉及好几个相似的结构体，比如
-Fd、Filefd、Open，可以把这些结构体的定义打印出来带进考场方便查阅，甚至那些复杂的函数接口也可以印出来，一定要利用好开卷考试的这个特点。
-]]></content>
-      <categories>
-        <category>操作系统</category>
-      </categories>
-      <tags>
-        <tag>OS</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>BUAA-信号处理与信息推断 核心教程</title>
     <url>/2026/06/15/BUAA-%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E4%B8%8E%E4%BF%A1%E6%81%AF%E6%8E%A8%E6%96%AD%20%E6%A0%B8%E5%BF%83%E6%95%99%E7%A8%8B/</url>
     <content><![CDATA[写在前面
@@ -4096,7 +4153,19 @@ H
 Inference）的本质。因为在实际物理世界中，这种逆向映射往往是非一一对应（多对一或多对多）的。不同的内部原因在噪声和系统失真的干扰下，可能呈现出完全相同的外部表象。
 
 
-graph TD    subgraph easy [&quot;正向过程 (Easy)&quot;]        H[内部成因 H] --&gt;|系统机制与物理定律| A[外部观测 A]    end    subgraph hard [&quot;逆向过程 (Hard)&quot;]        A_inv[外部观测 A] --&gt;|不确定性/多对一映射| H_inv[推断内部成因 H?]    end    style H fill:#d4edda,stroke:#28a745,stroke-width:2px    style A fill:#f8d7da,stroke:#dc3545,stroke-width:2px    style A_inv fill:#f8d7da,stroke:#dc3545,stroke-width:2px    style H_inv fill:#d4edda,stroke:#28a745,stroke-width:2px
+
+graph TD
+    subgraph easy [&quot;正向过程 (Easy)&quot;]
+        H[内部成因 H] --&gt;|系统机制与物理定律| A[外部观测 A]
+    end
+    subgraph hard [&quot;逆向过程 (Hard)&quot;]
+        A_inv[外部观测 A] --&gt;|不确定性/多对一映射| H_inv[推断内部成因 H?]
+    end
+    style H fill:#d4edda,stroke:#28a745,stroke-width:2px
+    style A fill:#f8d7da,stroke:#dc3545,stroke-width:2px
+    style A_inv fill:#f8d7da,stroke:#dc3545,stroke-width:2px
+    style H_inv fill:#d4edda,stroke:#28a745,stroke-width:2px
+
 2.
 信息推断在现实工程与生活中的具体映射
 为了让这一概念具象化，我们来看几个现实中典型的逆向信息推断场景：
@@ -4187,14 +4256,16 @@ MLE）是一种应用极广的经典参数估计方法。但在信息推断的�
 MLE，将会导致灾难性的后果。
 1. 最大似然估计的数学定义
 设我们观测到了某个具体的现象 A。对于任意一个候选原因 H_i，我们在正向过程中可以确定其产生该现象的概率，这个概率被称为似然（Likelihood）：
-\text{Likelihood}(H_i) = P(A | H_i)
+\text{Likelihood}(H_i) = P(A |
+H_i)
 似然值的大小反映了：在原因 H_i
 成立的假设下，当前观测现象 A
 出现的概率。似然值越高，说明原因 H_i 对现象 A
 的解释力度越强。
 最大似然估计（MLE）的决策核心在于：在所有可能的原因中，选择那个能够最完美、最大程度解释当前观测现象的原因作为最终的推断结论。
-其数学表达式为： \hat{H}_{\text{MLE}} =
-\arg\max_{H_i} P(A | H_i)
+其数学表达式为：
+\hat{H}_{\text{MLE}} = \arg\max_{H_i} P(A |
+H_i)
 2. MLE 的核心缺陷
 最大似然估计虽然在正向物理建模和样本量极大时非常有效，但在逆向信息推断中，它存在一个致命缺陷：它完全忽略了原因本身发生的基准概率，即先验概率（Prior
 Probability） P(H_i)。
@@ -4205,24 +4276,33 @@ P(H_n)）。然而，在现实世界中，各种原因的初始发生概率往�
 为了彻底讲透 MLE 的这一缺陷，我们构建一个严密的医学诊断数学模型。
 实验设定与变量定义
 设随机变量 H
-代表受试者的健康真实状况，其取值空间为： * H_1：受试者确实患有某种罕见的血液病。 * H_2：受试者完全健康。
+代表受试者的健康真实状况，其取值空间为：
+* H_1：受试者确实患有某种罕见的血液病。
+* H_2：受试者完全健康。
 设随机变量 A
-代表医学仪器的检测结果，其取值空间为： * A =
-+：检测结果呈阳性（指示患病）。 * A =
+代表医学仪器的检测结果，其取值空间为：
+* A =
++：检测结果呈阳性（指示患病）。
+* A =
 -：检测结果呈阴性（指示健康）。
 系统参数（似然概率）
-医疗诊断仪器的性能指标（即正向条件概率）如下： 1.
+医疗诊断仪器的性能指标（即正向条件概率）如下：
+1.
 敏感度（Sensitivity，真阳性率）：如果受试者真的患病，仪器
-100% 能够检测出阳性。 P(A = + | H_1) = 1.0
-\quad (100\%) 2.
+100% 能够检测出阳性。
+P(A = + | H_1) = 1.0 \quad
+(100\%)
+2.
 特异度（Specificity，真阴性率）：如果受试者完全健康，仪器有
 99% 的概率检测出阴性，但有 1% 的概率误报为阳性（即假阳性率 False
-Positive Rate 为 1%）。 P(A = + | H_2) = 0.01
-\quad (1\%)
+Positive Rate 为 1%）。
+P(A = + | H_2) = 0.01 \quad (1\%)
 流行病学数据（先验概率）
-该血液病在人群中极其罕见，其基础患病率（先验概率）为千分之一： P(H_1) = 0.001 \quad (0.1\%)
-因此，人群中健康人的比例为： P(H_2) = 1 -
-P(H_1) = 0.999 \quad (99.9\%)
+该血液病在人群中极其罕见，其基础患病率（先验概率）为千分之一：
+P(H_1) = 0.001 \quad (0.1\%)
+因此，人群中健康人的比例为：
+P(H_2) = 1 - P(H_1) = 0.999 \quad
+(99.9\%)
 场景引入
 现有一名普通市民在体检中被仪器检测出阳性结果，即我们拿到了观测证据
 A = +。
@@ -4230,12 +4310,16 @@ A = +。
 
 方案一：采用最大似然估计（MLE）决策
 MLE
-仅仅对比两个候选原因在产生“阳性结果”这一表象时的解释力度（似然值）： *
-原因一（患病）的似然值：P(A = + | H_1) =
-1.0 * 原因二（健康）的似联值：P(A = + |
-H_2) = 0.01
-由于： P(A = + | H_1) = 1.0 \gg P(A = + |
-H_2) = 0.01 MLE 决策器会毫不犹豫地做出判断： \hat{H}_{\text{MLE}} = H_1 \quad
+仅仅对比两个候选原因在产生“阳性结果”这一表象时的解释力度（似然值）：
+* 原因一（患病）的似然值：P(A = + | H_1) =
+1.0
+* 原因二（健康）的似联值：P(A = + | H_2) =
+0.01
+由于：
+P(A = + | H_1) = 1.0 \gg P(A = + | H_2) =
+0.01
+MLE 决策器会毫不犹豫地做出判断：
+\hat{H}_{\text{MLE}} = H_1 \quad
 (\text{推断结论：该市民患有罕见病})
 MLE
 的物理直觉解释：“得病了”这一假设能够完美解释“为什么检测呈阳性”；而“健康”这一假设要解释阳性，只能指望那
@@ -4246,17 +4330,20 @@ MLE
 我们引入先验概率，通过全概率公式计算出在整个受试人群中，检测出阳性（A = +）的综合概率 P(A = +)：
 P(A = +) = P(H_1) \cdot P(A = + | H_1) +
 P(H_2) \cdot P(A = + | H_2)
-代入具体数值计算： P(A = +) = 0.001 \times
-1.0 + 0.999 \times 0.01 P(A = +) =
-0.001 + 0.00999 = 0.01099 \quad (1.099\%)
+代入具体数值计算：
+P(A = +) = 0.001 \times 1.0 + 0.999 \times
+0.01
+P(A = +) = 0.001 + 0.00999 = 0.01099 \quad
+(1.099\%)
 这个结果的物理意义是：如果我们在人群中随机抽取大量样本，大约有 1.099\% 的人会被仪器检测出阳性。
 现在，我们计算该市民在已知检测为阳性的前提下，真正患病（H_1）的后验概率（Posterior
 Probability）：
 P(H_1 | A = +) = \frac{P(H_1 \cap A =
 +)}{P(A = +)} = \frac{P(H_1) \cdot P(A = + | H_1)}{P(A = +)}
-将数值代入方程： P(H_1 | A = +) =
-\frac{0.001 \times 1.0}{0.01099} = \frac{0.001}{0.01099} \approx 0.09099
-\quad (9.1\%)
+将数值代入方程：
+P(H_1 | A = +) = \frac{0.001 \times
+1.0}{0.01099} = \frac{0.001}{0.01099} \approx 0.09099 \quad
+(9.1\%)
 也就是说，即使这名市民拿到了阳性的体检报告，他真正患病的概率也仅仅只有
 9.1\% 左右，而他有超过 90.9\% 的概率其实是完全健康的！
 为什么会这样？——直观物理释义
@@ -4301,28 +4388,39 @@ P(H_1 | A = +) = \frac{P(H_1 \cap A =
 A
 代表我们观测到的表象或证据（Action/Evidence）。其中，H, A \in \mathcal{F}，且满足 P(A) &gt; 0, P(H) &gt; 0。
 
-条件概率定义： 在已知事件 A 发生的前提下，事件 H 发生的条件概率（即后验概率）定义为： P(H|A) = \frac{P(H \cap A)}{P(A)} \quad \text{---
-(公式 2.1)} 其中，P(H \cap A)
-是假说 H 与观测 A 同时发生的联合概率（Joint
-Probability）。
+条件概率定义：
+在已知事件 A 发生的前提下，事件 H 发生的条件概率（即后验概率）定义为：
+P(H|A) = \frac{P(H \cap A)}{P(A)} \quad
+\text{--- (公式 2.1)}
+其中，P(H \cap A) 是假说 H 与观测 A
+同时发生的联合概率（Joint Probability）。
 联合概率的对称性：
-显然，集合的交集满足交换律，即： P(H \cap A)
-= P(A \cap H) \quad \text{--- (公式 2.2)}
+显然，集合的交集满足交换律，即：
+P(H \cap A) = P(A \cap H) \quad \text{---
+(公式 2.2)}
 乘法定理展开：
 根据条件概率的乘法公式，我们可以将联合概率 P(A
-\cap H) 展开为： P(A \cap H) = P(H)
-\cdot P(A|H) \quad \text{--- (公式 2.3)} 这里，P(A|H) 是在假说 H 成立的条件下，观测到现象 A 的概率（即似然概率）。
-代入与合成： 将公式 (2.3) 和公式 (2.2) 代入公式
-(2.1) 的分子中，即可直接推导出经典的贝叶斯公式（Bayes’
-Theorem）： P(H|A) = \frac{P(H)
-\cdot P(A|H)}{P(A)} \quad \text{--- (公式 2.4)}
+\cap H) 展开为：
+P(A \cap H) = P(H) \cdot P(A|H) \quad
+\text{--- (公式 2.3)}
+这里，P(A|H) 是在假说 H 成立的条件下，观测到现象 A 的概率（即似然概率）。
+代入与合成：
+将公式 (2.3) 和公式 (2.2) 代入公式 (2.1)
+的分子中，即可直接推导出经典的贝叶斯公式（Bayes’
+Theorem）：
+P(H|A) = \frac{P(H) \cdot P(A|H)}{P(A)} \quad
+\text{--- (公式 2.4)}
 
 如果我们的假说空间可以被划分为一组互不相交且并集为全集的完备事件组（即互斥且穷尽的原因集合）
-\{H_1, H_2, \dots, H_n\}，满足： \bigcup_{k=1}^n H_k = \Omega \quad \text{且} \quad
-H_i \cap H_j = \emptyset \ (\forall i \neq j)
+\{H_1, H_2, \dots, H_n\}，满足：
+\bigcup_{k=1}^n H_k = \Omega \quad \text{且}
+\quad H_i \cap H_j = \emptyset \ (\forall i \neq j)
 那么根据全概率公式（Law of Total Probability），分母
-P(A) 可以展开为： P(A) = \sum_{k=1}^n P(H_k) \cdot P(A|H_k) \quad
-\text{--- (公式 2.5)} 此时，对于任意特定的原因 H_i，其贝叶斯公式的展开形式为： P(H_i|A) = \frac{P(H_i) \cdot
+P(A) 可以展开为：
+P(A) = \sum_{k=1}^n P(H_k) \cdot P(A|H_k)
+\quad \text{--- (公式 2.5)}
+此时，对于任意特定的原因 H_i，其贝叶斯公式的展开形式为：
+P(H_i|A) = \frac{P(H_i) \cdot
 P(A|H_i)}{\sum_{k=1}^n P(H_k) \cdot P(A|H_k)} \quad \text{--- (公式
 2.6)}
 
@@ -4375,8 +4473,9 @@ P(H\|A)
 
 
 
-我们可以将贝叶斯公式的逻辑浓缩为一句话： \text{后验概率} = \frac{\text{先验概率} \times
-\text{似然概率}}{\text{归一化常数}}
+我们可以将贝叶斯公式的逻辑浓缩为一句话：
+\text{后验概率} = \frac{\text{先验概率}
+\times \text{似然概率}}{\text{归一化常数}}
 后验概率是先验（常识/历史）与似然（现实证据的解释力）相互妥协、融合后产生的理性折中。
 
 2.2
@@ -4387,33 +4486,40 @@ P(A)（即归一化常数）往往是一个极其痛苦的过程。
 从公式 (2.5) 可以看出，计算 P(A)
 需要对所有的可能原因进行穷举求和。在连续随机变量的情况下，求和将变成高维积分：
 P(A) = \int_{\Theta} P(\theta) \cdot
-P(A|\theta) d\theta 如果参数空间 \Theta
+P(A|\theta) d\theta
+如果参数空间 \Theta
 是高维的，这个积分在数学上通常是不可积（Intractable）的，计算复杂度呈指数级爆炸。这被称为“维数灾难”。
 2. 相对后验概率与比率法
 幸运的是，在绝大多数决策场景中，我们并不需要知道后验概率的绝对值，而只需要知道哪一个原因的可能性更大（即进行分类或选出最优解）。
 设有两个对立的候选成因 H_1 与 H_2。我们观测到了相同的证据 A。根据贝叶斯公式，我们分别写出它们的绝对后验概率：
-P(H_1|A) = \frac{P(H_1)P(A|H_1)}{P(A)}
+P(H_1|A) =
+\frac{P(H_1)P(A|H_1)}{P(A)}
 P(H_2|A) =
 \frac{P(H_2)P(A|H_2)}{P(A)}
 现在，我们计算这两个后验概率的比值（后验胜率，Posterior
-Odds）： \frac{P(H_1|A)}{P(H_2|A)} =
+Odds）：
+\frac{P(H_1|A)}{P(H_2|A)} =
 \frac{\frac{P(H_1)P(A|H_1)}{P(A)}}{\frac{P(H_2)P(A|H_2)}{P(A)}} =
 \frac{P(H_1)P(A|H_1)}{P(H_2)P(A|H_2)}
-我们可以将上式整理为： \frac{P(H_1|A)}{P(H_2|A)} = \left(
+我们可以将上式整理为：
+\frac{P(H_1|A)}{P(H_2|A)} = \left(
 \frac{P(H_1)}{P(H_2)} \right) \cdot \left( \frac{P(A|H_1)}{P(A|H_2)}
 \right) \quad \text{--- (公式 2.7)}
-这个公式是非常漂亮的，它将逆向推断的比较拆解为两个独立因子的乘积： 1.
-\frac{P(H_1)}{P(H_2)}：先验胜率
-(Prior Odds)。在拿到证据前，原因 1 和原因 2 的基准概率之比。 2.
-\frac{P(A|H_1)}{P(A|H_2)}：贝叶斯因子
+这个公式是非常漂亮的，它将逆向推断的比较拆解为两个独立因子的乘积：
+1. \frac{P(H_1)}{P(H_2)}：先验胜率
+(Prior Odds)。在拿到证据前，原因 1 和原因 2
+的基准概率之比。
+2. \frac{P(A|H_1)}{P(A|H_2)}：贝叶斯因子
 (Bayes Factor) / 似然比 (Likelihood Ratio)。原因 1
 对现象的解释力与原因 2 对现象的解释力之比。
 关键发现
 在这个比值中，令人头疼的归一化常数 P(A) 被完美约掉了！
 这意味着，要对比两个成因的相对可能性，我们根本不需要知道全社会所有人做检测的阳性比例，也不需要计算复杂的边缘积分。我们只需要将它们的“先验乘以似然”进行直接对比即可。
 在多原因 \{H_1, H_2, \dots, H_n\}
-的情况下，这一规律可以推广为正比例关系： P(H_i|A) \propto P(H_i) \cdot P(A|H_i) \quad
-\text{--- (公式 2.8)} 其中，符号 \propto
+的情况下，这一规律可以推广为正比例关系：
+P(H_i|A) \propto P(H_i) \cdot P(A|H_i) \quad
+\text{--- (公式 2.8)}
+其中，符号 \propto
 表示“正比例于”。这就是贝叶斯决策的核心：后验正比于先验乘以似然。在垃圾邮件分类器（Naive
 Bayes Classifier）等工程算法中，我们正是利用这一性质，通过比较 P(H_i)P(A|H_i)
 的大小来直接决定分类结果，从而绕过了分母的复杂计算。
@@ -4422,23 +4528,26 @@ Bayes Classifier）等工程算法中，我们正是利用这一性质，通过�
 奥卡姆剃刀的贝叶斯解释：为什么简单就是美？
 1. 什么是奥卡姆剃刀？
 14世纪英格兰逻辑学家、圣方济各会修道士奥卡姆的威廉（William of
-Occam）提出了一个著名的哲学与科学方法论原则： &gt;
-“如无必要，勿增实体”（More things should not be used than are
-necessary）。
+Occam）提出了一个著名的哲学与科学方法论原则：
+&gt; “如无必要，勿增实体”（More things should not be used than
+are necessary）。
 在科学建模中，这一原则被表述为：如果两个不同的理论或模型都能够同样好地解释观测到的实验数据，我们应当优先选择那个更简单、假设更少、结构更精简的理论。
 这在人类的直觉上是说得通的，但它在数学上是否合理？我们能否用概率论的语言对其进行严密的论证？贝叶斯定理给出了令人信服的回答。
 2. 奥卡姆剃刀的贝叶斯数学论证
-设我们观测到了一个物理现象 A。现在有两个相互竞争的解释假说： *
-简单假说 H_{\text{simple}}：该假说结构非常简单，只包含极少数的未知参数，假设前提极少。例如：“天体运行轨迹是一个完美的椭圆”。
+设我们观测到了一个物理现象 A。现在有两个相互竞争的解释假说：
+* 简单假说 H_{\text{simple}}：该假说结构非常简单，只包含极少数的未知参数，假设前提极少。例如：“天体运行轨迹是一个完美的椭圆”。
 * 复杂假说 H_{\text{complex}}：该假说结构高度复杂，包含大量可以自由调节的未知参数。例如：“天体运行轨迹是由几十个大小不一的均轮和本轮叠加而成的复杂几何曲线”。
 这两种假说在解释当前观测到的行星轨迹数据 A
-时，表现得一样好。也就是说，它们的似然概率几乎是相同的： P(A|H_{\text{simple}}) \approx
+时，表现得一样好。也就是说，它们的似然概率几乎是相同的：
+P(A|H_{\text{simple}}) \approx
 P(A|H_{\text{complex}}) \approx 1
-现在，我们通过公式 (2.7) 来评估它们在观测之后的相对后验概率： \frac{P(H_{\text{simple}}|A)}{P(H_{\text{complex}}|A)}
+现在，我们通过公式 (2.7) 来评估它们在观测之后的相对后验概率：
+\frac{P(H_{\text{simple}}|A)}{P(H_{\text{complex}}|A)}
 = \frac{P(H_{\text{simple}})}{P(H_{\text{complex}})} \cdot
 \frac{P(A|H_{\text{simple}})}{P(A|H_{\text{complex}})}
 因为似然比 \frac{P(A|H_{\text{simple}})}{P(A|H_{\text{complex}})}
-\approx 1，上式可以简化为： \frac{P(H_{\text{simple}}|A)}{P(H_{\text{complex}}|A)}
+\approx 1，上式可以简化为：
+\frac{P(H_{\text{simple}}|A)}{P(H_{\text{complex}}|A)}
 \approx \frac{P(H_{\text{simple}})}{P(H_{\text{complex}})} \quad
 \text{--- (公式 2.9)}
 此时，决定谁更可信的唯一砝码落在了它们的先验概率之比 \frac{P(H_{\text{simple}})}{P(H_{\text{complex}})}
@@ -4461,8 +4570,11 @@ A 的概率被极度稀释。
 我们可以用概率图直观表达这一现象：
 P(观测 | 模型)  ▲  │       ┌─┐  &lt;-- 简单模型 (概率集中在狭窄区域，峰值极高)  │       │ │  │    ┌──┴─┴──┐  │ ───┼───────┼───   &lt;-- 复杂模型 (概率稀释在极宽的范围，峰值很低)  │    │       │  └────┴───────┴────────► 观测空间 (Data Space)         数据 A
 从先验的角度来看，一个结构极其繁复、需要十几个苛刻前提条件同时成立的复杂原因（例如“外星人为了做实验，特意用强电磁干扰模拟了飞机引擎故障的警报信号”），其发生的基础概率（先验概率）在自然界中是极低的。而一个结构简单、只需一个前提的成因（例如“仪器传感器老化接触不良”），其先验概率要大得多。
-因此，根据贝叶斯法则： P(H_{\text{simple}}) \gg
-P(H_{\text{complex}}) 结合公式 (2.9)，我们直接得出： P(H_{\text{simple}}|A) \gg
+因此，根据贝叶斯法则：
+P(H_{\text{simple}}) \gg
+P(H_{\text{complex}})
+结合公式 (2.9)，我们直接得出：
+P(H_{\text{simple}}|A) \gg
 P(H_{\text{complex}}|A)
 物理直觉与结论
 贝叶斯公式在数学层面上自动惩罚了过度复杂的实体，自然而然地倾向于更精简的解释。“奥卡姆剃刀”不是一个主观的哲学偏好，而是概率论与贝叶斯推理在逻辑上的必然产物。
@@ -4477,9 +4589,9 @@ P(H_{\text{complex}}|A)
 9.1\%。
 为了深刻揭示先验概率如何像一个隐形的重力场一样牵引着最终的推断结果，我们保持检测仪器的性能指标（似然概率）不变，即：
 * 真阳性率（敏感度）：P(A = +
-| H_{\text{sick}}) = 1.0 \quad (100\%) *
-假阳性率（误报率）：P(A = + |
-H_{\text{healthy}}) = 0.01 \quad (1\%)
+| H_{\text{sick}}) = 1.0 \quad (100\%)
+* 假阳性率（误报率）：P(A = +
+| H_{\text{healthy}}) = 0.01 \quad (1\%)
 我们让基础患病率（先验概率 P(H_{\text{sick}})）在不同的受试群体和筛查场景下进行跨数量级的变动，并定量观察后验概率
 P(H_{\text{sick}} | A = +)
 的阶跃变化。
@@ -4489,13 +4601,16 @@ A：极罕见疾病的普查（先验概率 P(H_{\text{sick}}) = 0.0001 \ (0.01\
 适用情境：在一座普通城市的所有健康常住人口中，普查某种发病率极低的极其罕见基因缺陷。
 计算过程：
 
-全概率分母： P(A = +) =
-P(H_{\text{sick}}) \cdot 1.0 + P(H_{\text{healthy}}) \cdot 0.01
+全概率分母：
+P(A = +) = P(H_{\text{sick}}) \cdot 1.0 +
+P(H_{\text{healthy}}) \cdot 0.01
 P(A = +) = 0.0001 \times 1.0 + 0.9999 \times
 0.01 = 0.0001 + 0.009999 = 0.010099 \quad (1.0099\%)
-后验概率分子项： P(H_{\text{sick}}) \cdot
-P(A = + | H_{\text{sick}}) = 0.0001 \times 1.0 = 0.0001
-后验概率： P(H_{\text{sick}} | A = +) =
+后验概率分子项：
+P(H_{\text{sick}}) \cdot P(A = + |
+H_{\text{sick}}) = 0.0001 \times 1.0 = 0.0001
+后验概率：
+P(H_{\text{sick}} | A = +) =
 \frac{0.0001}{0.010099} \approx 0.009902 \quad (0.99\%)
 
 物理结论：在此先验下，超过 99\%
@@ -4504,8 +4619,10 @@ P(A = + | H_{\text{sick}}) = 0.0001 \times 1.0 = 0.0001
 2. 场景
 B：普通罕见疾病的筛查（先验概率 P(H_{\text{sick}}) = 0.001 \ (0.1\%)）
 
-计算过程：正如第一章推导： P(H_{\text{sick}} | A = +) = \frac{0.001 \times
-1.0}{0.001 \times 1.0 + 0.999 \times 0.01} \approx 9.1\%
+计算过程：正如第一章推导：
+P(H_{\text{sick}} | A = +) = \frac{0.001
+\times 1.0}{0.001 \times 1.0 + 0.999 \times 0.01} \approx
+9.1\%
 物理结论：虽然比场景 A 改善了近 10 倍，但依然有近
 91\%
 的概率是“被仪器冤枉”的健康人。
@@ -4516,11 +4633,12 @@ B：普通罕见疾病的筛查（先验概率 P(H_{\text{sick}}) = 0.001 \ (0.1
 适用情境：在医院的特定发热门诊，或者针对有家族遗传史的高危人群开展针对性筛查。
 计算过程：
 
-全概率分母： P(A = +) = 0.01 \times 1.0 +
-0.99 \times 0.01 = 0.01 + 0.0099 = 0.0199 \quad (1.99\%)
-后验概率： P(H_{\text{sick}} | A = +) =
-\frac{0.01 \times 1.0}{0.0199} \approx 0.5025 \quad
-(50.25\%)
+全概率分母：
+P(A = +) = 0.01 \times 1.0 + 0.99 \times 0.01
+= 0.01 + 0.0099 = 0.0199 \quad (1.99\%)
+后验概率：
+P(H_{\text{sick}} | A = +) = \frac{0.01
+\times 1.0}{0.0199} \approx 0.5025 \quad (50.25\%)
 
 物理结论：此时后验概率达到了抛硬币的临界点。检测为阳性的人中，刚好有一半是真病人，另一半是误报。测试的参考价值开始显著提升。
 
@@ -4530,10 +4648,12 @@ B：普通罕见疾病的筛查（先验概率 P(H_{\text{sick}}) = 0.001 \ (0.1
 适用情境：在疫情大暴发的核心疫区，或者患者已经出现了极为典型的临床症状（如持续高烧加特定器官阴影）。
 计算过程：
 
-全概率分母： P(A = +) = 0.1 \times 1.0 +
-0.9 \times 0.01 = 0.1 + 0.009 = 0.109 \quad (10.9\%)
-后验概率： P(H_{\text{sick}} | A = +) =
-\frac{0.1 \times 1.0}{0.109} \approx 0.9174 \quad (91.74\%)
+全概率分母：
+P(A = +) = 0.1 \times 1.0 + 0.9 \times 0.01 =
+0.1 + 0.009 = 0.109 \quad (10.9\%)
+后验概率：
+P(H_{\text{sick}} | A = +) = \frac{0.1 \times
+1.0}{0.109} \approx 0.9174 \quad (91.74\%)
 
 物理结论：此时，阳性报告的信度极高，真正确诊的概率超过了
 91\%，临床上可以作为强力的诊断依据。
@@ -4591,7 +4711,8 @@ B：普通罕见疾病的筛查（先验概率 P(H_{\text{sick}}) = 0.001 \ (0.1
 
 从表中我们可以看到一个清晰的规律：测试仪器的物理精度（似然值）在四个场景中完全一样，但仅仅因为受试人群的基准发生率（先验）不同，检测结果的可靠性就发生了从
 0.99\% 到 91.74\% 的天壤之别。
-这给了我们深刻的启示： 1.
+这给了我们深刻的启示：
+1.
 医学伦理与卫生经济学：为什么大部分医疗指南都极力反对在大规模健康无症状人群中普查某些少见癌症？因为低先验会导致假阳性泛滥，引发社会恐慌和过度医疗。
 2.
 雷达与信号检测工程：在雷达警戒系统中，如果虚警概率（假阳性率）是固定的，如果空域中敌机出现的概率（先验）极低，那么雷达一旦报警，大概率是鸟类或云层带来的杂波误报。只有结合红外、声学等其他渠道提高先验，雷达报警的后验可信度才具有工程价值。
@@ -4600,29 +4721,32 @@ B：普通罕见疾病的筛查（先验概率 P(H_{\text{sick}}) = 0.001 \ (0.1
 守门员扑点球案例：动作似然概率趋同到先验决定后验的完整逻辑
 在竞技体育的博弈中，守门员扑点球是一个典型的瞬时逆向信息推断过程。
 1. 传统守门员的直觉误区
-普通人或业余守门员在面对罚球者时，习惯于进行“正向观测后推断”： *
-观测 A：罚球球员助跑时的眼神、出脚的倾斜角度、脚弓张开的弧度等动作。
-* 推断目标 H：罚球者到底是要射向左侧（H_{\text{Left}}），还是右侧（H_{\text{Right}}）？ *
-决策动作：朝着推断出的方向飞身扑救。
+普通人或业余守门员在面对罚球者时，习惯于进行“正向观测后推断”：
+* 观测 A：罚球球员助跑时的眼神、出脚的倾斜角度、脚弓张开的弧度等动作。
+* 推断目标 H：罚球者到底是要射向左侧（H_{\text{Left}}），还是右侧（H_{\text{Right}}）？
+* 决策动作：朝着推断出的方向飞身扑救。
 然而，职业足坛的统计数据表明，这种“看动作再扑球”的模式在物理上是几乎不可能成功的。
 
 物理限制：速度与时间：
 现代职业球员罚出的点球，球速通常在 90 \text{
 km/h} \sim 110 \text{ km/h} 之间。以 100 \text{ km/h} 计算，球飞过 11
 米的点球点到达球门线仅需约 0.4
-秒。 而人类的视觉信号传导与神经反应时间约为 0.15 \sim 0.2 秒，身体起跳腾空并完全展开需要
-0.2 \sim 0.3
+秒。
+而人类的视觉信号传导与神经反应时间约为 0.15
+\sim 0.2 秒，身体起跳腾空并完全展开需要 0.2 \sim 0.3
 秒。这意味着，如果守门员等到看清皮球出脚瞬间的动作才做出反应，球早已经飞过了球门线。
 似然概率的假动作趋同（似然比退化）：
 顶级射手精通各种假动作骗术。他们可以用几乎完全相同的助跑姿势和脚踝动作，在触球的千分之几秒内改变手腕和脚踝扣动的方向。这导致：
 P(\text{动作 } A | H_{\text{Left}}) \approx
 P(\text{动作 } A | H_{\text{Right}}) \approx 1
 或者说，在极短的动态观测下，无论射向哪个方向，其动作的似然比都高度趋近于
-1： \frac{P(\text{动作 } A |
+1：
+\frac{P(\text{动作 } A |
 H_{\text{Left}})}{P(\text{动作 } A | H_{\text{Right}})} \approx
 1
 
-此时，如果我们带入贝叶斯相对后验概率公式（公式 2.7）： \frac{P(H_{\text{Left}} | \text{动作 }
+此时，如果我们带入贝叶斯相对后验概率公式（公式 2.7）：
+\frac{P(H_{\text{Left}} | \text{动作 }
 A)}{P(H_{\text{Right}} | \text{动作 } A)} =
 \left(\frac{P(H_{\text{Left}})}{P(H_{\text{Right}})}\right) \cdot
 \left(\frac{P(\text{动作 } A | H_{\text{Left}})}{P(\text{动作 } A |
@@ -4637,14 +4761,24 @@ H_{\text{Right}})}\right) \approx
 在 2006
 年德国世界杯四分之一决赛德国对阵阿根廷的点球大战中，德国守门员延斯·莱曼（Jens
 Lehmann）在每次扑救前都会看一眼从袜子里掏出的一张小纸条。
-这张小纸条上密密麻麻写着阿根廷主力罚球队员的历史射门偏好： *
-克鲁兹 (Cruz)：长距离助跑，喜欢右上角。 *
-阿亚拉 (Ayala)：注意他的跑动步频，喜欢射左下角。 *
-罗德里格斯 (Rodriguez)：大力抽射右边。 *
-坎比亚索 (Cambiasso)：短距离助跑，抽射左上角。
+这张小纸条上密密麻麻写着阿根廷主力罚球队员的历史射门偏好：
+* 克鲁兹 (Cruz)：长距离助跑，喜欢右上角。
+* 阿亚拉
+(Ayala)：注意他的跑动步频，喜欢射左下角。
+* 罗德里格斯 (Rodriguez)：大力抽射右边。
+* 坎比亚索 (Cambiasso)：短距离助跑，抽射左上角。
 这些数据，就是阿根廷各位球员在莱曼做出扑救之前，关于射门方向的先验概率
 P(H)。
-sequenceDiagram    participant K as 罚球者 (Kicker)    participant G as 守门员莱曼 (Lehmann)    Note over K,G: 莱曼查阅纸条获取罚球者历史方向偏好 (先验 Prior)    Note over K: 罚球者助跑并做出极具迷惑性的假动作 (似然收敛 Likelihood -&gt; 1)    Note over G: 莱曼忽略动作，直接按照纸条上的先验方向提前起跳    K-&gt;&gt;G: 射门    Note over G: 成功扑出阿亚拉和坎比亚索的点球！
+
+sequenceDiagram
+    participant K as 罚球者 (Kicker)
+    participant G as 守门员莱曼 (Lehmann)
+    Note over K,G: 莱曼查阅纸条获取罚球者历史方向偏好 (先验 Prior)
+    Note over K: 罚球者助跑并做出极具迷惑性的假动作 (似然收敛 Likelihood -&gt; 1)
+    Note over G: 莱曼忽略动作，直接按照纸条上的先验方向提前起跳
+    K-&gt;&gt;G: 射门
+    Note over G: 成功扑出阿亚拉和坎比亚索的点球！
+
 莱曼完全遵循了贝叶斯公式的教导，把宝贵的身体动作时间全部押注在先验概率最大的方向上。最终，他成功扑出了阿亚拉和坎比亚索的点球，将德国队送入四强。这就是先验概率在巅峰竞技对抗中的决定性力量。
 
 3.3 内部视角 vs
@@ -4685,14 +4819,14 @@ Fox）：“在我们相似的团队中，最终能写完教材的有多少？�
 8 年 才编写完成，工期延误了 4 倍。
 案例二：格力手机的商业滑铁卢
 董明珠在宣布做格力手机时，曾高调声称格力手机可以在一年内卖出一亿台。
-她的全部论据都建立在强烈的内部视角之上： *
-“我们格力拥有全国最庞大的线下专卖店销售渠道。” *
-“我们掌握了空调核心科技，拥有强大的生产线与品控能力。” *
-“董明珠本人的个人IP和格力品牌有着极高的社会认可度。”
-然而，从外部视角来看： *
-智能手机行业在当时已是一片红海，苹果、华为、小米等巨头壁垒极高。 *
-传统白电品牌跨界做智能手机的先例中，成功率几乎为零。 *
-空调渠道和手机销售渠道的目标受众与购买决策逻辑完全不同。
+她的全部论据都建立在强烈的内部视角之上：
+* “我们格力拥有全国最庞大的线下专卖店销售渠道。”
+* “我们掌握了空调核心科技，拥有强大的生产线与品控能力。”
+* “董明珠本人的个人IP和格力品牌有着极高的社会认可度。”
+然而，从外部视角来看：
+* 智能手机行业在当时已是一片红海，苹果、华为、小米等巨头壁垒极高。
+* 传统白电品牌跨界做智能手机的先例中，成功率几乎为零。
+* 空调渠道和手机销售渠道的目标受众与购买决策逻辑完全不同。
 最终，外部视角（零成功率的先验）再次胜出，格力手机在经历了几代惨淡的内部消化后，黯然退出了市场。
 案例三： Larry
 Summers 的“时间调整法则”（Summers’ Law）
@@ -4700,12 +4834,12 @@ Summers 的“时间调整法则”（Summers’ Law）
 Summers）发现，他的下属在提交工作汇报时，总是严重低估任务的完成时间。为了对抗下属的“规划谬误”，萨默斯总结出一套经验公式：
 &gt; 将雇员给出的预计时间乘以
 2，然后用高一级的时间单位来表示。
-例如： * 员工估计：“这个报告我写完只要 1 小时。”
-\rightarrow 实际需要：2
-天。 * 员工估计：“这个算法我调试大概需要 2
-天。” \rightarrow
-实际需要：4 星期（一个月）。 *
-员工估计：“这篇论文写完投出去要 2 周。” \rightarrow 实际需要：4
+例如：
+* 员工估计：“这个报告我写完只要 1 小时。” \rightarrow 实际需要：2
+天。
+* 员工估计：“这个算法我调试大概需要 2 天。” \rightarrow 实际需要：4
+星期（一个月）。
+* 员工估计：“这篇论文写完投出去要 2 周。” \rightarrow 实际需要：4
 个月（事实证明，那位说要两周的同学，拖拖拉拉半年才把文章投出去）。
 这虽然看似是个调侃，但在本质上是萨默斯利用历史统计数据（外部视角），对个人过度乐观的估计（内部视角）进行强行引入先验概率的贝叶斯修正。
 3.
@@ -4725,20 +4859,21 @@ Flyvbjerg）提出了一个高度结构化的外部视角应用框架，称为�
 4.
 认知偏误的心理学根源：过度自信（Overconfidence）
 为什么外部视角如此难以被人类接受？因为我们的潜意识里根深蒂固地存在着过度自信的偏差。我们总是相信自己和普通人是不同的，相信自己拥有更好的特质、更强的控制力甚至更好的运气。
-心理学家为此做过大量的调查： * 司机车技自评：有高达
-90\%
-的司机坚信自己的驾驶技术处于“平均水平之上”。 *
-创业胜率预估：美国的统计表明小微企业 5 年生存率仅为
+心理学家为此做过大量的调查：
+* 司机车技自评：有高达 90\%
+的司机坚信自己的驾驶技术处于“平均水平之上”。
+* 创业胜率预估：美国的统计表明小微企业 5 年生存率仅为
 35\%（先验 0.35）。但有 81\%
 的小企业创办人在被问及“你的企业能生存下去吗”时，给出了 70\%
-以上的胜率估计，甚至有三分之一的人认为自己绝对不会失败（胜率 100\%）。 *
+以上的胜率估计，甚至有三分之一的人认为自己绝对不会失败（胜率 100\%）。
+*
 彩票与股票：每个买彩票的人都觉得自己有可能中奖；每个在股市里满仓频繁交易的散户，都深信自己的分析和运气要好于盘子里的其他韭菜。
 * 进天堂的概率自评：1997
 年美国《新闻与世界报道》开展了一次民意调查：“你认为以下几位名人死后最配进天堂？”
-* 克林顿总统：得票率 52\% *
-迈克尔·乔丹：得票率 65\% *
-特蕾莎修女：得票率 79\% *
-问卷填答者自己：得票率竟然高达 97\%！
+* 克林顿总统：得票率 52\%
+* 迈克尔·乔丹：得票率 65\%
+* 特蕾莎修女：得票率 79\%
+* 问卷填答者自己：得票率竟然高达 97\%！
 这名副其实地展示了：在人类的主观心智中，“自我”的先验概率被极度高估了。
 只有学会尊重外部视角，尊重历史规律的先验数据，我们才能免受现实的残酷惩罚。在面对任何重大决策时，请克制住内部视角的冲动，多看看冰冷的先验统计。
 
@@ -4753,20 +4888,22 @@ Razor）。我们将给出它们的贝叶斯数学论证，并结合丰富的实
 Effect）是指当人们需要对某个未知事件进行定量估测时，大脑会不由自主地将某些特定数值（即使该数值与待估事件毫无逻辑关联）作为起始值。这个起始值就像一艘轮船的“锚”一样，死死地制约和拉扯着最终的估测值，导致决策者在进行修正和调整时，会严重过度重视最初获得的信息。
 2. 锚定效应的贝叶斯公式证明
 我们可以用贝叶斯定理给锚定效应提供一个极其漂亮的数学解释。
-在进行定量估测时，我们的大脑实际上在进行如下逆向推断： *
-估测目标（因 H）：商品的真实价值、某项工作的合理时长、或者某一消息的严重程度。
+在进行定量估测时，我们的大脑实际上在进行如下逆向推断：
+* 估测目标（因 H）：商品的真实价值、某项工作的合理时长、或者某一消息的严重程度。
 * 新到来的证据（果 A）：商品此时呈现的标价、或是谈判对手提出的第一报价。
-根据贝叶斯公式的比例形式（公式 2.8）： P(H|A) \propto P(H) \cdot P(A|H)
+根据贝叶斯公式的比例形式（公式 2.8）：
+P(H|A) \propto P(H) \cdot P(A|H)
 在这里，所谓的“锚（Anchor）”在本质上就是操纵者强行植入我们大脑中的“先验概率分布
-P(H)”： 1. 植入先验
-P(H)：当我们踏入商店看到一件标价为
+P(H)”：
+1. 植入先验 P(H)：当我们踏入商店看到一件标价为
 20,000 元的西装时，这个标价在我们脑海中瞬间建立了一个以 20,000
-元为中心的高均值先验分布 P(H)。 2.
-获取新观测并微调 P(A|H)：当售货员说“今天店庆打折，只要
+元为中心的高均值先验分布 P(H)。
+2. 获取新观测并微调 P(A|H)：当售货员说“今天店庆打折，只要
 3,000 元”时，这 3,000 元是我们的观测证据 A。由于我们之前的先验被定格在 20,000
 元，我们计算出的后验值 P(H|A)
-依然会受到 20,000 元先验的强烈拉扯，从而觉得 3,000 元“简直太便宜了”。 3.
-如果抹去先验：如果没有这 20,000
+依然会受到 20,000 元先验的强烈拉扯，从而觉得 3,000
+元“简直太便宜了”。
+3. 如果抹去先验：如果没有这 20,000
 元的“锚”，在空白先验下直接面对 3,000
 元的西装，我们可能会根据常识理性评估其面料、做工，觉得它可能也就值 1,000
 元。
@@ -4775,8 +4912,10 @@ P(H|A)。
 
 3. 经典商业操纵案例
 案例一：划线价格的陷阱
-电商平台或超市货架上最常用的促销套路就是“划线价”： \text{原价：}\cancel{\text{¥ 999}} \quad
-\text{现价：¥ 199} 这里的“999
+电商平台或超市货架上最常用的促销套路就是“划线价”：
+\text{原价：}\cancel{\text{¥ 999}} \quad
+\text{现价：¥ 199}
+这里的“999
 元”在物理上根本没有发生过交易，它唯一的生存价值就是作为你脑海中的“先验锚”。有了
 999 元的锚，199 元的现价就会显得性价比极高，从而刺激冲动消费。
 案例二：房地产中介的“陪跑房”策略
@@ -4801,12 +4940,14 @@ Winston）。温斯顿将这批黑珍珠放在他在纽约第五大道最显眼�
 4. 人际沟通中的“坏消息锚定”艺术
 锚定效应不仅能卖货，还能巧妙地重塑人际沟通中的后验情绪。
 场景一：如何告诉你老婆今晚要加班
-如果你直接打电话给妻子： &gt;
-“老婆，今晚部门聚餐/加班，我不能回去吃晚饭了。”
+如果你直接打电话给妻子：
+&gt; “老婆，今晚部门聚餐/加班，我不能回去吃晚饭了。”
 这直接在妻子脑海中建立了“今晚能按时回家”的先验被打破的负面反馈，容易引发埋怨。
-但如果你启用“坏消息锚定”： &gt;
+但如果你启用“坏消息锚定”：
+&gt;
 “老婆，刚才我们写字楼楼下发生了一起比较严重的车祸，围了好多警车，我刚才下楼买咖啡差点被蹭到……”
-&gt; 妻子（惊慌）：“啊？！你没事吧？有没有受伤？！” &gt;
+&gt; 妻子（惊慌）：“啊？！你没事吧？有没有受伤？！”
+&gt;
 “哦，我没事，我安全回办公室了。不过因为处理这个事，我今晚得稍微加班晚点回去。”
 &gt;
 妻子（长舒一口气）：“吓死我了！你人没事就好！加班多晚都没关系，注意安全！”
@@ -4815,12 +4956,13 @@ Winston）。温斯顿将这批黑珍珠放在他在纽约第五大道最显眼�
 某公司年底遭遇亏损，总经理召集两位副总经理，告知今年部门年终奖全部取消。
 
 副总经理 A 粗暴宣贯：
-他回到部门，直接对员工宣布： &gt;
-“由于今年公司亏损，大家的年终奖今年就不发了。”
+他回到部门，直接对员工宣布：
+&gt; “由于今年公司亏损，大家的年终奖今年就不发了。”
 员工听后怨声载道，士气低落到谷底，纷纷在私下里大骂公司并密谋跳槽，副经理
 A 的管理权威严重受挫。
 副总经理 B 巧妙宣贯（利用锚定）：
-他回到部门，面色凝重地对员工说： &gt;
+他回到部门，面色凝重地对员工说：
+&gt;
 “由于今年公司整体亏损严重，董事会原本拟定了裁员名单，准备在我们部门直接裁掉
 20\%
 的员工。我昨天在总经理办公室据理力争，和他们吵了整整三个小时，甚至拿我的职位做担保，终于保住了我们部门所有人的岗位，没有一个人被裁！但作为妥协，公司取消了我们部门今年的年终奖。”
@@ -4833,15 +4975,15 @@ A 的管理权威严重受挫。
 
 4.2
 汉隆剃刀激活：“愚蠢”与“恶意”的贝叶斯决斗
-在日常职场和生活中，我们经常会遇到被他人“伤害”或“冷落”的场景： *
-发给领导的方案，领导一直没有回复。 *
-刚买咖啡转身，被后面的同事撞了一下，咖啡洒了一身。 *
-微信上给暗恋的对象发了消息，对方迟迟不理你。
+在日常职场和生活中，我们经常会遇到被他人“伤害”或“冷落”的场景：
+* 发给领导的方案，领导一直没有回复。
+* 刚买咖啡转身，被后面的同事撞了一下，咖啡洒了一身。
+* 微信上给暗恋的对象发了消息，对方迟迟不理你。
 我们的大脑极易开启黑白思维，将这些表象归结为最坏的本质——“恶意（Malice）”。例如：“领导是不是故意针对我？”、“这个同事是不是在挑衅我？”、“她是不是讨厌我？”。
 为了拯救我们免受这种内耗之苦，心智哲学提供了一个强大的剃刀工具——汉隆剃刀（Hanlon’s
-Razor）： &gt;
-“能用愚蠢解释的，就不要解释为恶意”（Never attribute to malice
-that which is adequately explained by stupidity）。
+Razor）：
+&gt; “能用愚蠢解释的，就不要解释为恶意”（Never attribute to
+malice that which is adequately explained by stupidity）。
 1.
 汉隆剃刀的贝叶斯严格数学证明
 我们用贝叶斯定理的相对后验概率（公式
@@ -4850,34 +4992,43 @@ that which is adequately explained by stupidity）。
 设观测到的现象 A
 为：“某人做出了一个在客观上对我造成了不利影响的行为”（如未回微信、撞到我、方案石沉大海）。
 导致现象 A
-发生的背后有两个最核心的候选原因： * H_{\text{stupid}}（愚蠢/无意）：代表所有非故意的、偶然的、无知的或不可抗力的原因。包括：对方太忙忘了、发错人了、手机没电了、出门太急没看路、或者纯粹就是因为人性的懒惰。
+发生的背后有两个最核心的候选原因：
+* H_{\text{stupid}}（愚蠢/无意）：代表所有非故意的、偶然的、无知的或不可抗力的原因。包括：对方太忙忘了、发错人了、手机没电了、出门太急没看路、或者纯粹就是因为人性的懒惰。
 * H_{\text{malice}}（恶意/故意）：代表对方经过精细策划，出于怨恨或敌意，特意针对我进行的恶意攻击或冷落。
 似然概率分析
 如果对方确实是出于“恶意”想冷落我，他 100%
 会不回我微信；如果对方是因为“愚蠢/手滑/遗忘”等无意原因，他同样有极高的概率漏掉我的微信。
-因此，在这两个原因下，产生当前不利现象 A 的似然概率几乎是完全对等的： P(A | H_{\text{stupid}}) \approx P(A |
-H_{\text{malice}}) \approx 1 由于似然比退化： \frac{P(A | H_{\text{stupid}})}{P(A |
+因此，在这两个原因下，产生当前不利现象 A 的似然概率几乎是完全对等的：
+P(A | H_{\text{stupid}}) \approx P(A |
+H_{\text{malice}}) \approx 1
+由于似然比退化：
+\frac{P(A | H_{\text{stupid}})}{P(A |
 H_{\text{malice}})} \approx 1
 先验概率对比
 现在我们对比它们在现实世界中的基础发生率（先验概率）。
-在整个人类社会乃至日常生活中： * “恶意”的先验 P(H_{\text{malice}})
+在整个人类社会乃至日常生活中：
+* “恶意”的先验 P(H_{\text{malice}})
 极低：设计一个恶意的谋划需要消耗大量的脑力、情感成本和承担被报复的风险。除非你和对方有深仇大恨，否则一个普通人是没有动机和精力天天花心思去蓄意谋害你的。你其实没有那么多敌人。
 * “愚蠢”的先验 P(H_{\text{stupid}})
 极高：遗忘、粗心、疲惫、能力不足、系统出
 bug、纯粹的懒惰，这些是不需要任何成本的，它们是宇宙熵增的自然体现。每个人随时随地都在犯错。
-因此，先验概率存在着极其悬殊的非对称性： P(H_{\text{stupid}}) \gg
+因此，先验概率存在着极其悬殊的非对称性：
+P(H_{\text{stupid}}) \gg
 P(H_{\text{malice}})
 后验概率推导
-我们将似然比和先验比代入贝叶斯公式中： \frac{P(H_{\text{stupid}}|A)}{P(H_{\text{malice}}|A)}
+我们将似然比和先验比代入贝叶斯公式中：
+\frac{P(H_{\text{stupid}}|A)}{P(H_{\text{malice}}|A)}
 = \frac{P(H_{\text{stupid}})}{P(H_{\text{malice}})} \cdot
 \frac{P(A|H_{\text{stupid}})}{P(A|H_{\text{malice}})} \approx
 \frac{P(H_{\text{stupid}})}{P(H_{\text{malice}})} \gg 1
-由此直接得出： P(H_{\text{stupid}}|A) \gg
+由此直接得出：
+P(H_{\text{stupid}}|A) \gg
 P(H_{\text{malice}}|A)
 结论
 当别人做了一件让你不爽的事，在数学上它有超过 99\%
 的概率只是因为对方“蠢、忙、累、忘”，而只有不到 1\% 的概率是对方“坏”。
-这正如歌德在《少年维特之烦恼》中所写的： &gt;
+这正如歌德在《少年维特之烦恼》中所写的：
+&gt;
 “误会和忽略在世界里所造成的混乱，比巧诈和恶意还要多。无论如何，后两者确实要少见得多。”
 汉隆剃刀不仅保护了人际关系的和谐，更用科学的概率论拯救了我们敏感脆弱的内心。
 
@@ -4908,15 +5059,18 @@ P(H_{\text{malice}}|A)
 1.
 什么是信息量？——贝叶斯视角的相对定义
 在信息论中，香农将信息定义为“消除不确定性的度量”。而在贝叶斯推断中，我们对信息量（Information
-Content）有着一个更加动态、相对的定义： &gt;
-信息量不是观测数据 A
+Content）有着一个更加动态、相对的定义：
+&gt; 信息量不是观测数据 A
 的绝对物理大小，而是观测数据 A
 对我们原有认知（先验概率）的改变程度。
 设我们对假说 H 的初始认知为先验概率
 P(H)，在获取观测 A 之后，认知更新为后验概率 P(H|A)。我们可以将该观测带来的信息量
 I(A; H)
-定量描述为后验概率与先验概率的偏差程度： I(A;
-H) = | P(H|A) - P(H) | \quad \text{--- (公式 5.1)} * 如果 I(A; H) \approx 0，说明观测 A
+定量描述为后验概率与先验概率的偏差程度：
+I(A; H) = | P(H|A) - P(H) | \quad \text{---
+(公式 5.1)}
+* 如果 I(A; H) \approx 0，说明观测
+A
 几乎没有改变我们的任何认知，该观测的信息量极低（甚至为零）。
 * 如果 I(A; H) \to 1，说明观测 A
 彻底颠覆了我们的初始认知，该观测具有极大的信息量（醍醐灌顶）。
@@ -4925,30 +5079,39 @@ H) = | P(H|A) - P(H) | \quad \text{--- (公式 5.1)} * 如果 I(A; H) \approx 0�
 情况一：扭转“低先验”（强烈支持证据）
 设初始先验概率极低，即 P(H) \to
 0。什么样的观测 A
-能够让后验概率直接飙升到 1？ 我们来看贝叶斯公式的展开形式： P(H|A) = \frac{P(H)P(A|H)}{P(H)P(A|H) +
-P(\bar{H})P(A|\bar{H})} 如果我们要让 P(H|A) \to 1： 1. 必要条件一：P(A|H) \neq 0。即在假说 H 成立时，观测 A 必须有概率发生（合理的解释力）。 2.
-必要条件二：P(A|\bar{H}) =
+能够让后验概率直接飙升到 1？
+我们来看贝叶斯公式的展开形式：
+P(H|A) = \frac{P(H)P(A|H)}{P(H)P(A|H) +
+P(\bar{H})P(A|\bar{H})}
+如果我们要让 P(H|A) \to 1：
+1. 必要条件一：P(A|H) \neq
+0。即在假说 H
+成立时，观测 A
+必须有概率发生（合理的解释力）。
+2. 必要条件二：P(A|\bar{H}) =
 0。这是一个极度严苛的条件！它的物理意义是：在对立假说
 \bar{H}（除 H 之外的所有原因）成立的条件下，观测现象
 A 绝对不可能发生。
-代入公式计算： P(H|A) =
-\frac{P(H)P(A|H)}{P(H)P(A|H) + P(\bar{H}) \cdot 0} =
-\frac{P(H)P(A|H)}{P(H)P(A|H)} = 1 \quad \text{--- (公式 5.2)}
+代入公式计算：
+P(H|A) = \frac{P(H)P(A|H)}{P(H)P(A|H) +
+P(\bar{H}) \cdot 0} = \frac{P(H)P(A|H)}{P(H)P(A|H)} = 1 \quad \text{---
+(公式 5.2)}
 这就是排他性支持证据。只要证明除了 H 之外，天下任何原因都绝对无法产生现象 A，那么一旦观测到 A，哪怕 H
 的初始先验概率只有万分之一，其后验概率也会瞬间锁死为 1。
 情况二：扭转“高先验”（强烈反对证据）
 设初始先验概率极高，即 P(H) \to
 1。什么样的观测 A
-能够让后验概率瞬间归零？ 同理，如果要让 P(H|A)
-\to 0： 1. 必要条件一：P(A|H) =
+能够让后验概率瞬间归零？
+同理，如果要让 P(H|A) \to 0：
+1. 必要条件一：P(A|H) =
 0。即如果假说 H
-是真的，现象 A 绝不可能发生。 2.
-必要条件二：P(A|\bar{H}) \neq
+是真的，现象 A 绝不可能发生。
+2. 必要条件二：P(A|\bar{H}) \neq
 0。即如果 H
 不成立，现象 A 有可能发生。
-代入公式： P(H|A) = \frac{P(H) \cdot
-0}{P(H) \cdot 0 + P(\bar{H})P(A|\bar{H})} = 0 \quad \text{--- (公式
-5.3)}
+代入公式：
+P(H|A) = \frac{P(H) \cdot 0}{P(H) \cdot 0 +
+P(\bar{H})P(A|\bar{H})} = 0 \quad \text{--- (公式 5.3)}
 这就是排他性否定证据（通常表现为“一票否决”）。只要观测到一件在
 H
 条件下绝对不可能发生的事情，高不可攀的先验也会瞬间土崩瓦解。
@@ -4957,31 +5120,36 @@ H
 现实中，人们常犯的一个严重逻辑谬误是：只关注绝对解释力，不关注相对解释力。
 如果一个观测 A 能够被观点 H 完美解释（即 P(A|H) \approx 1），但它同时也能被对立观点
 \bar{H} 完美解释（即 P(A|\bar{H}) \approx 1）。
-此时，我们代入计算后验概率： P(H|A) =
-\frac{P(H) \cdot 1}{P(H) \cdot 1 + P(\bar{H}) \cdot 1} = P(H) \quad
-\text{--- (公式 5.4)}
+此时，我们代入计算后验概率：
+P(H|A) = \frac{P(H) \cdot 1}{P(H) \cdot 1 +
+P(\bar{H}) \cdot 1} = P(H) \quad \text{--- (公式 5.4)}
 后验概率依然等于先验概率！这就意味着：该证据虽然可以“完美支持”你的观点，但它因为缺乏排他性，对提高你观点的信誉没有半点贡献。它的信息量为零。
 经典案例：明星的公关秀
-我们想推断某个高调做慈善的明星，其真实的动机到底是“内心善良”（H）还是“收割名利的爱作秀”（\bar{H}）。 * 观测 A：该明星在大型慈善晚会上高调捐款
-100 万元，并买下了微博热搜。 *
-解释力评估：“内心善良”可以完美解释这一行为（P(A|H) =
-1）；“爱作秀”也同样可以完美解释，甚至解释得更顺畅（P(A|\bar{H}) = 1）。 *
-贝叶斯推论：由于似然比为
+我们想推断某个高调做慈善的明星，其真实的动机到底是“内心善良”（H）还是“收割名利的爱作秀”（\bar{H}）。
+* 观测 A：该明星在大型慈善晚会上高调捐款
+100 万元，并买下了微博热搜。
+* 解释力评估：“内心善良”可以完美解释这一行为（P(A|H) =
+1）；“爱作秀”也同样可以完美解释，甚至解释得更顺畅（P(A|\bar{H}) = 1）。
+* 贝叶斯推论：由于似然比为
 1，这次捐款没有提供任何信息量。粉丝无法以此证明他善良，黑粉也无法以此证明他虚伪。
 * 观测 A&#39;：狗仔队意外挖出，该明星在过去二十年里，隐姓埋名，从未向任何媒体透露，默默资助了山区
-100 名贫困儿童直至大学毕业。 *
+100 名贫困儿童直至大学毕业。
+*
 解释力评估：“内心善良”可以合理解释；但“爱作秀”绝对无法解释这种长期、匿名的行为，因为作秀必须曝光，匿名意味着作秀成本无法收回，即
-P(A&#39; | \bar{H}) \approx 0。 *
+P(A&#39; | \bar{H}) \approx 0。
+*
 贝叶斯推论：这一证据具有极强的排他性。即便之前该明星的社会口碑极差（先验极低），这个证据也会瞬间将其善良的后验概率
 P(H|A&#39;) 扭转到接近 100\%。
 
 5.2
 排他性证据解析：批判成功学与经典思辨
 1. 成功学大纲的数学死穴
-市面上的“成功学”书籍，其编写套路无一例外是这样的： 1.
-挑出世界上最知名的几十位成功人士（如乔布斯、比尔·盖茨、马斯克）。 2.
-总结他们身上的共同特征（观测 A）：他们都有百折不挠的勇气、坚毅的性格、每天工作
-16 小时、敢于打破常规。 3. 得出结论：只要你拥有了这些特质 A，你就能获得成功（H）。
+市面上的“成功学”书籍，其编写套路无一例外是这样的：
+1.
+挑出世界上最知名的几十位成功人士（如乔布斯、比尔·盖茨、马斯克）。
+2. 总结他们身上的共同特征（观测 A）：他们都有百折不挠的勇气、坚毅的性格、每天工作
+16 小时、敢于打破常规。
+3. 得出结论：只要你拥有了这些特质 A，你就能获得成功（H）。
 用条件概率的语言来说，成功学向你展示了：在成功者群体中，这些特质的覆盖率极高：
 P(\text{坚毅、勤奋 } A | \text{成功 } H)
 \approx 1
@@ -4991,18 +5159,19 @@ P(A|\bar{H})。
 小时，同样拥有百折不挠的坚毅，但因为运气、行业趋势或资本限制，一生都处于温饱线（即没有世俗意义上的“成功”）。这说明：
 P(\text{坚毅、勤奋 } A | \text{普通 }
 \bar{H}) \approx 1
-因为似然比退化： \frac{P(A|H)}{P(A|\bar{H})} \approx \frac{1}{1} =
-1
+因为似然比退化：
+\frac{P(A|H)}{P(A|\bar{H})} \approx
+\frac{1}{1} = 1
 所以在一个人身上观测到“坚毅和勤奋”，对推断他未来能否“成功”的信息量基本为零。成功学之所以是毒鸡汤，正是因为它用“高解释力”包装了“无排他性”的无用证据。
 
 2.
 经典公案一：《两小儿辩日》中的排他性缺失
 《列子·汤问》中记载了中国古代一个著名的思辨故事：
-两个小孩在孔子面前争论太阳在早上和中午什么时候离人更近。 *
-一儿的假说 H_1：太阳早上近，中午远。 * 证据
-A：“日初出大如车盖，及日中则如盘盂”。（视觉上早上大，中午小。根据常识，近者大而远者小。）
-* 一儿的假说 H_2：太阳早上远，中午近。 * 证据
-B：“日初出沧沧凉凉，及其日中如探汤”。（触觉上早上冷，中午热。根据常识，近者热而远者凉。）
+两个小孩在孔子面前争论太阳在早上和中午什么时候离人更近。
+* 一儿的假说 H_1：太阳早上近，中午远。
+* 证据 A：“日初出大如车盖，及日中则如盘盂”。（视觉上早上大，中午小。根据常识，近者大而远者小。）
+* 一儿的假说 H_2：太阳早上远，中午近。
+* 证据 B：“日初出沧沧凉凉，及其日中如探汤”。（触觉上早上冷，中午热。根据常识，近者热而远者凉。）
 * 孔子的困境：“孔子不能决也。”
 为什么连圣人孔子都无法判定谁对谁错？因为这两个小孩犯了相同的贝叶斯逻辑错误：他们各自提出的强力证据，都完全缺乏排他性。
 一儿证据 A (早上大) ──► 既能被 &quot;早上近&quot; (H1) 解释 ──► 也能被 &quot;背景亮度对比的视觉误差&quot; (非 H1) 解释一儿证据 B (中午热) ──► 既能被 &quot;中午近&quot; (H2) 解释 ──► 也能被 &quot;入射角与热量累积效应&quot; (非 H2) 解释
@@ -5019,7 +5188,8 @@ B：“日初出沧沧凉凉，及其日中如探汤”。（触觉上早上冷�
 3.
 经典公案二：小品《卖拐》中的降维打击
 在赵本山和范伟合演的经典小品《卖拐》中，赵本山通过精密的骗术，成功让健康的范伟相信了自己的腿有病并买下了拐杖。这堪称现实生活中操纵后验概率的邪恶教材。
-我们来解剖赵本山的骗术逻辑： 1. 观察现象（观测 A）：赵本山突然指出范伟：“你的脸型偏大，这叫脸大。”
+我们来解剖赵本山的骗术逻辑：
+1. 观察现象（观测 A）：赵本山突然指出范伟：“你的脸型偏大，这叫脸大。”
 2. 强塞因果（假说 H）：赵本山立刻给出了一个看似极为高深的医学原因：“你这是因为末梢神经坏死，把上面的血憋大了。”
 3. 范伟的沦陷：范伟心想：“对啊，我脸确实大（观测 A 成立），他给出的神经坏死（原因 H）也确实能合理解释脸大，所以我的神经肯定坏死了！”
 范伟的致命盲区在于完全没有评估“脸大”这一证据的排他性。
@@ -5036,9 +5206,12 @@ P(\text{脸大 } A | \text{健康 } \bar{H})
 H，但能直接用于评估 H
 的排他性证据在现实中根本不存在或极难获取。
 此时，贝叶斯思维提供了一个高阶解决方案——间接关联路径（Indirect
-Bayesian Path）： 1. 寻找一个与目标假说 H 具有高度条件相关性的中间变量 H_0（通常是人的某种品质、态度或底层规律）。
+Bayesian Path）：
+1. 寻找一个与目标假说 H
+具有高度条件相关性的中间变量 H_0（通常是人的某种品质、态度或底层规律）。
 2. 寻找能够强烈支持或反对 H_0
-的排他性证据 A。 3. 通过证据 A 彻底扭转 H_0 的后验概率，进而通过 H_0 与 H
+的排他性证据 A。
+3. 通过证据 A 彻底扭转 H_0 的后验概率，进而通过 H_0 与 H
 的关联性，级联扭转我们对 H
 的后验判断。
 其概率流向如下：
@@ -5060,32 +5233,37 @@ Roth）在到达一个新场馆后，根本没有时间和精力去后台逐一�
 的证据，物理成本太高，来不及。
 间接方案：第 126 号条款
 范海伦乐队在厚达几百页的技术规格合同中，极其隐蔽地夹杂了一条“第 126
-号条款”（M&amp;Ms 条款）： &gt; “在后台的更衣室里，必须准备一碗
-M&amp;Ms
+号条款”（M&amp;Ms 条款）：
+&gt; “在后台的更衣室里，必须准备一碗 M&amp;Ms
 巧克力豆。但这碗巧克力豆里，绝对不能出现任何一颗棕色的巧克力。如果发现有一颗棕色巧克力，乐队有权立刻取消演出并索取全额赔偿。”
 每当主唱罗斯到达场馆，他第一件事就是冲进更衣室，看一眼桌上的巧克力碗。如果他发现里面哪怕有一颗棕色巧克力（观测
 A =
 \text{出现棕色巧克力}），他会立刻下令：全场停工，所有技术人员重新把全部线路检查一遍。
 贝叶斯定量解析
 我们引入中间变量 H_0：主办方对待合同的态度是否认真可靠？
-* 先验评估：我们假设一个陌生主办方的可靠概率是均等的，P(H_0) = P(\bar{H}_0) = 0.5。 *
-似然参数（M&amp;Ms 条款的检测效能）： *
-如果主办方对待合同极为认真可靠（H_0），他们连几百页合同里最荒谬的第 126
-条款也会仔细阅读并照办，因此放错巧克力的概率极低： P(A | H_0) = 0.01 \quad (1\%) *
-如果主办方态度敷衍、粗心大意（\bar{H}_0），他们根本不会读到这么偏僻的条款，放错的概率极高：
+* 先验评估：我们假设一个陌生主办方的可靠概率是均等的，P(H_0) = P(\bar{H}_0) = 0.5。
+* 似然参数（M&amp;Ms 条款的检测效能）：
+* 如果主办方对待合同极为认真可靠（H_0），他们连几百页合同里最荒谬的第 126
+条款也会仔细阅读并照办，因此放错巧克力的概率极低：
+P(A | H_0) = 0.01 \quad (1\%)
+* 如果主办方态度敷衍、粗心大意（\bar{H}_0），他们根本不会读到这么偏僻的条款，放错的概率极高：
 P(A | \bar{H}_0) = 0.90 \quad
 (90\%)
 当罗斯在碗里看到棕色巧克力（A
 发生）时，我们计算主办方“可靠”的后验概率 P(H_0
-| A)： P(H_0 | A) =
+| A)：
+P(H_0 | A) =
 \frac{P(H_0)P(A|H_0)}{P(H_0)P(A|H_0) +
-P(\bar{H}_0)P(A|\bar{H}_0)} P(H_0 | A)
-= \frac{0.5 \times 0.01}{0.5 \times 0.01 + 0.5 \times 0.90} =
-\frac{0.005}{0.005 + 0.45} \approx 0.011 \quad (1.1\%)
+P(\bar{H}_0)P(A|\bar{H}_0)}
+P(H_0 | A) = \frac{0.5 \times 0.01}{0.5
+\times 0.01 + 0.5 \times 0.90} = \frac{0.005}{0.005 + 0.45} \approx
+0.011 \quad (1.1\%)
 也就是说，仅仅因为一颗棕色巧克力，主办方是“靠谱团队”的后验概率直接从
 50\% 崩塌到了 1.1\%！
-根据条件概率链，主办方在“不靠谱”的状态下，技术布线合格（H）的概率极低： P(H | \bar{H}_0) \approx 0
-最终，布线合格的后验概率被级联拉低到接近于零： P(H|A) = P(H_0|A)P(H|H_0, A) +
+根据条件概率链，主办方在“不靠谱”的状态下，技术布线合格（H）的概率极低：
+P(H | \bar{H}_0) \approx 0
+最终，布线合格的后验概率被级联拉低到接近于零：
+P(H|A) = P(H_0|A)P(H|H_0, A) +
 P(\bar{H}_0|A)P(H|\bar{H}_0, A) \approx 0.011 \times 1 + 0.989 \times 0
 \approx 0.011
 逻辑美感：一碗小小的巧克力豆，在物理上与舞台用电安全没有任何因果关系。但罗斯通过将“巧克力”与“合同执行态度”进行概率绑定，把巧克力豆变成了评估舞台安全的超低成本、高敏捷度的间接排他性探针。
@@ -5124,22 +5302,27 @@ Hypothesis），深度解剖五个经典的“隐藏变量导致统计伪相关�
 6.1 联合观测贝叶斯数学推导
 当观测证据由多个不同的事件 A_1, A_2, \dots,
 A_m 组成时，我们需要计算在这些联合证据同时发生的前提下，目标假说
-H 的联合后验概率： P(H | A_1, A_2, \dots, A_m)
-根据条件概率的原始定义，我们可以写出： P(H
-| A_1, A_2, \dots, A_m) = \frac{P(H \cap A_1 \cap A_2 \cap \dots \cap
-A_m)}{P(A_1, A_2, \dots, A_m)} \quad \text{--- (公式 6.1)}
-利用概率乘法定理，我们将分子项展开为： P(H
-\cap A_1 \cap A_2 \cap \dots \cap A_m) = P(H) \cdot P(A_1, A_2, \dots,
-A_m | H) \quad \text{--- (公式 6.2)}
+H 的联合后验概率：
+P(H | A_1, A_2, \dots, A_m)
+根据条件概率的原始定义，我们可以写出：
+P(H | A_1, A_2, \dots, A_m) = \frac{P(H \cap
+A_1 \cap A_2 \cap \dots \cap A_m)}{P(A_1, A_2, \dots, A_m)} \quad
+\text{--- (公式 6.1)}
+利用概率乘法定理，我们将分子项展开为：
+P(H \cap A_1 \cap A_2 \cap \dots \cap A_m) =
+P(H) \cdot P(A_1, A_2, \dots, A_m | H) \quad \text{--- (公式
+6.2)}
 根据全概率公式，分母联合边缘概率 P(A_1,
-A_2, \dots, A_m) 可以展开为关于假说完备组 \{H, \bar{H}\} 的和： P(A_1, A_2, \dots, A_m) = P(H)P(A_1, \dots, A_m |
-H) + P(\bar{H})P(A_1, \dots, A_m | \bar{H}) \quad \text{--- (公式
+A_2, \dots, A_m) 可以展开为关于假说完备组 \{H, \bar{H}\} 的和：
+P(A_1, A_2, \dots, A_m) = P(H)P(A_1, \dots,
+A_m | H) + P(\bar{H})P(A_1, \dots, A_m | \bar{H}) \quad \text{--- (公式
 6.3)}
 将公式 (6.2) 和公式 (6.3) 代入公式
-(6.1)，得到联合观测下的贝叶斯公式： P(H |
-A_1, A_2, \dots, A_m) = \frac{P(H) \cdot P(A_1, A_2, \dots, A_m |
-H)}{P(H)P(A_1, \dots, A_m | H) + P(\bar{H})P(A_1, \dots, A_m | \bar{H})}
-\quad \text{--- (公式 6.4)}
+(6.1)，得到联合观测下的贝叶斯公式：
+P(H | A_1, A_2, \dots, A_m) = \frac{P(H)
+\cdot P(A_1, A_2, \dots, A_m | H)}{P(H)P(A_1, \dots, A_m | H) +
+P(\bar{H})P(A_1, \dots, A_m | \bar{H})} \quad \text{--- (公式
+6.4)}
 在公式 (6.4) 中，最难计算的项是联合似然概率 P(A_1, A_2, \dots, A_m |
 H)。如果观测变量有几十个，它们之间存在着千丝万缕的相互关联，我们要确定这个多维联合概率分布，其参数空间将随观测数量
 m
@@ -5150,17 +5333,23 @@ m
 为了简化多观测下的联合计算，统计学和信号处理中普遍引入了条件独立性假设。
 1. 条件独立性的定义
 设 A, B, C 是三个不同的事件，且
-P(C) &gt; 0。如果满足： P(A, B | C) = P(A | C) \cdot P(B | C) \quad
-\text{--- (公式 6.5)} 则我们称事件 A 和事件 B
-关于事件 C 是条件独立的（Conditionally
-Independent）。
+P(C) &gt; 0。如果满足：
+P(A, B | C) = P(A | C) \cdot P(B | C) \quad
+\text{--- (公式 6.5)}
+则我们称事件 A 和事件 B 关于事件 C
+是条件独立的（Conditionally Independent）。
 2. 等价数学表达形式
-我们可以通过条件概率展开，写出公式 (6.5) 的等价形式： 由于 P(A, B | C) = P(B | C) \cdot P(A | B,
-C)，代入公式 (6.5) 得到： P(B | C)
-\cdot P(A | B, C) = P(A | C) \cdot P(B | C) 两边约去 P(B | C)，得到： P(A | B, C) = P(A | C) \quad \text{--- (公式
+我们可以通过条件概率展开，写出公式 (6.5) 的等价形式：
+由于 P(A, B | C) = P(B | C) \cdot P(A | B,
+C)，代入公式 (6.5) 得到：
+P(B | C) \cdot P(A | B, C) = P(A | C) \cdot
+P(B | C)
+两边约去 P(B | C)，得到：
+P(A | B, C) = P(A | C) \quad \text{--- (公式
 6.6)}
-同理可得： P(B | A, C) = P(B | C) \quad
-\text{--- (公式 6.7)}
+同理可得：
+P(B | A, C) = P(B | C) \quad \text{--- (公式
+6.7)}
 物理与信息论释义
 公式 (6.6) 和 (6.7) 的直观物理意义是：一旦已知隐藏状态或条件
 C 已经发生，那么关于事件 B 是否发生的新信息，无法为我们推断事件 A 的概率提供任何额外的帮助。
@@ -5169,9 +5358,11 @@ C 已经发生，那么关于事件 B 是否发生的新信息，无法为我们
 如果在假说 H 和 \bar{H} 成立的条件下，各个观测 A_1, A_2, \dots, A_m
 之间满足相互条件独立，那么联合似然概率可以被完美拆解为单个似然的乘积：
 P(A_1, A_2, \dots, A_m | H) = \prod_{k=1}^m
-P(A_k | H) \quad \text{--- (公式 6.8)} P(A_1, A_2, \dots, A_m | \bar{H}) = \prod_{k=1}^m
-P(A_k | \bar{H}) \quad \text{--- (公式 6.9)}
-代入公式 (6.4)，我们得到了条件独立假设下的联合贝叶斯公式： P(H | A_1, A_2, \dots, A_m) = \frac{P(H)
+P(A_k | H) \quad \text{--- (公式 6.8)}
+P(A_1, A_2, \dots, A_m | \bar{H}) =
+\prod_{k=1}^m P(A_k | \bar{H}) \quad \text{--- (公式 6.9)}
+代入公式 (6.4)，我们得到了条件独立假设下的联合贝叶斯公式：
+P(H | A_1, A_2, \dots, A_m) = \frac{P(H)
 \prod_{k=1}^m P(A_k | H)}{P(H) \prod_{k=1}^m P(A_k | H) + P(\bar{H})
 \prod_{k=1}^m P(A_k | \bar{H})} \quad \text{--- (公式 6.10)}
 此时，多源信息融合的计算复杂度直接降为线性！这正是朴素贝叶斯分类器（Naive
@@ -5242,8 +5433,9 @@ C)。不是豪车有“排开堵车”的魔法。
 6.4
 论证：独立极其罕见，条件独立才是世界的常态
 在概率论的入门教学中，我们经常遇到绝对独立（Statistical
-Independence）的定义： P(A, B) =
-P(A) \cdot P(B) \quad \text{--- (公式 6.11)}
+Independence）的定义：
+P(A, B) = P(A) \cdot P(B) \quad \text{---
+(公式 6.11)}
 然而，在纷繁复杂的现实物理世界中，绝对独立的两个事件几乎是不可寻的。
 
 万物互联的引力场：
@@ -5266,10 +5458,13 @@ C）全部提取出来并加以控制，在特定的天气和时间下，你散�
 6.10）进行双传感器融合诊断。
 问题场景与先验设定
 你走进开水房准备打水，想要评估“开水器里的水到底开了没有”（目标假说
-H）。 * 目标假说：H = \text{水开了}；对立假说：\bar{H} = \text{水没开}。 *
-根据经验，此时水开了的先验概率 P(H) =
-0.6，水没开的先验 P(\bar{H}) =
-0.4。
+H）。
+* 目标假说：H =
+\text{水开了}；对立假说：\bar{H} =
+\text{水没开}。
+* 根据经验，此时水开了的先验概率 P(H)
+= 0.6，水没开的先验 P(\bar{H})
+= 0.4。
 传感器一：指示灯（观测 A_1）
 
 观测现象 A_1：开水器的红灯（代表水开）亮了。
@@ -5295,10 +5490,13 @@ H）。 * 目标假说：H = \text{水开了}；对立假说：\bar{H} = \text{�
 我们假设在水开与否的边界条件下，指示灯电路和水气蒸发的物理现象是条件独立的。
 
 1. 单一观测 A_1（红灯亮）发生后的后验概率计算
-我们走进水房，看到红灯亮了。根据一维贝叶斯公式： P(H | A_1) = \frac{P(H)P(A_1 | H)}{P(H)P(A_1 | H) +
-P(\bar{H})P(A_1 | \bar{H})} 代入数值： P(H | A_1) = \frac{0.6 \times 0.95}{0.6 \times 0.95
-+ 0.4 \times 0.10} = \frac{0.57}{0.57 + 0.04} = \frac{0.57}{0.61}
-\approx 0.9344 \quad (93.44\%)
+我们走进水房，看到红灯亮了。根据一维贝叶斯公式：
+P(H | A_1) = \frac{P(H)P(A_1 | H)}{P(H)P(A_1
+| H) + P(\bar{H})P(A_1 | \bar{H})}
+代入数值：
+P(H | A_1) = \frac{0.6 \times 0.95}{0.6
+\times 0.95 + 0.4 \times 0.10} = \frac{0.57}{0.57 + 0.04} =
+\frac{0.57}{0.61} \approx 0.9344 \quad (93.44\%)
 看到红灯亮起，水开了的可信度从 60\%
 上升到了 93.44\%。
 2.
@@ -5308,11 +5506,17 @@ P(\bar{H})P(A_1 | \bar{H})} 代入数值： P(H | A_1) = \frac{0.6 \times 0.95}{
 P(H | A_1, A_2) =
 \frac{P(H)P(A_1|H)P(A_2|H)}{P(H)P(A_1|H)P(A_2|H) +
 P(\bar{H})P(A_1|\bar{H})P(A_2|\bar{H})}
-将数值代入方程的分子和分母： * 分子项（先验 \times 似然 1 \times 似然 2）： \text{分子} = 0.6 \times 0.95 \times 1.0 =
-0.57 * 分母的假阳性修正项（健康/未开 \times 误报 1 \times 误报 2）： \text{假阳性项} = 0.4 \times 0.10 \times 0.50 =
-0.02 * 联合后验概率： P(H | A_1, A_2)
-= \frac{0.57}{0.57 + 0.02} = \frac{0.57}{0.59} \approx 0.9661 \quad
-(96.61\%)
+将数值代入方程的分子和分母：
+* 分子项（先验 \times 似然 1 \times 似然 2）：
+\text{分子} = 0.6 \times 0.95 \times 1.0 =
+0.57
+* 分母的假阳性修正项（健康/未开 \times
+误报 1 \times 误报 2）：
+\text{假阳性项} = 0.4 \times 0.10 \times 0.50
+= 0.02
+* 联合后验概率：
+P(H | A_1, A_2) = \frac{0.57}{0.57 + 0.02} =
+\frac{0.57}{0.59} \approx 0.9661 \quad (96.61\%)
 物理直觉分析
 在多源观测融合下，我们的推断信心从单一红灯的 93.44\% 进一步攀升到了 96.61\%。
 虽然第二个传感器“冒热气”的单项精度并不算特别高（未开水时也有高达 50\%
@@ -5332,26 +5536,36 @@ Updating）的迭代递推公式，探讨当前后验概率如何作为未来先
 设 H 为目标假说。观测流依次为 A_1, A_2, A_3, \dots。我们假设这些观测在给定
 H 的条件下是条件独立的。
 
-第一步：观测到 A_1： 我们的后验概率为： P(H|A_1) = \frac{P(H)P(A_1|H)}{P(A_1)} \quad
+第一步：观测到 A_1：
+我们的后验概率为：
+P(H|A_1) = \frac{P(H)P(A_1|H)}{P(A_1)} \quad
 \text{--- (公式 7.1)}
-第二步：观测到 A_2： 我们想计算联合后验概率 P(H|A_1,
-A_2)。根据概率乘法定理与条件独立假设： P(H|A_1, A_2) = \frac{P(H \cap A_1 \cap
+第二步：观测到 A_2：
+我们想计算联合后验概率 P(H|A_1,
+A_2)。根据概率乘法定理与条件独立假设：
+P(H|A_1, A_2) = \frac{P(H \cap A_1 \cap
 A_2)}{P(A_1, A_2)} = \frac{P(H)P(A_1, A_2|H)}{P(A_1, A_2)} =
 \frac{P(H)P(A_1|H)P(A_2|H)}{P(A_1)P(A_2|A_1)} \quad \text{--- (公式
 7.2)}
-我们将公式 (7.2) 进行巧妙的重新组合： P(H|A_1, A_2) = \left[ \frac{P(H)P(A_1|H)}{P(A_1)}
-\right] \cdot \frac{P(A_2|H)}{P(A_2|A_1)} \quad \text{--- (公式
-7.3)}
-注意，公式 (7.3) 括号内的项正是第一步计算出的后验概率 P(H|A_1)！因此，我们可以将公式简化为： P(H|A_1, A_2) = P(H|A_1) \cdot
+我们将公式 (7.2) 进行巧妙的重新组合：
+P(H|A_1, A_2) = \left[
+\frac{P(H)P(A_1|H)}{P(A_1)} \right] \cdot \frac{P(A_2|H)}{P(A_2|A_1)}
+\quad \text{--- (公式 7.3)}
+注意，公式 (7.3) 括号内的项正是第一步计算出的后验概率 P(H|A_1)！因此，我们可以将公式简化为：
+P(H|A_1, A_2) = P(H|A_1) \cdot
 \frac{P(A_2|H)}{P(A_2|A_1)} \quad \text{--- (公式 7.4)}
-推广至第 k 步：
+推广至第 k
+步：
 设 \mathbb{A}_{k-1} = \{A_1, A_2, \dots,
 A_{k-1}\} 为截止到上一时刻的历史观测集合。当前时刻迎来了新观测
-A_k。 联合后验更新公式为： P(H | \mathbb{A}_{k-1}, A_k) = P(H |
+A_k。
+联合后验更新公式为：
+P(H | \mathbb{A}_{k-1}, A_k) = P(H |
 \mathbb{A}_{k-1}) \cdot \frac{P(A_k|H)}{P(A_k|\mathbb{A}_{k-1})} \quad
 \text{--- (公式 7.5)}
 分母归一化项 P(A_k |
-\mathbb{A}_{k-1}) 同样可以通过增量方式计算： P(A_k|\mathbb{A}_{k-1}) =
+\mathbb{A}_{k-1}) 同样可以通过增量方式计算：
+P(A_k|\mathbb{A}_{k-1}) =
 P(H|\mathbb{A}_{k-1})P(A_k|H) +
 P(\bar{H}|\mathbb{A}_{k-1})P(A_k|\bar{H}) \quad \text{--- (公式
 7.6)}
@@ -5418,8 +5632,10 @@ O(1)，与历史数据量无关。
 在互联网信息流和电商推荐中，推荐算法的核心是处理一个极度稀疏的“用户-文章”评分矩阵
 A。
 1. 经典离线 SVD 的瓶颈
-为了发现用户潜在的兴趣维度，我们需要对矩阵 A 进行奇异值分解（SVD）： A = U \cdot S \cdot V^T \quad \text{--- (公式
-7.7)} 其中，U
+为了发现用户潜在的兴趣维度，我们需要对矩阵 A 进行奇异值分解（SVD）：
+A = U \cdot S \cdot V^T \quad \text{--- (公式
+7.7)}
+其中，U
 矩阵代表用户的潜在兴趣向量，V
 矩阵代表文章的潜在话题向量。
 然而，互联网每天都会涌入数以百万计的新用户和数以亿计的新点击。这意味着矩阵
@@ -5428,8 +5644,10 @@ A
 如果每次新进一篇文章，我们都要重新对这个几千万乘几千万的超大矩阵做一次完整的奇异值分解，其计算成本之高是不可想象的，服务器会在几秒钟内彻底崩溃。
 2. 在线 SVD 的拯救
 为了解决这一痛点，推荐工程中引入了在线奇异值分解（Incremental
-SVD）： 当新的一批文章和点击数据 D_k
-到来时，算法无需拉回历史矩阵，而是直接在上一时刻分解出的特征矩阵 U_{k-1}, S_{k-1}, V_{k-1} 上进行在线更新：
+SVD）：
+当新的一批文章和点击数据 D_k
+到来时，算法无需拉回历史矩阵，而是直接在上一时刻分解出的特征矩阵 U_{k-1}, S_{k-1}, V_{k-1}
+上进行在线更新：
 [U_k, S_k, V_k] = f(U_{k-1}, S_{k-1},
 V_{k-1}, D_k) \quad \text{--- (公式 7.8)}
 这正是“在线贝叶斯”思想在代数矩阵运算上的映射。它保留了过去所有数据的计算成果，仅对增量进行吸收，在不降低推荐精度的情况下，节省了
@@ -5450,9 +5668,11 @@ Model）。它将任务严格切分为需求分析、系统设计、代码编写
 MVP：精益求精的贝叶斯流
 与之相对的，是现代互联网推崇的敏捷开发（Agile
 Development）和最简可行产品（Minimum Viable Product,
-MVP）。 *
+MVP）。
+*
 思维本质：精益求精。它承认我们在项目初期拥有不完整的、高度不确定的信息（先验低信度）。因此，我们不需要一开始就追求完美，而是以最快速度做出一个“粗糙但能跑”的
-MVP 投放市场。 *
+MVP 投放市场。
+*
 迭代循环：市场的真实反馈、用户的点击数据，就是源源不断到来的新观测
 A_k。我们不断用这些新观测对 MVP
 版本的后验认知进行在线贝叶斯更新，快速调整产品形态，直到逼近用户真正满意的最优解。
@@ -5462,8 +5682,10 @@ A_k。我们不断用这些新观测对 MVP
 定量分析“狼来了”：信任崩塌的数学过程
 为了展示在线贝叶斯流对人际信用和主观信念的修正，我们定量计算经典寓言《狼来了》中，村民对牧童信任度的崩塌过程。
 实验设定与变量定义
-设随机变量 H 代表牧童的真实属性： *
-H：牧童是诚实可靠的孩子。 * \bar{H}：牧童是爱撒谎的淘气孩子。
+设随机变量 H
+代表牧童的真实属性：
+* H：牧童是诚实可靠的孩子。
+* \bar{H}：牧童是爱撒谎的淘气孩子。
 设观测事件 A_k 为第 k
 次发生如下事件：“牧童在山上大喊狼来了，但村民赶到山上后发现狼没有来”。
 系统参数设定
@@ -5475,19 +5697,23 @@ P(H) = 0.9, \quad P(\bar{H}) = 0.1 \quad
 
 即使是诚实的孩子，也有可能因为一时眼花误判、或者野狗出没而报假警，我们设定诚实孩子报假警的概率为：
 P(A_k | H) = 0.1 \quad (10\%)
-如果是撒谎的孩子，他出于恶作剧报假警的概率极高，我们设定为： P(A_k | \bar{H}) = 0.7 \quad (70\%)
+如果是撒谎的孩子，他出于恶作剧报假警的概率极高，我们设定为：
+P(A_k | \bar{H}) = 0.7 \quad
+(70\%)
 
 
 
 1. 牧童第一次撒谎（观测到 A_1 发生）
 村民赶到山上，发现被骗了。我们利用一维贝叶斯计算此时村民对他的后验信任度
-P(H|A_1)： *
-第一步：计算分母边缘概率 P(A_1)（假警报发生的综合概率）： P(A_1) = P(H)P(A_1|H) +
-P(\bar{H})P(A_1|\bar{H}) P(A_1) = 0.9
-\times 0.1 + 0.1 \times 0.7 = 0.09 + 0.07 = 0.16 \quad (16\%) *
-第二步：计算后验概率： P(H|A_1) =
-\frac{P(H)P(A_1|H)}{P(A_1)} = \frac{0.09}{0.16} = 0.5625 \quad
-(56.25\%)
+P(H|A_1)：
+* 第一步：计算分母边缘概率 P(A_1)（假警报发生的综合概率）：
+P(A_1) = P(H)P(A_1|H) +
+P(\bar{H})P(A_1|\bar{H})
+P(A_1) = 0.9 \times 0.1 + 0.1 \times 0.7 =
+0.09 + 0.07 = 0.16 \quad (16\%)
+* 第二步：计算后验概率：
+P(H|A_1) = \frac{P(H)P(A_1|H)}{P(A_1)} =
+\frac{0.09}{0.16} = 0.5625 \quad (56.25\%)
 物理分析
 第一场恶作剧发生后，村民对牧童的信任度直接从极其信任的 90\% 暴跌到了 56.25\%。信任防线已经出现了严重的裂痕。
 
@@ -5495,12 +5721,19 @@ P(\bar{H})P(A_1|\bar{H}) P(A_1) = 0.9
 牧童觉得好玩，第二天继续故伎重演。村民再次上山，发现又是一场恶作剧。我们启用在线贝叶斯流计算第二步的信任更新：
 *
 更新输入：此时，村民脑海中的先验概率自动更新为第一步得出的后验值：
-P(H)_{\text{new}} = P(H|A_1) = 0.5625
+P(H)_{\text{new}} = P(H|A_1) =
+0.5625
 P(\bar{H})_{\text{new}} = 1 - 0.5625 =
-0.4375 * 第一步：计算分母增量边缘概率 P(A_2 | A_1)： P(A_2 | A_1) = P(H)_{\text{new}} \cdot P(A_2|H) +
-P(\bar{H})_{\text{new}} \cdot P(A_2|\bar{H}) P(A_2 | A_1) = 0.5625 \times 0.1 + 0.4375 \times
-0.7 = 0.05625 + 0.30625 = 0.3625 * 第二步：计算联合后验信任度
-P(H|A_1, A_2)： P(H|A_1, A_2) = \frac{P(H)_{\text{new}} \cdot
+0.4375
+* 第一步：计算分母增量边缘概率 P(A_2 |
+A_1)：
+P(A_2 | A_1) = P(H)_{\text{new}} \cdot
+P(A_2|H) + P(\bar{H})_{\text{new}} \cdot P(A_2|\bar{H})
+P(A_2 | A_1) = 0.5625 \times 0.1 + 0.4375
+\times 0.7 = 0.05625 + 0.30625 = 0.3625
+* 第二步：计算联合后验信任度 P(H|A_1,
+A_2)：
+P(H|A_1, A_2) = \frac{P(H)_{\text{new}} \cdot
 P(A_2|H)}{P(A_2|A_1)} = \frac{0.5625 \times 0.1}{0.3625} =
 \frac{0.05625}{0.3625} \approx 0.1552 \quad (15.52\%)
 物理分析
@@ -5527,12 +5760,15 @@ Method）的四个步骤，并对五个覆盖求职、消费、求学、医疗�
 设我们想推断一个特定家庭是否养狗（目标假说 H =
 \text{养狗}）。我们收集到了关于这个家庭的如下一系列具体观测条件：
 * A_1：家庭成员共 5
-口人。 * A_2：父亲 35
-岁，母亲 30 岁，孩子 6 岁刚上小学。 * A_3：外公外婆（或姥姥姥爷）同住并帮忙照顾小孩。
+口人。
+* A_2：父亲 35
+岁，母亲 30 岁，孩子 6 岁刚上小学。
+* A_3：外公外婆（或姥姥姥爷）同住并帮忙照顾小孩。
 * A_4：居住在北京海淀区世纪城小区。
-如果套用联合贝叶斯公式，我们需要计算： P(H
-| A_1, A_2, A_3, A_4) = \frac{P(H)P(A_1, A_2, A_3, A_4 | H)}{P(A_1, A_2,
-A_3, A_4)} \quad \text{--- (公式 8.1)}
+如果套用联合贝叶斯公式，我们需要计算：
+P(H | A_1, A_2, A_3, A_4) = \frac{P(H)P(A_1,
+A_2, A_3, A_4 | H)}{P(A_1, A_2, A_3, A_4)} \quad \text{--- (公式
+8.1)}
 此时，无论我们是想通过公式计算还是通过社会学统计，都会面临一个绝望的事实：我们根本找不到“同时满足这四个极其特异性条件”的家庭样本。
 在整个人口普查数据库中，同时满足“5口人、35岁父亲、30岁母亲、6岁小学娃、姥姥姥爷同住、且住在海淀世纪城”的样本数量可能接近于零。
 2. 维数灾难与样本稀疏的定义
@@ -5564,8 +5800,10 @@ Object）是谁。例如：“这个具体的求职学生”、“这个具体�
 P(H |
 \mathbb{A})。这被称为寻找先验基准（Base
 Rate）。
-第四步：局部微调（似然修正）： 用集合 \mathbb{A}
-之外更细微的、未参与先验计算的特征（似然集合 \mathbb{B}），对基准概率 P(H | \mathbb{A}) 进行小幅度的贝叶斯调整：
+第四步：局部微调（似然修正）：
+用集合 \mathbb{A}
+之外更细微的、未参与先验计算的特征（似然集合 \mathbb{B}），对基准概率 P(H | \mathbb{A})
+进行小幅度的贝叶斯调整：
 P(H | \mathbb{A}, \mathbb{B}) = P(H |
 \mathbb{A}) \cdot \frac{P(\mathbb{B} | H, \mathbb{A})}{P(\mathbb{B} |
 \mathbb{A})} \quad \text{--- (公式 8.2)}
@@ -5586,10 +5824,12 @@ P(H | \mathbb{A}, \mathbb{B}) = P(H |
 第五层（微观调整层）：他是电信学院下属 XXXX
 实验室成员，具备硬件、网页开发及算法/信号处理的混合背景。
 
-数据锁定与计算： 查阅《华中科技大学 2015
+数据锁定与计算：
+查阅《华中科技大学 2015
 届毕业生就业质量年度报告》：硕士研究生整体就业率为 95.80\%。电信学院作为核心工科学院，其硕士就业率先验概率
 P(H | \text{华科电信硕士}) \approx
-98\%。 我们以 98\%
+98\%。
+我们以 98\%
 作为先验基准，后续只需根据他的个人技术短板或实验室声誉（第五层特征），在
 98\% 的基础上进行 \pm 1\%
 的小幅微调。这样既保留了高可信的大样本统计，又兼顾了个体差异。
@@ -5607,8 +5847,10 @@ P(H | \text{华科电信硕士}) \approx
 月份（盛夏成熟期）上市的麒麟瓜。
 第四层（调整层）：它拍起来声音嘭嘭响，且纹路清晰。
 
-贝叶斯逻辑： 我们直接调取农业统计数据：7
-月份上市的成熟麒麟瓜，其甜西瓜的比例（先验基准）高达 85\%： P(H | \text{7月麒麟瓜}) = 0.85
+贝叶斯逻辑：
+我们直接调取农业统计数据：7
+月份上市的成熟麒麟瓜，其甜西瓜的比例（先验基准）高达 85\%：
+P(H | \text{7月麒麟瓜}) = 0.85
 在此高先验基础上，我们再根据“嘭嘭声”（似然值高）和“纹路”（似然值高）做进一步正向修正，其后验甜概率将直逼
 95\%+。
 
@@ -5626,15 +5868,17 @@ P(H | \text{华科电信硕士}) \approx
 
 数据锁定与惊人结论：
 查阅人大附中历年高考数据：人大附中的一本率多年来无限接近 100\%。
-因此，我们的先验基准直接锁定为： P(\text{一本} | \text{人大附中考生}) \approx 1.0
-\quad (100\%) 由于先验概率已经被拉到了 100%
+因此，我们的先验基准直接锁定为：
+P(\text{一本} | \text{人大附中考生}) \approx
+1.0 \quad (100\%)
+由于先验概率已经被拉到了 100%
 的顶点，即使我们在第四层引入了“数学一般”、“发挥一般”等负面修正因子，根据贝叶斯乘法：
 P(\text{一本} | \text{人大附中},
 \text{数学差}) = 1.0 \cdot \frac{P(\text{数学差} |
 \text{一本})}{P(\text{数学差})} = 1.0
 （因为在人大附中，即使考上一本的学生里也有数学差的，其后验依然被 100%
-的先验牢牢拽住）。 结论：该学生考上一本的概率依然是
-100\%。
+的先验牢牢拽住）。
+结论：该学生考上一本的概率依然是 100\%。
 社会学启示：为什么北京户口如此值钱？为什么家长为了孩子进
 top
 高中（如人大附中）不惜付出几千万学区房的代价？因为这些“圈子”给孩子提供了一个高得近乎无解的先验概率保底。一旦进入这个圈子，个体的微观劣势（偏科、发挥失常）几乎无法撼动最终成功的后验结果。
@@ -5682,8 +5926,9 @@ top
 确定地陪伴孩子度过前 5 年的童年，但 5 年后必死无疑。
 骨髓移植：唯一治愈的希望。但手术风险极大，术后一年内因免疫系统重建失败导致的平均死亡率极高。
 
-致命的绝对统计： 布莱恩查阅医学统计：MDS
-患者进行骨髓移植的平均手术失败率超过 80\%。
+致命的绝对统计：
+布莱恩查阅医学统计：MDS 患者进行骨髓移植的平均手术失败率超过
+80\%。
 如果只看这个数据，进行手术等于自杀，他应该选择 conservative 治疗陪孩子 5
 年。
 利用分层描述法寻找“特异性圈子”：
@@ -5713,22 +5958,27 @@ MDS 患者。
 9.1 医学诊断精度的概率定义
 为了量化评估某项医学检查方法的诊断精度，我们需要在概率空间中定义其性能指标。
 设随机变量 H
-代表患者的真实健康状态： * H：患者确实患有目标疾病（被感染/患病）； *
-\bar{H}：患者未患目标疾病（健康/正常）。
+代表患者的真实健康状态：
+* H：患者确实患有目标疾病（被感染/患病）；
+* \bar{H}：患者未患目标疾病（健康/正常）。
 设随机变量 A
-代表医学检测的输出结果： * A^+：检测结果呈阳性（指示患病）； * A^-：检测结果呈阴性（指示健康）。
+代表医学检测的输出结果：
+* A^+：检测结果呈阳性（指示患病）；
+* A^-：检测结果呈阴性（指示健康）。
 根据上述定义，诊断过程中可能出现以下四种基本结果，其概率定义及对应指标如下：
 1. 漏报（False Negative /
 假阴性）
 当患者实际患病（H
 成立），但检测结果呈阴性（A^-
-发生）时，称为漏报或假阴性。 *
-假阴性率（False Negative Rate,
-FNR）：在患者实际患病的前提下，检测结果为阴性的条件概率。 \text{FNR} = P(A^- | H) \quad \text{--- (公式
-9.1)} 例如，如果某种方法检测 100
+发生）时，称为漏报或假阴性。
+* 假阴性率（False Negative Rate,
+FNR）：在患者实际患病的前提下，检测结果为阴性的条件概率。
+\text{FNR} = P(A^- | H) \quad \text{--- (公式
+9.1)}
+例如，如果某种方法检测 100
 个确诊的新冠患者，有 10
-个人的检测结果是阴性（漏诊），那么该方法的假阴性率就是 10\%。 * 真阳性率（True Positive
-Rate, TPR / 灵敏度
+个人的检测结果是阴性（漏诊），那么该方法的假阴性率就是 10\%。
+* 真阳性率（True Positive Rate, TPR / 灵敏度
 Sensitivity）：在患者实际患病的前提下，被检测方法正确识别为阳性的比例。它与假阴性率互补：
 \text{TPR} = P(A^+ | H) = 1 - \text{FNR}
 \quad \text{--- (公式 9.2)}
@@ -5736,13 +5986,15 @@ Sensitivity）：在患者实际患病的前提下，被检测方法正确识别
 假阳性）
 当患者实际健康（\bar{H}
 成立），真实检测结果呈阳性（A^+
-发生）时，称为误报或假阳性。 *
-假阳性率（False Positive Rate,
-FPR）：在患者实际健康的前提下，检测结果为阳性的条件概率。 \text{FPR} = P(A^+ | \bar{H}) \quad \text{--- (公式
-9.3)} 例如，如果平均 100
-个健康人接受检测，有 10
-个人被误报为阳性，那么该检测方法的假阳性率就是 10\%。 * 真阴性率（True Negative
-Rate, TNR / 特异度
+发生）时，称为误报或假阳性。
+* 假阳性率（False Positive Rate,
+FPR）：在患者实际健康的前提下，检测结果为阳性的条件概率。
+\text{FPR} = P(A^+ | \bar{H}) \quad \text{---
+(公式 9.3)}
+例如，如果平均 100 个健康人接受检测，有
+10
+个人被误报为阳性，那么该检测方法的假阳性率就是 10\%。
+* 真阴性率（True Negative Rate, TNR / 特异度
 Specificity）：在患者实际健康的前提下，被检测方法正确识别为阴性的比例。它与假阳性率互补：
 \text{TNR} = P(A^- | \bar{H}) = 1 -
 \text{FPR} \quad \text{--- (公式 9.4)}
@@ -5759,12 +6011,16 @@ P(H) = 0.02\% = 0.0002, \quad P(\bar{H}) =
 2. 核酸检测的“金标准”数学逻辑
 核酸检测（Nucleic Acid
 Test）被世界卫生组织和各国定为确诊新冠肺炎的“金标准”。这在数学上可以通过其超低的假阳性率来解释。
-核酸检测具有几乎为 0 的假阳性率，即： P(\text{核酸}^+ | \bar{H}) = 0 \quad \text{---
-(公式 9.6)} 现在，若某人核酸检测结果为阳性（A^+_{\text{核酸}}），我们计算其患病的后验概率：
+核酸检测具有几乎为 0 的假阳性率，即：
+P(\text{核酸}^+ | \bar{H}) = 0 \quad
+\text{--- (公式 9.6)}
+现在，若某人核酸检测结果为阳性（A^+_{\text{核酸}}），我们计算其患病的后验概率：
 P(H | \text{核酸}^+) = \frac{P(H)
 P(\text{核酸}^+ | H)}{P(H) P(\text{核酸}^+ | H) + P(\bar{H})
-P(\text{核酸}^+ | \bar{H})} \quad \text{--- (公式 9.7)} 将 P(\text{核酸}^+ | \bar{H}) = 0 代入公式 (9.7)
-分母中： P(H | \text{核酸}^+) = \frac{P(H)
+P(\text{核酸}^+ | \bar{H})} \quad \text{--- (公式 9.7)}
+将 P(\text{核酸}^+ | \bar{H}) = 0
+代入公式 (9.7) 分母中：
+P(H | \text{核酸}^+) = \frac{P(H)
 P(\text{核酸}^+ | H)}{P(H) P(\text{核酸}^+ | H) + 0} = 1 \quad (100\%)
 \quad \text{--- (公式 9.8)}
 物理分析：只要核酸检测的假阳性率绝对为零，那么无论目标人群的先验基础发病率有多低（哪怕只有百万分之一），一旦某人检测出阳性，其患病的后验概率就绝对等于
@@ -5773,45 +6029,61 @@ P(\text{核酸}^+ | H)}{P(H) P(\text{核酸}^+ | H) + 0} = 1 \quad (100\%)
 在疫情期间，曾有专家建议“将肺部 CT
 影像作为主要确诊手段，以实现快速收治”。我们来评估这一建议的数学效果。
 根据临床统计，新冠肺炎患者在 CT
-扫描中的典型表现（如磨玻璃影）具有以下特征： * CT
-的真阳性率（敏感度）：P(\text{CT}^+ |
-H) = 85\% * CT 的假阳性率：P(\text{CT}^+ | \bar{H}) =
+扫描中的典型表现（如磨玻璃影）具有以下特征：
+* CT 的真阳性率（敏感度）：P(\text{CT}^+ | H) = 85\%
+* CT 的假阳性率：P(\text{CT}^+ | \bar{H}) =
 5\%（其他普通的病毒性肺炎或细菌性肺炎也会表现出类似磨玻璃阴影）
 若某人在普查中仅仅做了一次 CT，结果呈现阳性（A^+_{\text{CT}}），我们计算其患病的后验概率
-P(H | \text{CT}^+)： *
-第一步：计算分母，即任意一人做 CT 呈现阳性的边缘概率 P(\text{CT}^+)： P(\text{CT}^+) = P(H) P(\text{CT}^+ | H) +
-P(\bar{H}) P(\text{CT}^+ | \bar{H}) P(\text{CT}^+) = 0.02\% \times 85\% + 99.98\%
+P(H | \text{CT}^+)：
+* 第一步：计算分母，即任意一人做 CT 呈现阳性的边缘概率 P(\text{CT}^+)：
+P(\text{CT}^+) = P(H) P(\text{CT}^+ | H) +
+P(\bar{H}) P(\text{CT}^+ | \bar{H})
+P(\text{CT}^+) = 0.02\% \times 85\% + 99.98\%
 \times 5\% = 0.00017 + 0.04999 = 0.05016 \quad (5.016\%) \quad \text{---
-(公式 9.9)} * 第二步：计算后验概率： P(H | \text{CT}^+) = \frac{P(H) P(\text{CT}^+ |
-H)}{P(\text{CT}^+)} = \frac{0.00017}{0.05016} \approx 0.3389\% \approx
+(公式 9.9)}
+* 第二步：计算后验概率：
+P(H | \text{CT}^+) = \frac{P(H) P(\text{CT}^+
+| H)}{P(\text{CT}^+)} = \frac{0.00017}{0.05016} \approx 0.3389\% \approx
 0.34\% \quad \text{--- (公式 9.10)}
 物理分析：尽管 CT 的敏感度高达 85\%，且假阳性率仅为 5\%，但由于普通人群的患病先验概率极低（0.02\%），导致筛查出的阳性人群中，绝大多数（99.66\%）其实只是患有普通肺炎的健康人。因此，仅凭
 CT
 影像确诊新冠在工程上是灾难性的，它会导致大量的误诊和医疗资源挤兑。
 4. 多观测联合贝叶斯诊断
 为了解决单观测信度不足的问题，医生在临床中通常会进行多维度联合诊断。
-设我们有三个条件独立的观测维度： * A_1（临床表现）：是否有发热、干咳、乏力等症状。
+设我们有三个条件独立的观测维度：
+* A_1（临床表现）：是否有发热、干咳、乏力等症状。
 P(A_1 | H) = 70\%, \quad P(A_1 | \bar{H}) =
-10\% * A_2（接触史）：是否来自疫区或接触过确诊病例。
+10\%
+* A_2（接触史）：是否来自疫区或接触过确诊病例。
 P(A_2 | H) = 95\%, \quad P(A_2 | \bar{H}) =
-1\% * A_3（CT
-影像）：肺部 CT 是否呈磨玻璃阴影。 P(A_3 | H) = 85\%, \quad P(A_3 | \bar{H}) =
+1\%
+* A_3（CT 影像）：肺部
+CT 是否呈磨玻璃阴影。
+P(A_3 | H) = 85\%, \quad P(A_3 | \bar{H}) =
 5\%
 我们使用在线递进更新的方法，计算当患者同时表现出临床症状（A_1）和接触史（A_2）时，其患病的后验概率。
 
-第一步：计算当仅观察到临床表现 A_1 时，患者的后验概率 P(H | A_1)： P(H |
-A_1) = \frac{P(H) P(A_1 | H)}{P(H) P(A_1 | H) + P(\bar{H}) P(A_1 |
-\bar{H})} P(H | A_1) = \frac{0.02\%
-\times 70\%}{0.02\% \times 70\% + 99.98\% \times 10\%} =
-\frac{0.00014}{0.00014 + 0.09998} \approx 0.1398\% \approx 0.14\% \quad
-\text{--- (公式 9.11)} 在有了临床表现后，患病概率从初始的 0.02\% 飙升了 7 倍，达到了 0.14\%。
+第一步：计算当仅观察到临床表现 A_1 时，患者的后验概率 P(H | A_1)：
+P(H | A_1) = \frac{P(H) P(A_1 | H)}{P(H)
+P(A_1 | H) + P(\bar{H}) P(A_1 | \bar{H})}
+P(H | A_1) = \frac{0.02\% \times 70\%}{0.02\%
+\times 70\% + 99.98\% \times 10\%} = \frac{0.00014}{0.00014 + 0.09998}
+\approx 0.1398\% \approx 0.14\% \quad \text{--- (公式
+9.11)}
+在有了临床表现后，患病概率从初始的 0.02\% 飙升了 7 倍，达到了 0.14\%。
 第二步：将 P(H |
-A_1) 作为新的先验，引入接触史观测 A_2 进行在线更新： 新先验为： P(H)_{\text{new}} = 0.001398, \quad
-P(\bar{H})_{\text{new}} = 0.998602 计算联合后验概率 P(H | A_1, A_2)： P(H | A_1, A_2) = \frac{P(H)_{\text{new}} P(A_2 |
-H)}{P(H)_{\text{new}} P(A_2 | H) + P(\bar{H})_{\text{new}} P(A_2 |
-\bar{H})} P(H | A_1, A_2) =
-\frac{0.001398 \times 0.95}{0.001398 \times 0.95 + 0.998602 \times 0.01}
-= \frac{0.0013281}{0.0013281 + 0.009986} \approx 11.738\% \approx 12\%
+A_1) 作为新的先验，引入接触史观测 A_2 进行在线更新：
+新先验为：
+P(H)_{\text{new}} = 0.001398, \quad
+P(\bar{H})_{\text{new}} = 0.998602
+计算联合后验概率 P(H | A_1,
+A_2)：
+P(H | A_1, A_2) = \frac{P(H)_{\text{new}}
+P(A_2 | H)}{P(H)_{\text{new}} P(A_2 | H) + P(\bar{H})_{\text{new}} P(A_2
+| \bar{H})}
+P(H | A_1, A_2) = \frac{0.001398 \times
+0.95}{0.001398 \times 0.95 + 0.998602 \times 0.01} =
+\frac{0.0013281}{0.0013281 + 0.009986} \approx 11.738\% \approx 12\%
 \quad \text{--- (公式 9.12)}
 
 物理分析：当引入具有高排他性的“接触史”这一强特征（似然比
@@ -5848,19 +6120,25 @@ H_1，此时剩余假设空间 \bar{H}_1 的整体概率上升，医生再从 \b
 在二分法诊断中，选择问什么问题、做什么检查，决定了诊断的效率。很多缺乏经验的医务人员或普通非专业人士，在诊断中经常会陷入“确认偏差（Confirmation
 Bias）”的泥潭。
 1. 滑膜炎 vs 关节炎的诊断误区
-小李经常腿疼，同事老张曾经得过“运动性滑膜炎”，小李便向老张咨询： *
-老张的诊断：“我感觉你是滑膜炎。你走路久了会疼吗？” *
-小李的回答：“是的，我走路久了确实会疼。” *
+小李经常腿疼，同事老张曾经得过“运动性滑膜炎”，小李便向老张咨询：
+*
+老张的诊断：“我感觉你是滑膜炎。你走路久了会疼吗？”
+* 小李的回答：“是的，我走路久了确实会疼。”
+*
 老张的结论：“没错了，滑膜炎不能过量运动，过量就会疼，你就是滑膜炎。另外，你膝盖下方疼吗？”
-* 小李的回答：“是的，我膝盖下方也很疼。” *
+* 小李的回答：“是的，我膝盖下方也很疼。”
+*
 老张的结论：“那绝对是滑膜炎了，滑膜炎疼痛位置就在膝盖。”
 概率学本质剖析
 老张所犯的错误，是不断去寻找“滑膜炎”（假设 H_1）的典型症状，并证实其概率 P(A_i | H_1)
-很高。然而，他忽视了“关节炎”（假设 H_2）在这些症状下的似然概率 P(A_i | H_2) 同样极高。 也就是说，对于特征
-A = \text{走路久了会疼}： P(A | \text{滑膜炎}) \approx 90\%, \quad P(A |
-\text{关节炎}) \approx 90\% \implies \text{似然比} = \frac{P(A |
+很高。然而，他忽视了“关节炎”（假设 H_2）在这些症状下的似然概率 P(A_i | H_2) 同样极高。
+也就是说，对于特征 A =
+\text{走路久了会疼}：
+P(A | \text{滑膜炎}) \approx 90\%, \quad P(A
+| \text{关节炎}) \approx 90\% \implies \text{似然比} = \frac{P(A |
 \text{滑膜炎})}{P(A | \text{关节炎})} \approx 1 \quad \text{--- (公式
-9.13)} 根据贝叶斯定理，一个似然比接近 1
+9.13)}
+根据贝叶斯定理，一个似然比接近 1
 的观测信息，其所携带的诊断信息量（KL散度）几乎为零，对区分这两种疾病没有任何帮助。
 
 小李的错误：小李后来提出：“我还有个症状，就是下雨天会疼得厉害，我听说关节炎下雨天会疼。”
@@ -5904,16 +6182,19 @@ P(\text{手脚肿} | \text{滑膜炎}) \approx 0
 [ 14 亿全人群 (低患病先验) ]             │             ▼ [ 筛查1: 接触史与体温 ]  &lt;─── (低成本、低漏报/高敏感)             │   ┌─────────┴─────────┐   ▼ (排除阴性)        ▼ (筛选出阳性 1400万)[ 安全 ]          [ 筛查2: 3次核酸检测 ] &lt;─── (高成本、极高特异)                       │             ┌─────────┴─────────┐             ▼ (排除阴性)        ▼ (确诊)          [ 排除 ]            [ 隔离治疗 ]
 我们通过定量数学模型来对比两种新冠筛查方案的成本与漏报率：
 假设单个核酸测试的假阴性率为 60\%（单次漏报率极高）。若对一个人连续进行
-3 次核酸检测，则其联合漏报率为： \text{FNR}_{3\text{x}} = 60\% \times 60\% \times
-60\% = 21.6\% \quad \text{--- (公式 9.14)}
+3 次核酸检测，则其联合漏报率为：
+\text{FNR}_{3\text{x}} = 60\% \times 60\%
+\times 60\% = 21.6\% \quad \text{--- (公式 9.14)}
 方案 A：全民直接接受 3 次核酸检测
 
 总人口：14
 亿人。
 单次检测成本：设为 100 元/人。
-方案总成本： \text{Cost}_A = 14 \text{ 亿} \times 100 \text{ 元}
-\times 3 \approx 4200 \text{ 亿元} \quad (\text{单轮全员筛查为 } 1400
-\text{ 亿元}) \quad \text{--- (公式 9.15)}
+方案总成本：
+\text{Cost}_A = 14 \text{ 亿} \times 100
+\text{ 元} \times 3 \approx 4200 \text{ 亿元} \quad
+(\text{单轮全员筛查为 } 1400 \text{ 亿元}) \quad \text{--- (公式
+9.15)}
 漏诊率：21.6\%
 的感染者会被漏掉。
 
@@ -5932,28 +6213,34 @@ B：级联筛查（接触史初筛 + 阳性者接受 3
 的真实感染者由于瞒报或不知情，在初筛中被判定为无接触史而漏网）。
 
 初筛成本：大数据轨迹调取与社区登记的成本极低，设平均到每个人身上仅折合
-0.1 元，则第一步总成本为： \text{Cost}_{\text{step1}} = 14 \text{ 亿} \times
-0.1 \text{ 元} = 1.4 \text{ 亿元} \quad \text{--- (公式
+0.1 元，则第一步总成本为：
+\text{Cost}_{\text{step1}} = 14 \text{ 亿}
+\times 0.1 \text{ 元} = 1.4 \text{ 亿元} \quad \text{--- (公式
 9.16)}
 
 第二步（精确检测）：仅对初筛出“有接触史”的 1400 万人进行 3 次核酸检测。
 
-核酸检测成本： \text{Cost}_{\text{step2}} = 1400 \text{ 万} \times
-100 \text{ 元} \times 3 = 42 \text{ 亿元} \quad \text{--- (公式
+核酸检测成本：
+\text{Cost}_{\text{step2}} = 1400 \text{ 万}
+\times 100 \text{ 元} \times 3 = 42 \text{ 亿元} \quad \text{--- (公式
 9.17)}
-方案总成本： \text{Cost}_B = 1.4 \text{ 亿} + 42 \text{ 亿} =
-43.4 \text{ 亿元} \quad \text{--- (公式 9.18)}
+方案总成本：
+\text{Cost}_B = 1.4 \text{ 亿} + 42 \text{
+亿} = 43.4 \text{ 亿元} \quad \text{--- (公式 9.18)}
 
 方案 B 的综合漏诊率计算：
 漏诊发生在以下两种互斥的情况中：
 
-真实感染者在第一步“接触史”中被漏诊，概率为： P_1 = P(\text{接触}^- | H) = 5\%
-真实感染者通过了第一步（有接触史），但在第二步连续 3 次核酸检测中均呈阴性，概率为： P_2 = P(\text{接触}^+ | H) \times
+真实感染者在第一步“接触史”中被漏诊，概率为：
+P_1 = P(\text{接触}^- | H) = 5\%
+真实感染者通过了第一步（有接触史），但在第二步连续 3 次核酸检测中均呈阴性，概率为：
+P_2 = P(\text{接触}^+ | H) \times
 \text{FNR}_{3\text{x}} = (1 - 5\%) \times 21.6\% = 95\% \times 21.6\% =
 20.52\%
 
 
-综合漏诊率： \text{FNR}_{\text{total}} = P_1 + P_2 = 5\% +
+综合漏诊率：
+\text{FNR}_{\text{total}} = P_1 + P_2 = 5\% +
 20.52\% = 25.52\% \quad \text{--- (公式 9.19)}
 
 
@@ -5998,9 +6285,11 @@ B：级联筛查（接触史初筛 + 阳性者接受 3
 
 9.6
 过度医疗的数学本质：高假阳性与低先验的合谋
-在医院门诊中，我们经常遇到两种截然不同的医生： *
+在医院门诊中，我们经常遇到两种截然不同的医生：
+*
 医生甲（过度检查型）：听完简单的自述后，立刻开出一张长长的检查单，包含血常规、超声、胸片、CT
-甚至核磁共振。 *
+甚至核磁共振。
+*
 医生乙（经验判断型）：仅简单询问并做几项基础体格检查，便给出诊断和处方，不开具不必要的昂贵检查。
 普通人常常认为医生甲“认真负责、细心全面”，而指责医生乙“敷衍马虎”。然而，从贝叶斯的视角来看，在不加区分的前提下进行大量的高端仪器检查，不仅浪费金钱，更会在数学上导致极高的“误诊率”，进而引发灾难性的过度医疗。
 1. 胎心监护的医学大复盘
@@ -6016,29 +6305,33 @@ P(\text{异常} | \text{健康})
 2. PET-CT 筛查肺癌的数学灾难
 某医院购买了一台价值数千万的先进设备 PET-CT，宣称能够发现小到 5
 毫米的早期恶性肿瘤。医院大力推广该项目，规定凡是体检检出肺部有小结节的患者，一律推荐做
-PET-CT，一旦结果呈阳性，立刻安排手术切除。 然而，PET-CT 单次费用高达
-8000 \sim 10000
-元，且辐射剂量巨大（相当于 100
+PET-CT，一旦结果呈阳性，立刻安排手术切除。
+然而，PET-CT 单次费用高达 8000 \sim
+10000 元，且辐射剂量巨大（相当于 100
 多次胸片）。我们来计算这套“体检筛查-阳性切除”流程的数学合理性。
 变量与参数设定
 
 先验概率：流行病学统计表明，在常规体检检出的肺部小结节中，绝大部分属于良性（如钙化点、陈旧性结核灶），恶性（肺癌）的比例小于
-1\%。 P(H) =
-1\% = 0.01, \quad P(\bar{H}) = 99\% = 0.99 \quad \text{--- (公式
-9.20)}
+1\%。
+P(H) = 1\% = 0.01, \quad P(\bar{H}) = 99\% =
+0.99 \quad \text{--- (公式 9.20)}
 检测敏感度（真阳性率）：由于 PET-CT
 极度灵敏，我们假设它能 100\%
-检出所有恶性病灶： P(A^+ | H) = 100\% = 1.0
-\quad \text{--- (公式 9.21)}
+检出所有恶性病灶：
+P(A^+ | H) = 100\% = 1.0 \quad \text{---
+(公式 9.21)}
 假阳性率：良性结节在活跃期（如局部轻微炎症反应）也会摄取显像剂，导致
 PET-CT 出现误报，假阳性率约为 7\%：
 P(A^+ | \bar{H}) = 7\% = 0.07 \quad \text{---
 (公式 9.22)}
 
 后验概率计算
-若某人 PET-CT 检测结果呈阳性（A^+），我们计算他实际上并未患肺癌（良性结节，\bar{H}）的后验概率 P(\bar{H} | A^+)： P(\bar{H} | A^+) = \frac{P(\bar{H}) P(A^+ |
+若某人 PET-CT 检测结果呈阳性（A^+），我们计算他实际上并未患肺癌（良性结节，\bar{H}）的后验概率 P(\bar{H} | A^+)：
+P(\bar{H} | A^+) = \frac{P(\bar{H}) P(A^+ |
 \bar{H})}{P(H) P(A^+ | H) + P(\bar{H}) P(A^+ | \bar{H})} \quad \text{---
-(公式 9.23)} 将具体数值代入公式 (9.23)： P(\bar{H} | A^+) = \frac{99\% \times 7\%}{1\%
+(公式 9.23)}
+将具体数值代入公式 (9.23)：
+P(\bar{H} | A^+) = \frac{99\% \times 7\%}{1\%
 \times 100\% + 99\% \times 7\%} = \frac{0.0693}{0.01 + 0.0693} =
 \frac{0.0693}{0.0793} \approx 87.39\% \approx 87\% \quad \text{--- (公式
 9.24)}
@@ -6049,39 +6342,50 @@ P(A^+ | \bar{H}) = 7\% = 0.07 \quad \text{---
 的手术是完全不需要做、且白白给患者带来肉体创伤的过度医疗。
 3. 假阳性泛滥的通用数学公式
 为什么精密仪器做出的阳性判断，真实率会如此之低？我们可以将公式 (9.23)
-进行代数变形。 假定检测手段的敏感度极高，即 P(A^+ | H) \approx 1.
-则阳性结果中，实际健康的后验概率可以表达为： P(\bar{H} | A^+) = \frac{P(\bar{H})P(A^+ |
+进行代数变形。
+假定检测手段的敏感度极高，即 P(A^+ | H)
+\approx 1. 则阳性结果中，实际健康的后验概率可以表达为：
+P(\bar{H} | A^+) = \frac{P(\bar{H})P(A^+ |
 \bar{H})}{P(H) + P(A^+ | \bar{H})P(\bar{H})} =
 \frac{1}{\frac{P(H)}{P(\bar{H})P(A^+ | \bar{H})} + 1} =
 \frac{1}{\frac{1}{P(A^+ | \bar{H})}\left(\frac{1}{P(\bar{H})} - 1\right)
 + 1} \quad \text{--- (公式 9.25)}
-从公式 (9.25) 可以一目了然地看出，导致误诊率 P(\bar{H} | A^+) 逼近 100\% 的两个关键罪魁祸首： 1. 极高的
-P(\bar{H})：对应疾病的先验基础发病率极低（P(H) \to 0）； 2. P(A^+ | \bar{H}) 不为
+从公式 (9.25) 可以一目了然地看出，导致误诊率 P(\bar{H} | A^+) 逼近 100\% 的两个关键罪魁祸首：
+1. 极高的 P(\bar{H})：对应疾病的先验基础发病率极低（P(H) \to 0）；
+2. P(A^+ | \bar{H}) 不为
 0：检测手段存在无法消除的假阳性。
 临床破局策略：寻找假阳性为
 0 的“金标准”
 为了避免这 87\%
 的无辜者被送上手术台，现代医学规定，任何影像学或筛查手段检测出阳性后，严禁直接进行实质性切除治疗。必须通过联合诊断引入最后一关——组织病理学活检（Biopsy）。
 病理活检通过切取或穿刺部分结节组织制成切片，在显微镜下直接观察细胞异型性。病理诊断的物理特异度几乎是
-100\%，即假阳性率： P(\text{病理}^+ | \bar{H}) \approx 0 \quad
-\text{--- (公式 9.26)} 只有将这一假阳性率为 0
+100\%，即假阳性率：
+P(\text{病理}^+ | \bar{H}) \approx 0 \quad
+\text{--- (公式 9.26)}
+只有将这一假阳性率为 0
 的终极金标准作为最后一道防线，才能彻底断绝低先验率下过度医疗的数学宿命。
 4.
 重复冗余检查的条件独立无用性
 在过度检查中，还有一种常见现象：医生给已经做了三维断层扫描 CT（观测
 A_1）的患者，又开具了一张普通的二维平面胸片 X
-光（观测 A_2）。 从物理学原理上，X 光与
-CT 都是利用 X 射线穿透不同密度组织后的衰减图像。CT 在本质上包含了 X
-光所能呈现的所有空间密度信息。 因此，一旦已知 CT 的结果 A_1，X 光的结果 A_2 与患者是否患癌 H 在数学上就呈现出条件独立：
+光（观测 A_2）。
+从物理学原理上，X 光与 CT 都是利用 X
+射线穿透不同密度组织后的衰减图像。CT 在本质上包含了 X
+光所能呈现的所有空间密度信息。
+因此，一旦已知 CT 的结果 A_1，X
+光的结果 A_2 与患者是否患癌 H
+在数学上就呈现出条件独立：
 P(A_2 | A_1, H) = P(A_2 | A_1) \quad
 \text{--- (公式 9.27)}
 根据我们在第六章和第七章中推导的条件独立融合定理，我们来相除两者的后验：
 \frac{P(H|A_1, A_2)}{P(H|A_1)} =
-\frac{P(A_2|A_1, H)}{P(A_2|A_1)} \quad \text{--- (公式 9.28)}
-将公式 (9.27) 的条件独立性代入公式 (9.28) 的分子中： \frac{P(H|A_1, A_2)}{P(H|A_1)} =
+\frac{P(A_2|A_1, H)}{P(A_2|A_1)} \quad \text{--- (公式
+9.28)}
+将公式 (9.27) 的条件独立性代入公式 (9.28) 的分子中：
+\frac{P(H|A_1, A_2)}{P(H|A_1)} =
 \frac{P(A_2|A_1)}{P(A_2|A_1)} = 1 \implies P(H|A_1, A_2) = P(H|A_1)
-\quad \text{--- (公式 9.29)} 数学结论：已经做了
-CT
+\quad \text{--- (公式 9.29)}
+数学结论：已经做了 CT
 之后，再去做普通的胸片检查，其对于诊断决策的概率修正贡献绝对为零。这种重复检查除了增加患者的辐射剂量和经济负担外，没有任何临床学上的信息增量。
 
 核心心智启示
@@ -6110,22 +6414,29 @@ Alan Dershowitz
 辩方的 1/2500
 统计数据是完全真实的。从表面上看，辩方的数据比控方的感性陈词要严密得多。然而，辩方的逻辑中存在一个致命的数学漏洞：他们有意遗漏了一个最核心的已知观测事实——前妻已经死于谋杀。
 我们用贝叶斯定理来重构这一推断过程。
-设随机变量 H 代表假说： * H：丈夫谋杀了自己的妻子。
-设已知观测集合为： * A_1：丈夫曾经家暴过妻子。 * A_2：妻子确实已经被谋杀（当前妻子已死）。
-辩方律师要求陪审团关注的概率是： P(H |
-A_1) \approx \frac{1}{2500} = 0.0004 \quad \text{--- (公式
-10.1)}
+设随机变量 H 代表假说：
+* H：丈夫谋杀了自己的妻子。
+设已知观测集合为：
+* A_1：丈夫曾经家暴过妻子。
+* A_2：妻子确实已经被谋杀（当前妻子已死）。
+辩方律师要求陪审团关注的概率是：
+P(H | A_1) \approx \frac{1}{2500} = 0.0004
+\quad \text{--- (公式 10.1)}
 然而，法庭上面临的真实问题并不是“一个被家暴的妻子未来被谋杀的概率”，而是“在一个被家暴的妻子已经被谋杀的前提下，凶手是其丈夫的概率”。即我们需要计算联合后验概率
-P(H | A_1, A_2)： P(H | A_1, A_2) = \frac{P(H | A_1) P(A_2 | H,
+P(H | A_1, A_2)：
+P(H | A_1, A_2) = \frac{P(H | A_1) P(A_2 | H,
 A_1)}{P(A_2 | A_1)} \quad \text{--- (公式 10.2)}
-其中： * 如果丈夫杀死了妻子，妻子必定死亡，因此敏感度 P(A_2 | H, A_1) = 1.0。 * 代入公式 (10.2)：
+其中：
+* 如果丈夫杀死了妻子，妻子必定死亡，因此敏感度 P(A_2 | H, A_1) = 1.0。
+* 代入公式 (10.2)：
 P(H | A_1, A_2) = \frac{P(H | A_1)}{P(A_2 |
 A_1)} \quad \text{--- (公式 10.3)}
 根据美国疾病控制与预防中心（CDC）及美国国家暴力死亡报告系统（NVDRS）的大样本历史数据统计：
 在所有死于谋杀的美国女性（A_2
 成立）中，有高达 55.3\%
 的人是被自己的丈夫或男友（亲密伴侣）杀害的。而在有家暴史的前置背景下，这一概率更是飙升至
-90\% 以上。 也就是说：
+90\% 以上。
+也就是说：
 P(H | A_1, A_2) \approx 90\% \quad \text{---
 (公式 10.4)}
 3. 数学结论与分析
@@ -6139,22 +6450,26 @@ Bias）。
 1.
 经典历史复盘：瓦尔德的弹孔弹道分析
 在第二次世界大战期间，英国皇家空军的轰炸机频繁飞越英吉利海峡轰炸德国。由于德军防空火力的拦截，大量战机被击落，飞行员伤亡惨重。为了提升生存率，军方决定在战机上加装装甲防护，但因战机载重限制，装甲只能加在最需要的部位。
-工程技术人员对安全返航的轰炸机进行了详细的弹孔位置统计，发现： *
-机翼和机身部位中弹最为密集。 * 驾驶舱和机尾发动机部位几乎没有弹孔。
+工程技术人员对安全返航的轰炸机进行了详细的弹孔位置统计，发现：
+* 机翼和机身部位中弹最为密集。
+* 驾驶舱和机尾发动机部位几乎没有弹孔。
 军方的直觉结论：应当在弹孔最密集的机翼 and
 机身部位加装防护装甲。
 瓦尔德的贝叶斯逆向断言
 美国哥伦比亚大学的统计学家亚伯拉罕·瓦尔德（Abraham
 Wald）教授立即阻止了这一愚蠢决定。他指出：装甲应当加在最没有弹孔的驾驶舱和尾部发动机位置。
 [返航受损飞机样本空间 S_survive] ──► 机翼满是弹孔 (存活似然高)                                   └─► 驾驶舱/引擎无弹孔                                            │                                   (逆向推导未返航飞机)                                            ▼[坠毁飞机样本空间 S_dead]       ──► 驾驶舱/引擎被击中 (致死性强，无法返航)
-瓦尔德的逻辑在概率上是非常严密的。我们设随机变量 H 代表“飞机被击中的部位”： * H_{\text{机翼}}：被击中机翼； * H_{\text{引擎}}：被击中引擎。
+瓦尔德的逻辑在概率上是非常严密的。我们设随机变量 H 代表“飞机被击中的部位”：
+* H_{\text{机翼}}：被击中机翼；
+* H_{\text{引擎}}：被击中引擎。
 设已知观测事件为 A_{\text{返航}}：飞机成功安全返航。
 我们要做的是在返航的样本中，推断哪个部位中弹是致命的。我们在机场统计到的是：
 P(H_{\text{机翼}} | A_{\text{返航}}) \gg
 P(H_{\text{引擎}} | A_{\text{返航}}) \quad \text{--- (公式
 10.5)}
 然而，我们真正需要评估的是“中弹后飞机的死亡率”，即后验概率 P(\bar{A}_{\text{返航}} |
-H_i)。根据贝叶斯定理： P(\bar{A}_{\text{返航}} | H_{\text{引擎}}) =
+H_i)。根据贝叶斯定理：
+P(\bar{A}_{\text{返航}} | H_{\text{引擎}}) =
 \frac{P(H_{\text{引擎}} | \bar{A}_{\text{返航}})
 P(\bar{A}_{\text{返航}})}{P(H_{\text{引擎}})} \quad \text{--- (公式
 10.6)}
@@ -6179,9 +6494,12 @@ Memory）”导致你大脑中的样本库发生了严重偏差，过度放大�
 神医的“个案推销”陷阱：
 
 电视虚假广告上，鹤发童颜的“神医”滔滔不绝地讲述自己治愈的数十个绝症案例，并让痊愈的患者现身说法，推销其独家神药。
-概率谬误：评估医术的指标是真实治愈率 P(\text{治愈} | \text{患者})： \text{治愈率} =
+概率谬误：评估医术的指标是真实治愈率 P(\text{治愈} | \text{患者})：
+\text{治愈率} =
 \frac{\text{治愈的患者数}}{\text{看病的患者总数}} \quad \text{--- (公式
-10.7)} 如果该神医十年间共看诊了 10000 人，其中 9900
+10.7)}
+如果该神医十年间共看诊了 10000 人，其中
+9900
 人毫无疗效甚至病情加重（死无对证），但仅有 100 人因为自身免疫力自愈。神医只需将这 100
 个“幸存者”召集起来做广告，就能在电视上伪造出“包治百病”的神效。这种刻意的有偏采样剥夺了分母的客观存在。
 
@@ -6237,12 +6555,16 @@ Paradox）。它指出：即使在全局样本中，两个正面特质是完全�
 1. 伯格森悖论的严格数学证明
 我们用概率论的语言对该悖论进行一般性证明。
 设 X 和 Y
-是两个代表某种正面优良特征的独立二值随机变量： * X \in \{0, 1\}，其中 X=1 代表具备特征一（例如：长得帅/颜值高）； *
-Y \in \{0, 1\}，其中 Y=1
+是两个代表某种正面优良特征的独立二值随机变量：
+* X \in \{0, 1\}，其中 X=1
+代表具备特征一（例如：长得帅/颜值高）；
+* Y \in \{0, 1\}，其中 Y=1
 代表具备特征二（例如：性格好/脾气温和）。
-假定这两个特征在全人类中是完全独立的： P(X=1) = p \in (0, 1), \quad P(Y=1) = q \in (0,
-1) P(X, Y) = P(X)P(Y) \quad \text{---
-(公式 10.8)}
+假定这两个特征在全人类中是完全独立的：
+P(X=1) = p \in (0, 1), \quad P(Y=1) = q \in
+(0, 1)
+P(X, Y) = P(X)P(Y) \quad \text{--- (公式
+10.8)}
 由于独立性，我们知道在全局人群中，一个人脾气好坏与长相帅否毫无关系：
 P(X=1 | Y=1) = P(X=1 | Y=0) = p \quad
 \text{--- (公式 10.9)}
@@ -6252,14 +6574,25 @@ S = \{X=1 \cup Y=1\} \quad \text{--- (公式
 我们来计算在进入了筛选池（S 发生，即
 S=1）的样本群体中，脾气温和度与颜值的条件概率关系。
 
-第一步：计算在 S=1 且已知对方脾气很好（Y=1）的条件下，对方长相帅气的概率 P(X=1 | Y=1, S)： 因为 Y=1 时，联合事件 \{X=1 \cup Y=1\} 即 S=1 必定成立，所以 S 条件是冗余的： P(X=1 | Y=1, S) = P(X=1 | Y=1) = p \quad \text{---
-(公式 10.11)}
-第二步：计算在 S=1 且对方脾气很差（Y=0）的条件下，对方长相帅气的概率 P(X=1 | Y=0, S)： 根据条件概率展开： P(X=1 | Y=0, S) = \frac{P(X=1, Y=0, S)}{P(Y=0, S)}
-\quad \text{--- (公式 10.12)} 在 Y=0 的情况下，要使筛选条件 S = \{X=1 \cup Y=1\} 成立，必须有 X=1。因此，分子上的交集事件等价于： \{X=1, Y=0, S\} \equiv \{X=1, Y=0\}
-同理，分母上的交集事件也等价于： \{Y=0, S\}
-\equiv \{X=1, Y=0\} 代入公式 (10.12)： P(X=1 | Y=0, S) = \frac{P(X=1, Y=0)}{P(X=1, Y=0)} =
-1.0 \quad \text{--- (公式 10.13)}
-第三步：对比两者的条件概率大小： 因为 p &lt; 1.0，所以： P(X=1 | Y=1, S) &lt; P(X=1 | Y=0, S) \quad
+第一步：计算在 S=1 且已知对方脾气很好（Y=1）的条件下，对方长相帅气的概率 P(X=1 | Y=1, S)：
+因为 Y=1 时，联合事件 \{X=1 \cup Y=1\} 即 S=1 必定成立，所以 S 条件是冗余的：
+P(X=1 | Y=1, S) = P(X=1 | Y=1) = p \quad
+\text{--- (公式 10.11)}
+第二步：计算在 S=1 且对方脾气很差（Y=0）的条件下，对方长相帅气的概率 P(X=1 | Y=0, S)：
+根据条件概率展开：
+P(X=1 | Y=0, S) = \frac{P(X=1, Y=0,
+S)}{P(Y=0, S)} \quad \text{--- (公式 10.12)}
+在 Y=0 的情况下，要使筛选条件 S = \{X=1 \cup Y=1\} 成立，必须有 X=1。因此，分子上的交集事件等价于：
+\{X=1, Y=0, S\} \equiv \{X=1,
+Y=0\}
+同理，分母上的交集事件也等价于：
+\{Y=0, S\} \equiv \{X=1, Y=0\}
+代入公式 (10.12)：
+P(X=1 | Y=0, S) = \frac{P(X=1, Y=0)}{P(X=1,
+Y=0)} = 1.0 \quad \text{--- (公式 10.13)}
+第三步：对比两者的条件概率大小：
+因为 p &lt; 1.0，所以：
+P(X=1 | Y=1, S) &lt; P(X=1 | Y=0, S) \quad
 \text{--- (公式 10.14)}
 
 数学结论
@@ -6270,7 +6603,8 @@ p；但如果对方脾气坏（Y=0），其长相帅气的概率则被迫飙升�
 2. 真实世界的伯格森悖论实例
 实例一：“为什么帅哥都是渣男，暖男都长得丑？”
 在现实恋爱筛选中，女生愿意谈恋爱的群体（筛选集 S）要么长得好看（X=1），要么性格温柔体贴（Y=1）。如果两样都不占（X=0, Y=0），女生连认识的机会都不会给。
-因此，在女生的约会池中： 那些性格恶劣（Y=0）的男性之所以能被女生列为对象，必定是因为他们拥有极高颜值（X=1）的单一优势；而那些长相平平（X=0）的男性之所以能入选，必定是因为他们性格极好（Y=1）。
+因此，在女生的约会池中：
+那些性格恶劣（Y=0）的男性之所以能被女生列为对象，必定是因为他们拥有极高颜值（X=1）的单一优势；而那些长相平平（X=0）的男性之所以能入选，必定是因为他们性格极好（Y=1）。
 这就会让女生得出结论：“长得帅的都不体贴，体贴的都不帅。”这只是自我主动筛选导致的有偏采样幻觉。
 实例二：谷歌对编程竞赛获奖者工作能力的机器学习大发现
 2015年，谷歌（Google）人力资源部使用机器学习模型来分析哪些因素能预测员工入职后的工作表现。
@@ -6283,7 +6617,8 @@ p；但如果对方脾气坏（Y=0），其长相帅气的概率则被迫飙升�
 入职后，在谷歌这个高度同质化的筛选池中，这两者自然会呈现出人为的负相关。这并不代表竞赛有害，而是录用门槛本身过滤掉了那些“既没有竞赛成绩、又没有工程能力”的大多数人。
 
 实例三：“为什么好看的女明星演技都很差？”
-在娱乐圈这个筛选池中，一个人能红（S），要么长得极其惊艳（颜值 X=1），要么演技神乎其神（演技 Y=1）。 那些长相普通（X=0）但爆火的女演员，其演技必然出神入化；而那些花瓶演员，即使演技全无（Y=0），单凭颜值也足以在偶像剧中立足。因此，在红极一时的明星群体中，颜值与演技自然呈现此消彼长的负相关。
+在娱乐圈这个筛选池中，一个人能红（S），要么长得极其惊艳（颜值 X=1），要么演技神乎其神（演技 Y=1）。
+那些长相普通（X=0）但爆火的女演员，其演技必然出神入化；而那些花瓶演员，即使演技全无（Y=0），单凭颜值也足以在偶像剧中立足。因此，在红极一时的明星群体中，颜值与演技自然呈现此消彼长的负相关。
 
 10.5
 克服有偏采样与避免盲维的心智重构
@@ -6310,7 +6645,8 @@ Brennan）向团队下达了相反的指令：
 
 
 烛光晚餐的迟到逻辑
-小伙兴冲冲准备了烛光晚餐，结果女友迟到了 50 分钟。 *
+小伙兴冲冲准备了烛光晚餐，结果女友迟到了 50 分钟。
+*
 单维度盲维思考：站在“她爱不爱我”的单一维度，小伙就会自动检索所有能支持这一维度的微观证据：“上周去旅游我没答应，她肯定在存心报复我，看来她对我越来越冷淡了。”等女友一到，小伙怒气冲冲，大吵一顿，不欢而散。
 *
 多维度破除盲维：跳出单一维度的情绪偏见，引入其他物理假设维度：“她极度重视这次聚会，但她迟到了，一定是被外部因素阻碍了。今天是周五，路上大概率堵车了；或者她那个严厉的导师又临时给她派活了，她一个人承担，太辛苦了。”
@@ -6318,9 +6654,11 @@ Brennan）向团队下达了相反的指令：
 要避免盲维，其核心在于承认自身视角的局限性，在建立假设空间时，强迫自己引入不同的立场、角度和外部环境因素。
 3.
 历史观中的先验校准：论人勿求其全
-在看待历史人物和古代科学时，现代人极易犯“缺乏历史维度”的盲维偏见。 *
+在看待历史人物和古代科学时，现代人极易犯“缺乏历史维度”的盲维偏见。
+*
 因为掌握了极限概念，便嘲笑两千多年前提出“芝诺悖论”（阿基里斯追不上乌龟）的芝诺；
-* 因为熟知日心说，便瞧不起建立天文学宏大框架的托勒密； *
+* 因为熟知日心说，便瞧不起建立天文学宏大框架的托勒密；
+*
 因为掌握了现代地缘政治信息，便简单地将李鸿章签字割地归结为愚蠢和卖国。
 这种优越感，是因为现代人无偿继承了数百年来前人探索沉淀下来的先验基准率。我们把现在的理所当然，当成了历史的初始状态。
 正确的历史观应当如古人所言：“稽古者，当论其世；论人者，勿求其全。”将评估对象拉回到他们当时的历史先验局限中，才是公正的贝叶斯态度。
@@ -6343,7 +6681,8 @@ Brennan）向团队下达了相反的指令：
 P(\text{出事} | \text{老司机}, \text{醉酒}) =
 P(\text{出事} | \text{醉酒}) \cdot \frac{P(\text{老司机} |
 \text{出事})}{P(\text{老司机} | \text{醉酒})} \quad \text{--- (公式
-10.15)} 统计表明，酒后驾驶的事故概率是正常驾驶的 16
+10.15)}
+统计表明，酒后驾驶的事故概率是正常驾驶的 16
 倍以上。将低信息量的“老司机”选为首要先验背景，是对生命安全概率的致命误判。
 “皇帝的金锄头”与“舒适区偏见”：
 两个农民畅想皇帝的奢华生活，一个认为皇帝每天吃白面馍吃到饱，另一个坚信皇帝下地干活一定用金锄头。他们确实想到了用“圈子统计”来做先验评估，但他们找错了圈子（以自己的农民身份作为参考类向下微调），从而得出了滑稽的结论。在进行贝叶斯估计时，找准正确的“参考类（Reference
@@ -6372,20 +6711,22 @@ Bias）。例如，一名口腔科医生由于对自身科室的疾病最熟悉�
 P(H) \to 0 \quad (\text{如 } P(H) = 10^{-6})
 \quad \text{--- (公式 11.1)}
 作者为了让读者相信这个论点，其目标是让读者看完文章后的后验概率 P(H | E) 逼近于 1.0（或达到可信区间）。
-根据贝叶斯定理的形式： P(H | E) = P(H) \cdot
-\frac{P(E | H)}{P(E)} \quad \text{--- (公式 11.2)}
+根据贝叶斯定理的形式：
+P(H | E) = P(H) \cdot \frac{P(E | H)}{P(E)}
+\quad \text{--- (公式 11.2)}
 2. 卡尔·萨根的贝叶斯推导
 如果先验概率 P(H) 极小，要使后验概率
 P(H | E) 显著增大，公式 (11.2)
-中的比例因子（即似然比）必须极其庞大： \frac{P(E | H)}{P(E)} \gg 1 \quad \text{--- (公式
-11.3)}
+中的比例因子（即似然比）必须极其庞大：
+\frac{P(E | H)}{P(E)} \gg 1 \quad \text{---
+(公式 11.3)}
 这就要求分母边缘概率 P(E)
 极小，也就是说，证据 E
 必须具有极强的排他性。证据 E 应当只能用假说 H 来解释，而绝对无法用其他任何常识性解释
 \bar{H} 来解释（即 P(E | \bar{H}) \to 0）。
-这正是科学界著名的“萨根标准”（Sagan Standard）： &gt;
-“越是惊人的观点，就越需要强有力的证据来支持。” (Extraordinary
-claims require extraordinary evidence)
+这正是科学界著名的“萨根标准”（Sagan Standard）：
+&gt; “越是惊人的观点，就越需要强有力的证据来支持。”
+(Extraordinary claims require extraordinary evidence)
 贝叶斯预警器心智
 每当你在互联网上看到一个让你感到“震惊”、“不可思议”的观点时，你的大脑应当立即拉响贝叶斯警报：
 “这个观点的先验概率极低。要让我相信它，作者必须拿出含金量极高、具有绝对排他性的‘铁证’。如果他只拿出了几句名人名言或含糊的街头采访，我将判定其后验概率依然接近于零，不予采信。”
@@ -6396,12 +6737,16 @@ claims require extraordinary evidence)
 贝叶斯更新要求观测事实 E
 本身必须是高可信的。然而，网络文章的证据链往往缺乏坚实的物理支撑。在评估证据可信度时，我们应当在脑海中建立如下由高到低的可信度衰减序列：
 1. 第一级（极高）：发表在国际顶级同行评议学术期刊（如
-Nature, Science, Cell）上的双盲对照研究文献。
+Nature, Science,
+Cell）上的双盲对照研究文献。
 2.
 第二级（高）：一般专业学术期刊文献、国家级权威行业标准。
-3. 第三级（中）：相关领域权威专家署名的公开采访或口述。
-4. 第四级（低）：传统主流媒体、科普机构发布的综合报道。
-5. 第五级（极低）：一般自媒体转述、朋友圈转发。 6.
+3.
+第三级（中）：相关领域权威专家署名的公开采访或口述。
+4.
+第四级（低）：传统主流媒体、科普机构发布的综合报道。
+5. 第五级（极低）：一般自媒体转述、朋友圈转发。
+6.
 第六级（零）：来源模糊不清的杜撰（如“据消息人士透露”、“我的一个朋友说”）。
 如果证据本身来源于第五、六级，在数学上其不确定性就已经被杂讯淹没，根本无法作为后验更新的有效输入。
 2. 证据不量化（脱离剂量谈毒性）
@@ -6411,66 +6756,86 @@ Nature, Science, Cell）上的双盲对照研究文献。
 谣言逻辑：柠檬含有大量维生素
 C，具有还原性。虾蟹等海鲜中富含五价砷。两者同食，维生素 C
 会将五价砷还原成三价砷（即砒霜的主要成分），导致中毒身亡。
-量化数学计算： 国家标准规定，每千克鲜虾中的无机砷含量上限为
-0.5 毫克。 对于成年人，砒霜的致死量约为
-100 \sim 300 毫克（折合纯砷元素约 75 毫克）。
+量化数学计算：
+国家标准规定，每千克鲜虾中的无机砷含量上限为 0.5 毫克。
+对于成年人，砒霜的致死量约为 100 \sim
+300 毫克（折合纯砷元素约 75
+毫克）。
 我们假设人体摄入的虾全部达到了无机砷的上限值（0.5 \text{ mg/kg}），且胃部环境能将这些无机砷
 100\%
-还原为砒霜。要达到致死量，一个人需要一次性吃下： \text{吃虾量} = \frac{75 \text{ 毫克}}{0.5 \text{
-毫克/千克}} = 150 \text{ 千克} \quad (300 \text{ 斤}) \quad \text{---
-(公式 11.4)}
+还原为砒霜。要达到致死量，一个人需要一次性吃下：
+\text{吃虾量} = \frac{75 \text{ 毫克}}{0.5
+\text{ 毫克/千克}} = 150 \text{ 千克} \quad (300 \text{ 斤}) \quad
+\text{--- (公式 11.4)}
 物理分析：一个人在因为砒霜中毒死掉之前，首先会被 300
 斤虾物理性地撑死。因此，该化学反应虽然存在，但在现实剂量下其概率对生命威胁的修正值绝对为零。
 
 案例二：“用不锈钢杯子泡茶有毒”
 
 谣言逻辑：茶水呈酸性，会腐蚀不锈钢杯壁，导致重金属“铬”溶出，引发慢性中毒。
-量化数学计算： 根据国家安全标准测试，在 4\% 的醋酸溶液（酸性远强于茶水）中连续煮沸
-30 分钟并浸泡 24 小时，不锈钢器皿的铬迁移量上限为 0.4 \text{ mg/dm}^2。
+量化数学计算：
+根据国家安全标准测试，在 4\%
+的醋酸溶液（酸性远强于茶水）中连续煮沸 30 分钟并浸泡 24 小时，不锈钢器皿的铬迁移量上限为 0.4 \text{ mg/dm}^2。
 对于微弱酸性的茶水，要迁移出相同剂量的铬，大约需要连续浸泡 246 小时（超过 10
 天），前提还是不锈钢表面的钝化保护膜完全失效。日常泡茶几小时的铬摄入量微乎其微，完全在人体的代谢排泄能力之内。
 
 案例三：“樱桃核有毒，嚼碎吃会致死”
 
 谣言逻辑：樱桃核仁中含有氰苷，嚼碎后与胃酸反应会产生剧毒的氢氰酸（HCN）。
-量化数学计算： 每克樱桃核仁折算出的氢氰酸约为几十微克。
+量化数学计算：
+每克樱桃核仁折算出的氢氰酸约为几十微克。
 人体的氢氰酸中毒剂量约为每公斤体重 2
 毫克。对于一个 60 \text{ kg}
 的成年人，需要摄入 120 \text{ mg}
-氢氰酸。 假设每克核仁产生 50
-\mu\text{g} 氢氰酸，要达到中毒剂量，需要一次性嚼碎并吞下： \text{核仁量} = \frac{120 \text{ 毫克}}{0.05 \text{
-毫克/克}} = 2400 \text{ 克} = 4.8 \text{ 斤} \quad \text{--- (公式
-11.5)}
+氢氰酸。
+假设每克核仁产生 50 \mu\text{g}
+氢氰酸，要达到中毒剂量，需要一次性嚼碎并吞下：
+\text{核仁量} = \frac{120 \text{ 毫克}}{0.05
+\text{ 毫克/克}} = 2400 \text{ 克} = 4.8 \text{ 斤} \quad \text{---
+(公式 11.5)}
 相当于一次性吃下几十斤樱桃并费力地把所有硬核嚼碎咽下，这在现实中是绝对不可能发生的。
 
 3.
 用个例代替统计：“状元不如落第秀才”的鸡汤大拆解
-网络上广为流传一篇宽慰落榜考生和家长的议论文，列出了两份名单： *
-第一份名单：傅以渐、王式丹、毕沅、林召堂、王云锦。 *
+网络上广为流传一篇宽慰落榜考生和家长的议论文，列出了两份名单：
+*
+第一份名单：傅以渐、王式丹、毕沅、林召堂、王云锦。
+*
 第二份名单：李渔、洪昇、顾炎武、金圣叹、吴敬梓、蒲松龄、袁世凯。
 文章指出：第一份名单全是清朝科举状元，但如今无人认识；第二份名单全是当年落第的秀才，却个个留名青史。结论：“学校考场不重要，状元大多无能，落榜生才出大师。”
 概率统计学的无情降维打击
 这篇文章犯了最典型的用精选个例代替总体统计（有偏采样）的错误。要得出“状元不如落第秀才”的结论，我们必须客观比较这两个群体的名留青史率（成名率）：
 
-状元群体的成名率计算： 科举制度 1300
-年历史中，登记在册的状元共计约 800
+状元群体的成名率计算：
+科举制度 1300 年历史中，登记在册的状元共计约 800
 人。其中在历史上留下重大政治、文化影响的顶级名流包括：王维、柳公权、郭子仪、文天祥、杨慎、张謇等共
-6 人。 \text{状尔成名率 } P(\text{成名} | \text{状元}) =
-\frac{6}{800} \approx 0.75\% \quad \text{--- (公式
+6 人。
+\text{状尔成名率 } P(\text{成名} |
+\text{状元}) = \frac{6}{800} \approx 0.75\% \quad \text{--- (公式
 11.6)}
 秀才群体的成名率计算：
 根据清代科举层层筛选的比例估算，平均每三年一届考试，产生 1 名状元、约 276 名进士，而全国对应的生员（秀才）群体高达
-36800 人。 在 1300
+36800 人。
+在 1300
 年历史长河中，未能在科举中拔擢的落第秀才/童生群体基数庞大，保守估算累计达
-800 万人。 在这 800 万人中，我们即使放宽标准，认为有 210 人（平均每个朝代多达 30 人）像蒲松龄、顾炎武一样名垂青史： \text{秀才成名率 } P(\text{成名} | \text{落第秀才})
-= \frac{210}{8000000} \approx 0.002625\% \quad \text{--- (公式
-11.7)}
-胜率对比： 我们将两个圈子的先验概率相除： \text{胜率比} = \frac{P(\text{成名} |
+800 万人。
+在这 800
+万人中，我们即使放宽标准，认为有 210
+人（平均每个朝代多达 30
+人）像蒲松龄、顾炎武一样名垂青史：
+\text{秀才成名率 } P(\text{成名} |
+\text{落第秀才}) = \frac{210}{8000000} \approx 0.002625\% \quad
+\text{--- (公式 11.7)}
+胜率对比：
+我们将两个圈子的先验概率相除：
+\text{胜率比} = \frac{P(\text{成名} |
 \text{状元})}{P(\text{成名} | \text{落第秀才})} =
 \frac{0.75\%}{0.002625\%} \approx 285.7 \quad \text{--- (公式
 11.8)}
 
-数学结论：状元的成名概率是落第秀才的近 300 倍！ 自媒体作者刻意隐藏了 800 万落第秀才中 99.9997\%
+数学结论：状元的成名概率是落第秀才的近 300 倍！
+自媒体作者刻意隐藏了 800 万落第秀才中
+99.9997\%
 默默无闻死去的绝大多数人，用精心挑选的几个个例去碰瓷仅有 800
 人基数的状元群体。这就是典型的用有偏样本毒害大众常识的伪鸡汤。
 
@@ -6478,7 +6843,8 @@ C，具有还原性。虾蟹等海鲜中富含五价砷。两者同食，维生�
 网络时代，大众常识（先验概率库）的最大塑造者是无孔不入的媒体。而为了在竞争中生存，媒体会遵循一套扭曲事实的“流量公式”。
 1. 媒体爆点公式：意外 + 共鸣
 爆点 = 意外 \times 共鸣 \quad \text{---
-(公式 11.9)} *
+(公式 11.9)}
+*
 意外：指事件发生的客观概率极低（如空难、离奇凶杀、校园枪击、明星出轨）。因为极罕见，所以信息量极大，能瞬间攫取用户的注意力。
 *
 共鸣：指事件能完美迎合用户脑海中已经存在的某种情绪或偏见（如对社会不公的愤怒、阴谋论心理、对特定公众人物的喜爱或厌恶）。
@@ -6518,27 +6884,33 @@ P(\text{任何观测结果} | \text{阴谋论})
 设每个知情人在一年内，因为不小心说漏嘴、良心发现当吹哨人、或遭遇变故泄露秘密的独立概率为
 p。
 假定知情人泄密事件在时间上是独立的。那么在 t
-年内，该阴谋一直没有暴露的概率（即存活概率 S(t)）为： S(t) =
-(1 - p)^{Nt} \approx e^{-Npt} \quad \text{--- (公式 11.11)}
+年内，该阴谋一直没有暴露的概率（即存活概率 S(t)）为：
+S(t) = (1 - p)^{Nt} \approx e^{-Npt} \quad
+\text{--- (公式 11.11)}
 因此，该阴谋在 t
-年内被戳穿暴露的综合概率 L(t) 为：
+年内被戳穿暴露的综合概率 L(t)
+为：
 L(t) = 1 - S(t) = 1 - (1 - p)^{Nt} \quad
 \text{--- (公式 11.12)}
 模型参数的标定（用真实暴露的阴谋训练
 p）
 格莱姆斯教授使用历史上真实存在并最终败露的政府级机密阴谋，来标定单人年泄密概率
-p： 1.
-“棱镜门”监听计划（PRISM）： * 数据：知情人数约
-N = 30000 人。该计划在实施 t = 6 年后，被斯诺登彻底曝光。 *
-标定结果： 1 - (1-p)^{30000 \times
-6} = 0.5 \implies p \approx 4.09 \times 10^{-6} \quad \text{--- (公式
-11.13)} 2. “塔斯基吉梅毒实验”黑色丑闻（Tuskegee Syphilis
-Study）： *
+p：
+1. “棱镜门”监听计划（PRISM）：
+* 数据：知情人数约 N = 30000
+人。该计划在实施 t = 6
+年后，被斯诺登彻底曝光。
+* 标定结果：
+1 - (1-p)^{30000 \times 6} = 0.5 \implies p
+\approx 4.09 \times 10^{-6} \quad \text{--- (公式 11.13)}
+2. “塔斯基吉梅毒实验”黑色丑闻（Tuskegee Syphilis
+Study）：
+*
 数据：美国公共卫生部在黑人身上秘密进行不予治疗的梅毒活体观测，知情医护人员约
-N = 6700 人。秘密维持约 t = 25 年后，被一名官员向媒体揭发。 *
-标定结果： 1 - (1-p)^{6700 \times
-25} = 0.5 \implies p \approx 4.20 \times 10^{-6} \quad \text{--- (公式
-11.14)}
+N = 6700 人。秘密维持约 t = 25 年后，被一名官员向媒体揭发。
+* 标定结果：
+1 - (1-p)^{6700 \times 25} = 0.5 \implies p
+\approx 4.20 \times 10^{-6} \quad \text{--- (公式 11.14)}
 两个不同历史事件拟合出的单人年泄密概率惊人一致，均在 p \approx 4 \times 10^{-6}
 级别（即百万分之四，这表明参与者已经极其忠诚、保守秘密的能力极强）。
 阴谋论的推演结论
@@ -6550,10 +6922,12 @@ N = 6700 人。秘密维持约 t = 25 年后，被一名官员向媒体揭发。
 数据：1965年美国 NASA 雇员峰值达 41.1 万人。即便假定仅有 10\% 即 N =
 41100 人知晓“登月是在摄影棚拍的”绝密。
 计算被戳穿概率达到 95\% 的时间
-t： L(t) = 0.95 \implies 1 - e^{-Npt} = 0.95 \implies
-e^{-Npt} = 0.05 -Npt = \ln(0.05)
-\approx -3.00 t = \frac{3.00}{N \cdot
-p} = \frac{3.00}{41100 \times 4.09 \times 10^{-6}} = \frac{3.00}{0.1681}
+t：
+L(t) = 0.95 \implies 1 - e^{-Npt} = 0.95
+\implies e^{-Npt} = 0.05
+-Npt = \ln(0.05) \approx -3.00
+t = \frac{3.00}{N \cdot p} =
+\frac{3.00}{41100 \times 4.09 \times 10^{-6}} = \frac{3.00}{0.1681}
 \approx 17.8 \text{ 年} \quad \text{--- (公式 11.15)}
 格莱姆斯教授用全部 41.1
 万人参与的算力推导表明：如果登月是骗局，它必然在登月成功后的 3
@@ -6578,7 +6952,8 @@ p} = \frac{3.00}{41100 \times 4.09 \times 10^{-6}} = \frac{3.00}{0.1681}
 除了致命的低先验率，阴谋论者的论证过程往往还伴随着以下四个典型的贝叶斯逻辑谬误：
 1. 似然完美但先验过低
 正如前文所述，阴谋论者利用“万能似然律”让 P(E | \text{阴谋}) \approx
-1.0。但他们忽略了贝叶斯分子是先验与似然的乘积： \text{分子} = P(\text{阴谋}) \times P(E |
+1.0。但他们忽略了贝叶斯分子是先验与似然的乘积：
+\text{分子} = P(\text{阴谋}) \times P(E |
 \text{阴谋}) \approx 10^{-10} \times 1.0 = 10^{-10} \quad \text{---
 (公式 11.16)}
 由于没有进行归一化，他们被完美的似然性蒙蔽了双眼，把“能解释得通”直接等同于“事实就是这样”。
@@ -6615,10 +6990,12 @@ HIV，还能匹配上成百上千种植物、细菌和真菌的基因组。由�
 
 
 4. 使用伪造事实（虚假观测）
-为了强行拉升阴谋的概率，阴谋论者往往会捏造大量根本不存在的“事实”： *
+为了强行拉升阴谋的概率，阴谋论者往往会捏造大量根本不存在的“事实”：
+*
 声称“美国本国绝对不吃转基因食品，且立法禁止”（事实是美国是全球最大的转基因食品生产国与消费国，超市中
 70\% \sim 80\%
-包装食品含有转基因成分）； *
+包装食品含有转基因成分）；
+*
 声称“法国科学家用转基因玉米喂大鼠导致肿瘤”（该实验由于样本量极小且选用了本身极易自发乳腺肿瘤的大鼠系，因方法学错误已被《食品和化学毒理学》杂志撤稿，属于伪证据）。
 
 核心心智启示
@@ -6627,8 +7004,10 @@ HIV，还能匹配上成百上千种植物、细菌和真菌的基因组。由�
 结语：做个终身自我更新的贝叶斯主义者
 随着第十一章的结束，我们一同完成了这趟跨越数学、工程、认知科学与历史学的贝叶斯探索之旅。
 我们从最初信息推断的正逆双向空间出发，推导了贝叶斯定理的严密架构；我们目睹了先验概率如何决定着罕见病的筛选，认知偏误如何通过心智剃刀进行化解；我们完成了多观测条件独立性的融合，定量推演了在线贝叶斯流下村民对牧童信任的崩塌；我们学习了用分层描述法攻克维数灾难，并在医学过度诊疗的假阳性迷雾中找到了病理活检的破局支点；最终，我们站在网络时代的激流中，用逻辑之剑划破了谣言与阴谋论的薄纱。
-贝叶斯不仅是一个代数公式： P(H|E) = P(H)
-\frac{P(E|H)}{P(E)} 它更是一种世界观和心智哲学。它告诉我们：
+贝叶斯不仅是一个代数公式：
+P(H|E) = P(H)
+\frac{P(E|H)}{P(E)}
+它更是一种世界观和心智哲学。它告诉我们：
 
 承认无知与不确定性：我们的先验信念永远是不完美的。面对复杂的世界，我们脑海中的初始概率极少是非黑即白的
 0 或 1，而是介于其间的灰度。
