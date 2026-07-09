@@ -573,6 +573,122 @@ testbench，不要因为某题简单就不写，因为最后助教会一一检�
       </tags>
   </entry>
   <entry>
+    <title>BUAA-CO P3上机</title>
+    <url>/2025/11/03/BUAA-CO%20P3%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Logisim 实现单周期 CPU。
+课上题目
+T1 revi
+revi-rs-rt-imm16
+RTL
+temp &lt;- GPR[rs]result &lt;- temp[31-imm16:0]||reverse(temp[31:32-imm16])GPR[rt] &lt;- result
+T2 blz
+blz-rs-rt-offset
+RTL
+temp1 &lt;- count_leading_zeros(GPR[rs])temp2 &lt;- count_leading_zeros(GPR[rt])if (temp1 == temp2)     PC &lt;- PC + 4 + sign_ext(offset||00)else if (temp1 &gt; temp2)    PC &lt;- PC + 4    GPR[rs] &lt;- temp1else    PC &lt;- PC + 4    GPR[rs] &lt;- temp2
+T3 lwf
+lwf-base-rt-offset
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]filter &lt;- memword &amp; GPR[rt]ones &lt;- count_ones(filter)if (ones % 2 == 0)    GPR[rt] &lt;- memwordelse    GPR[(rt+1) % 32] &lt;- memword
+题目分析
+总的来说难度都不大，只要考前充分理解了 CPU 的数据通路，理解单周期 CPU
+是怎么跑那几条指令的，那么应该就能通过了。
+T1 需要将一个数翻转，我是用两个 Splitter
+反向拼接，就是手动修改每个端口的值有点繁琐。T2
+需要求前导零的个数，应该用 Bit Adder
+元件，如果想不到这个元件那难度就大了。有一个 Logisim
+的易错点，一个模块加了新的输出端口后，那么原端口的位置可能都会发生变化，这就导致在顶层连好的线实际上都断开了。这次上机时我们机房延长到了
+21:30 结束，从 P4 开始就只有两小时了。并注意，在 P3
+及之后，每个题目都要写测试程序（用新指令写一些汇编程序），虽然大部分人都是做完之后才写测试程序吧。
+助教问答
+以下为部分问题：
+
+看看测试程序和设计文档
+我评测机的设计思路，编写过程中出现了哪些错误，如何得到 Logisim
+的结果，评测机中代码生成的逻辑是什么，评测机是否测出我 CPU
+的问题，数据强度如何
+我 CPU 中 CTRL 模块的设计思路，0 号寄存器恒等于 0 是如何实现的
+
+笔者的话
+从 P3 开始就该开发 CPU
+了，每次上机的题目基本上都是运算类、跳转类、访存类各一道。上机之前一定要对
+CPU
+进行充分的测试，学有余力可以自己写评测机，往届学长也搞了一些评测机，可以直接拿来用，比如
+COT
+等。上机时可以先裸交一发，如果能过一些点就说明课下的设计基本是没问题的，否则就要先改课下的
+bug（虽然上机两小时内独立发现并修复 bug 非常难）。
+P3 仍然是使用 Logisim，建议适当利用
+Tunnel，用的太少，导线会太乱；用太多就不容易理清接线关系。另外在
+CTRL（控制模块）中，由 Instr
+生成对应的指令独热码时，不要用与门阵列，可以直接用
+Comparator 的，很简洁。另外可以提前给 CPU
+加一些要求之外的指令，比如
+j、jal、jr、jalr，加上这几个后，对跳转类指令的理解就更加深入了。还有学长加过
+lh、lb、sh、sb
+等指令，不过加这几个指令的工作量比较大，建议量力而行。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>Logisim</tag>
+        <tag>CO</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO P4上机</title>
+    <url>/2025/11/10/BUAA-CO%20P4%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Verilog 实现单周期 CPU。
+课上题目
+T1 brc
+brc-rs-rt-rd
+RTL
+temp &lt;- GPR[rs][4:0]if (temp &lt; 25 &amp;&amp; count_ones(GPR[rt][temp+7:temp]) % 2 == 0)    GPR[rd] &lt;- reverse(GPR[rt])else    GPR[rd] &lt;- GPR[rt]
+T2 cabc
+cabc-rs-rt-offset
+RTL
+cross1 &lt;- GPR[rs][23:16]||GPR[rt][7:0]||GPR[rs][31:24]||GPR[rt][15:8]cross2 &lt;- GPR[rt][7:0]||GPR[rs][23:16]||GPR[rt][31:24]||GPR[rs][15:8]xor_result &lt;- cross1 ^ cross2cnt1 &lt;- count_zeros(xor_result[31:16])cnt2 &lt;- count_zeros(xor_result[15:0])if (cnt1 == cnt2)    PC &lt;- PC + 4 + sign_ext(offset||00)else    GPR[rt] &lt;- xor_result
+T3 lhboc
+lhboc-base-rt-offset
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]temp1 &lt;- count_ones(memword[15:0])temp2 &lt;- count_ones(memword[31:16])if (temp1 &gt;= temp2)    GPR[rt] &lt;- sign_ext(memword[15:0])else    GPR[rt] &lt;- sign_ext(memword[31:16])
+题目分析
+T1 是运算类指令，新加一个 ALUOp 的取值，然后在 ALU
+中加入对应的计算逻辑。T2 是跳转类指令的变体，可以仿照 beq
+来添加，但注意不跳转时还要写寄存器。T3 是访存类指令，仿照
+lw 来做，本质就是对 lw
+回写寄存器的数据加了一些处理而已。
+助教问答
+以下为部分问题：
+
+看看测试程序和设计文档
+CTRL 模块的实现思路，EXT 输入的来源是什么，beq 指令的数据通路
+Verilog 中使用什么函数读取机器码
+我的评测机是不是全自动的？评测机生成的汇编程序是否有效？如何保证
+sw 和 lw 指令的地址偏移量是合法的？
+
+笔者的话
+从 P4 开始就要迭代开发 Verilog CPU 了，P4 课下就是直接将 P3
+的电路转化成 Verilog 代码，难度不大。还是可以自己加一些额外的指令，比如
+j、jalr
+等。另外可以提前预留出接口，比如将新加的指令提前命名成 new0
+变量，新加的信号命名成 newSign
+并连接到对应的模块等等，上机时直接修改就行了。
+添加每一个新指令，我一般都是从
+CTRL（控制模块）开始，每设置一个控制信号的值，就在对应的模块中增加新逻辑，如
+NPCOp 对应 NPC 模块，DMWr 对应
+DM，这样不容易漏。另外也有学长建议过使用 git
+来管理版本，学有余力也可以尝试。上机时间紧，且我对 git
+的掌握尚不熟练，所以我没有尝试过。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+        <tag>Verilog</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>BUAA-CO P2上机</title>
     <url>/2025/10/27/BUAA-CO%20P2%E4%B8%8A%E6%9C%BA/</url>
     <content><![CDATA[本节考查内容为 MIPS 汇编语言，三道题目一般至少两道会给参考 C
@@ -767,320 +883,6 @@ P2 很多人都没有过，不过也问题不大，P3 之前对分数影响微�
       </tags>
   </entry>
   <entry>
-    <title>BUAA-CO P3上机</title>
-    <url>/2025/11/03/BUAA-CO%20P3%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Logisim 实现单周期 CPU。
-课上题目
-T1 revi
-revi-rs-rt-imm16
-RTL
-temp &lt;- GPR[rs]result &lt;- temp[31-imm16:0]||reverse(temp[31:32-imm16])GPR[rt] &lt;- result
-T2 blz
-blz-rs-rt-offset
-RTL
-temp1 &lt;- count_leading_zeros(GPR[rs])temp2 &lt;- count_leading_zeros(GPR[rt])if (temp1 == temp2)     PC &lt;- PC + 4 + sign_ext(offset||00)else if (temp1 &gt; temp2)    PC &lt;- PC + 4    GPR[rs] &lt;- temp1else    PC &lt;- PC + 4    GPR[rs] &lt;- temp2
-T3 lwf
-lwf-base-rt-offset
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]filter &lt;- memword &amp; GPR[rt]ones &lt;- count_ones(filter)if (ones % 2 == 0)    GPR[rt] &lt;- memwordelse    GPR[(rt+1) % 32] &lt;- memword
-题目分析
-总的来说难度都不大，只要考前充分理解了 CPU 的数据通路，理解单周期 CPU
-是怎么跑那几条指令的，那么应该就能通过了。
-T1 需要将一个数翻转，我是用两个 Splitter
-反向拼接，就是手动修改每个端口的值有点繁琐。T2
-需要求前导零的个数，应该用 Bit Adder
-元件，如果想不到这个元件那难度就大了。有一个 Logisim
-的易错点，一个模块加了新的输出端口后，那么原端口的位置可能都会发生变化，这就导致在顶层连好的线实际上都断开了。这次上机时我们机房延长到了
-21:30 结束，从 P4 开始就只有两小时了。并注意，在 P3
-及之后，每个题目都要写测试程序（用新指令写一些汇编程序），虽然大部分人都是做完之后才写测试程序吧。
-助教问答
-以下为部分问题：
-
-看看测试程序和设计文档
-我评测机的设计思路，编写过程中出现了哪些错误，如何得到 Logisim
-的结果，评测机中代码生成的逻辑是什么，评测机是否测出我 CPU
-的问题，数据强度如何
-我 CPU 中 CTRL 模块的设计思路，0 号寄存器恒等于 0 是如何实现的
-
-笔者的话
-从 P3 开始就该开发 CPU
-了，每次上机的题目基本上都是运算类、跳转类、访存类各一道。上机之前一定要对
-CPU
-进行充分的测试，学有余力可以自己写评测机，往届学长也搞了一些评测机，可以直接拿来用，比如
-COT
-等。上机时可以先裸交一发，如果能过一些点就说明课下的设计基本是没问题的，否则就要先改课下的
-bug（虽然上机两小时内独立发现并修复 bug 非常难）。
-P3 仍然是使用 Logisim，建议适当利用
-Tunnel，用的太少，导线会太乱；用太多就不容易理清接线关系。另外在
-CTRL（控制模块）中，由 Instr
-生成对应的指令独热码时，不要用与门阵列，可以直接用
-Comparator 的，很简洁。另外可以提前给 CPU
-加一些要求之外的指令，比如
-j、jal、jr、jalr，加上这几个后，对跳转类指令的理解就更加深入了。还有学长加过
-lh、lb、sh、sb
-等指令，不过加这几个指令的工作量比较大，建议量力而行。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>Logisim</tag>
-        <tag>CO</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO P6上机</title>
-    <url>/2025/12/01/BUAA-CO%20P6%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Verilog 实现流水线 CPU。
-第一次课上题目
-T1 mygo
-mygo-rs-rt
-RTL
-function pattern_value(g):    return count_leading_zeros(g) * 2 + count_ones(g)function characteristic_code(A):    sum &lt;- 0    for i in 0..7:        g &lt;- A[4*i+3 : 4*i]        sum &lt;- sum + pattern_value(g) * (i + 1)    return sum    MDU_Start(Busy_Cycles = 5)temp1 &lt;- characteristic_code(GPR[rs])temp2 &lt;- characteristic_code(GPR[rt])if (temp1 &gt; temp2)    HI &lt;- GPR[rs]    LO &lt;- GPR[rt]else if (temp1 &lt; temp2)    HI &lt;- GPR[rt]    LO &lt;- GPR[rs]else    HI &lt;- GPR[rs] ^ GPR[rt]    LO &lt;- GPR[rs] ^ GPR[rt]
-T2 jalx
-jalx-rs-rt-offset
-RTL
-temp &lt;- GPR[rs] ^ GPR[rt]x &lt;- temp[4:0]// Find the largest perfect square less than or equal to xwhile (!is_perfect_square(x))    x &lt;- x - 1GPR[x] &lt;- PC + 8PC &lt;- PC + 4 + sign_ext(offset||00)
-T3 lbo
-lbo-base-rt-offset
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]byte &lt;- vAddr[1:0]temp &lt;- memword[8*byte+7 : 8*byte]for i in 0..3:    temp1 &lt;- GPR[rt][8*i+7 : 8*i]    if (temp != temp1)        if (count_ones(temp) &gt; count_ones(temp1))            GPR[rt][8*i+7 : 8*i] &lt;- temp
-第二次课上题目
-T1 mujica
-mujica-rs-rt-imm16
-RTL
-ext32 &lt;- sign_ext(imm16)cnt1 &lt;- count_ones(imm16)if (cnt1 % 2 == 0)    temp &lt;- GPR[rs] &amp; ext32    GPR[rt] &lt;- temp + GPR[rt]else    temp &lt;- GPR[rs] | ext32    GPR[rt] &lt;- temp ^ GPR[rt]
-T2 botto
-botto-rs-rt-offset
-RTL
-function hamming_distance(x, y):    return count_ones(x ^ y)    hd &lt;- hamming_distance(GPR[rs], GPR[rt])if (hd &lt; 8)    PC &lt;- PC + 4 + sign_ext(offset||00)    GPR[rt] &lt;- hdelse if (hd &lt;= 24)    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rt] &gt;&gt;&gt; hdelse    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rs] | GPR[rt]
-T3 lwcm
-lwcm-base-rt-offset
-本题要求在 M 级维护一个 32 位寄存器 WD，复位值为
-32'h0。
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]if (memword == WD)    GPR[rt] &lt;- memwordelse    GPR[26] &lt;- memwordWD &lt;- memword
-题目分析
-第一次上机的 T1
-是乘除指令的变体，在乘除槽中添加相关运算，难度应该不算大，但是笔者最终也没有通过，可能是当时现场写的
-count_leading_zeros
-等函数，比较着急导致细节写错了吧。因此可以提前把这些函数都加到 CPU
-中，具体模板在上篇文章末。
-T2 做起来比较棘手，当时我看名字是 jalx，就一直当成
-jalr 的变体做的，但事后发现其实更像是 bltzal
-的变体，只不过无条件跳转而已，最终我很多点都 TLE 了，没有通过。T3
-比较简单。
-第二次上机明显比第一次简单，T1
-不涉及乘除槽，还是普通的运算类，需要注意这个题同时涉及了
-GPR[rs]、GPR[rt] 和 ext32，因此可以在 ALU 中再加一个输入端口。
-T2 有一个细节就是写入的寄存器地址可能是 rs 或者
-rt，而写入寄存器地址只有得到寄存器值之后才能确定，因此可以在 E
-级刚开始加一个特判，将正确的地址修正回来，本题阻塞逻辑我没有改，仅仅将新指令分到
-branch 类，然后自动采用的 b 类阻塞方式。T3
-是常见的条件访存类型，关于阻塞，我是判断如果 D 级需要用 rt 或者 26
-号寄存器值，才考虑阻塞。
-助教问答
-以下为部分问题：
-
-看看测试程序和设计文档
-讲解第二题的思路
-讲解乘除槽的实现思路
-我的评测机是如何写的
-
-笔者的话
-P6 相对 P5，CPU
-主要的修改点是增加了几条新指令、乘除槽、存储器外置，总体难度不大。上机的题型只有运算类题目可能出乘除相关的，其余两道和
-P5 差不多，一般而言简单一些。到了 P5、P6
-挂的人肯定就多了起来，不过也不用担心，每人有 3 次挂 P 的机会，只要通关
-P7，实验部分成绩就都差不多。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>CO</tag>
-        <tag>Verilog</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO P4上机</title>
-    <url>/2025/11/10/BUAA-CO%20P4%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Verilog 实现单周期 CPU。
-课上题目
-T1 brc
-brc-rs-rt-rd
-RTL
-temp &lt;- GPR[rs][4:0]if (temp &lt; 25 &amp;&amp; count_ones(GPR[rt][temp+7:temp]) % 2 == 0)    GPR[rd] &lt;- reverse(GPR[rt])else    GPR[rd] &lt;- GPR[rt]
-T2 cabc
-cabc-rs-rt-offset
-RTL
-cross1 &lt;- GPR[rs][23:16]||GPR[rt][7:0]||GPR[rs][31:24]||GPR[rt][15:8]cross2 &lt;- GPR[rt][7:0]||GPR[rs][23:16]||GPR[rt][31:24]||GPR[rs][15:8]xor_result &lt;- cross1 ^ cross2cnt1 &lt;- count_zeros(xor_result[31:16])cnt2 &lt;- count_zeros(xor_result[15:0])if (cnt1 == cnt2)    PC &lt;- PC + 4 + sign_ext(offset||00)else    GPR[rt] &lt;- xor_result
-T3 lhboc
-lhboc-base-rt-offset
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]temp1 &lt;- count_ones(memword[15:0])temp2 &lt;- count_ones(memword[31:16])if (temp1 &gt;= temp2)    GPR[rt] &lt;- sign_ext(memword[15:0])else    GPR[rt] &lt;- sign_ext(memword[31:16])
-题目分析
-T1 是运算类指令，新加一个 ALUOp 的取值，然后在 ALU
-中加入对应的计算逻辑。T2 是跳转类指令的变体，可以仿照 beq
-来添加，但注意不跳转时还要写寄存器。T3 是访存类指令，仿照
-lw 来做，本质就是对 lw
-回写寄存器的数据加了一些处理而已。
-助教问答
-以下为部分问题：
-
-看看测试程序和设计文档
-CTRL 模块的实现思路，EXT 输入的来源是什么，beq 指令的数据通路
-Verilog 中使用什么函数读取机器码
-我的评测机是不是全自动的？评测机生成的汇编程序是否有效？如何保证
-sw 和 lw 指令的地址偏移量是合法的？
-
-笔者的话
-从 P4 开始就要迭代开发 Verilog CPU 了，P4 课下就是直接将 P3
-的电路转化成 Verilog 代码，难度不大。还是可以自己加一些额外的指令，比如
-j、jalr
-等。另外可以提前预留出接口，比如将新加的指令提前命名成 new0
-变量，新加的信号命名成 newSign
-并连接到对应的模块等等，上机时直接修改就行了。
-添加每一个新指令，我一般都是从
-CTRL（控制模块）开始，每设置一个控制信号的值，就在对应的模块中增加新逻辑，如
-NPCOp 对应 NPC 模块，DMWr 对应
-DM，这样不容易漏。另外也有学长建议过使用 git
-来管理版本，学有余力也可以尝试。上机时间紧，且我对 git
-的掌握尚不熟练，所以我没有尝试过。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>CO</tag>
-        <tag>Verilog</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO P7上机</title>
-    <url>/2025/12/08/BUAA-CO%20P7%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Verilog 实现 MIPS 微系统，支持中断和异常。
-课上题目
-T1~T4
-都是课下强测，分别是功能强测、异常强测、中断强测、冲突强测。
-T5 monitor
-在 P7 系统中（DM 范围 0x0000 ~
-0x2fff），新增一套内存监视控制机制。需在 CP0
-中扩展三个专用寄存器，并增加一条专用配置指令 monitor，配合
-sw 指令实现对特定内存区间的写入保护。
-1. 新增 CP0 寄存器
-系统复位后，以下三个寄存器均置为 0。
-
-
-
-
-
-
-
-
-
-编号
-寄存器名
-功能描述
-读写权限
-
-
-
-
-18
-DMBoundaryHI
-监视区间上界
-mfc0 可读；仅 monitor 可写
-
-
-19
-DMBoundaryLO
-监视区间下界
-mfc0 可读；仅 monitor 可写
-
-
-20
-DMEnable
-监视使能控制字
-mfc0 可读；仅 monitor 可写
-
-
-
-
-mtc0：仅能写入原有的 12-15 号寄存器（SR, Cause,
-EPC, PrID ），写入 18-20 号寄存器无效。
-monitor：仅能写入 18-20 号寄存器，写入 12-15
-号寄存器无效。
-mfc0：可读取上述所有寄存器。
-
-2. 逻辑定义
-使能信号生成
-DMEnable
-寄存器的值并不直接作为使能信号，需进行位统计比较：
-high_ones &lt;- count_ones(DMEnable[31:16])low_ones &lt;- count_ones(DMEnable[15:0])Monitor_Active &lt;- (high_ones &gt; low_ones)
-区间检查逻辑
-受监视的内存区间为 [DMBoundaryLO, DMBoundaryHI)。
-对于 sw
-指令，写入操作涉及的所有字节都必须位于该区间内才算合法。
-3. 指令与异常描述
-指令一：monitor
-monitor-rt-rd
-RTL：
-if (rd==18 &amp;&amp; GPR[rt] &gt;= DMBoundaryLO) ||(rd==19 &amp;&amp; GPR[rt] &lt;= DMBoundaryHI) || (rd==20）	CP0[rd] &lt;- GPR[rt]else if (rd==18 &amp;&amp; !GPR[rt] &gt;= DMBoundaryLO) ||(rd==19 &amp;&amp; !GPR[rt] &lt;= DMBoundaryHI)	SignalException(AdES)
-该指令用于更新 CP0
-的扩展寄存器。在写入时需进行合法性检查：更新后必须满足
-DMBoundaryLO \le
-DMBoundaryHI。如果写入操作导致该条件不满足，则不进行更新并触发异常。
-指令二：sw
-sw-base-rt-offset
-RTL：
-vAddr &lt;- GPR[base] + sign_ext(offset)high_ones &lt;- count_ones(DMEnable[31:16])low_ones &lt;- count_ones(DMEnable[15:0])Monitor_Active &lt;- (high_ones &gt; low_ones)is_in_range &lt;- (CP0[19] &lt;= vAddr) &amp;&amp; ((vAddr + 3) &lt; CP0[18])if (vAddr[1:0] != 00) || (Monitor_Active &amp;&amp; !is_in_range)    SignalException(AdES)else    memory[vAddr] &lt;- GPR[rt]
-当监视功能开启时，sw 指令需检查目标地址是否越界。
-题目分析
-T5 很复杂，但难度可能略低于去年的 withdraw。可能的一个难点是
-sw 的全部字节地址，其实就是 [vaddr, vaddr+3] 这个区间。我
-debug 许久才发现是一个条件中少加了括号，和 &amp;&amp; 和
-|| 的优先级有关，最终虚惊一场。
-助教问答
-以下为部分问题：
-
-看看测试程序和设计文档
-我是如何处理多个流水级、多条指令产生的异常的优先级的？
-如何判断一条指令是否处于延迟槽？
-我做这道题过程中遇到了什么问题
-我对计组课程有没有什么建议
-
-笔者的话
-P7 的课下可谓是最后一舞，笔者感觉比 P5
-还难。代码具体写法可以多参考一下 dalao
-的博客，此处只谈一些注意事项。通过 P7
-课下的弱测的难度就很大，每人刚写出来的代码往往都有数不清的
-bug，这时候就可以再次借助评测机了，不过 P7 和 MARS
-对拍就不合适了，只能找同学或者学长的 CPU
-来对拍，只有对拍几千轮都没有问题，那才敢比较放心。
-上机是 5 道做对 4
-道就算通过。开始后很拼手速，前四个题都是直接提交，如果有过不了的，那就需要现场
-debug。第五题一般是加新指令或者新异常，也可能两个都有，课下一定要充分理解每个异常是怎么产生和传递的，这样课上才能得心应手。另外
-P7 很多人会选择手动 gap，即只通过四道，会选择下周再试一次，因为 P7
-对成绩影响似乎大一点。还有一个细节，就是 handler.asm
-的代码也要打包提交（具体代码参考往届博客，反正这个自己写估计不太可能），不然用
-ISE 仿真时应该就没法处理异常的情况，也就很难 debug
-了（没错，我就忘交了）。
-P7
-结束了，那实验部分就告一段落，该开始理论部分的学习了。理论部分如果老师讲的浅，可以看其他老师班
-PPT，或者直接看王道书，王道上可以参考的主要就是存储系统，剩下的数制、流水线、总线、IO
-等也可以稍微参考，讲的都比较深，有些需要自己做取舍。另外 961
-的计组部分也可以做一做，仅有的两套往年题比较常规，去年的题量和难度感觉还是很大的，所以也做好心理准备（）
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>CO</tag>
-        <tag>Verilog</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>BUAA-CO Pre上机</title>
     <url>/2025/09/29/BUAA-CO%20Pre%E4%B8%8A%E6%9C%BA/</url>
     <content><![CDATA[本节主要是掌握三个工具，三道题目依次为 Logisim、Verilog、MIPS。
@@ -1227,30 +1029,6 @@ Pre
       </tags>
   </entry>
   <entry>
-    <title>BUAA-CO 推荐题目汇总</title>
-    <url>/2025/12/09/BUAA-CO%20%E6%8E%A8%E8%8D%90%E9%A2%98%E7%9B%AE%E6%B1%87%E6%80%BB/</url>
-    <content><![CDATA[可能有些人会感到，计组有时没题可做了，即使在往届博客上看到题目，也没有相关的评测环境，难以确定是否做对，HDLBits
-上的题画风又不太一致，但其实 cscore 上就有很多的题目可以访问。
-比如某题目的网址如下：
-http://cscore.buaa.edu.cn/#/problem?ProblemId=334&amp;PieId=1338
-PieId 应该是每届和每届都不同，2406 对应的是 1338。ProblemId
-是题目编号，没有规律可言，但同一个 ProblemId
-似乎每届都能访问到题目。我们便可以先查到本届的 PieId，再按顺序遍历
-ProblemId（当然也可以直接访问我提供的
-ProblemId），如果打开了题目就将其截图或其他形式保存下来，从而就有很多题目可以做并评测了。
-可惜的是，笔者直到 P5
-时才在往届博客中看到这个方法，因此很多之前的题目都没用了，而 P6
-及以后的题又爬不到，因此这些题只能流传下去了（）
-源码和题目获取
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>CO</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>BUAA-CO P5上机</title>
     <url>/2025/11/17/BUAA-CO%20P5%E4%B8%8A%E6%9C%BA/</url>
     <content><![CDATA[本节考查内容为 Verilog 实现流水线 CPU。
@@ -1328,12 +1106,210 @@ MARS 对每条写 GRF 或者 DM
       </tags>
   </entry>
   <entry>
-    <title>BUAA-ML 往年考题汇总</title>
-    <url>/2026/07/01/BUAA-ML%20%E5%BE%80%E5%B9%B4%E8%80%83%E9%A2%98%E6%B1%87%E6%80%BB/</url>
+    <title>BUAA-CO P7上机</title>
+    <url>/2025/12/08/BUAA-CO%20P7%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Verilog 实现 MIPS 微系统，支持中断和异常。
+课上题目
+T1~T4
+都是课下强测，分别是功能强测、异常强测、中断强测、冲突强测。
+T5 monitor
+在 P7 系统中（DM 范围 0x0000 ~
+0x2fff），新增一套内存监视控制机制。需在 CP0
+中扩展三个专用寄存器，并增加一条专用配置指令 monitor，配合
+sw 指令实现对特定内存区间的写入保护。
+1. 新增 CP0 寄存器
+系统复位后，以下三个寄存器均置为 0。
+
+
+
+
+
+
+
+
+
+编号
+寄存器名
+功能描述
+读写权限
+
+
+
+
+18
+DMBoundaryHI
+监视区间上界
+mfc0 可读；仅 monitor 可写
+
+
+19
+DMBoundaryLO
+监视区间下界
+mfc0 可读；仅 monitor 可写
+
+
+20
+DMEnable
+监视使能控制字
+mfc0 可读；仅 monitor 可写
+
+
+
+
+mtc0：仅能写入原有的 12-15 号寄存器（SR, Cause,
+EPC, PrID ），写入 18-20 号寄存器无效。
+monitor：仅能写入 18-20 号寄存器，写入 12-15
+号寄存器无效。
+mfc0：可读取上述所有寄存器。
+
+2. 逻辑定义
+使能信号生成
+DMEnable
+寄存器的值并不直接作为使能信号，需进行位统计比较：
+high_ones &lt;- count_ones(DMEnable[31:16])low_ones &lt;- count_ones(DMEnable[15:0])Monitor_Active &lt;- (high_ones &gt; low_ones)
+区间检查逻辑
+受监视的内存区间为 [DMBoundaryLO, DMBoundaryHI)。
+对于 sw
+指令，写入操作涉及的所有字节都必须位于该区间内才算合法。
+3. 指令与异常描述
+指令一：monitor
+monitor-rt-rd
+RTL：
+if (rd==18 &amp;&amp; GPR[rt] &gt;= DMBoundaryLO) ||(rd==19 &amp;&amp; GPR[rt] &lt;= DMBoundaryHI) || (rd==20）	CP0[rd] &lt;- GPR[rt]else if (rd==18 &amp;&amp; !GPR[rt] &gt;= DMBoundaryLO) ||(rd==19 &amp;&amp; !GPR[rt] &lt;= DMBoundaryHI)	SignalException(AdES)
+该指令用于更新 CP0
+的扩展寄存器。在写入时需进行合法性检查：更新后必须满足
+DMBoundaryLO \le
+DMBoundaryHI。如果写入操作导致该条件不满足，则不进行更新并触发异常。
+指令二：sw
+sw-base-rt-offset
+RTL：
+vAddr &lt;- GPR[base] + sign_ext(offset)high_ones &lt;- count_ones(DMEnable[31:16])low_ones &lt;- count_ones(DMEnable[15:0])Monitor_Active &lt;- (high_ones &gt; low_ones)is_in_range &lt;- (CP0[19] &lt;= vAddr) &amp;&amp; ((vAddr + 3) &lt; CP0[18])if (vAddr[1:0] != 00) || (Monitor_Active &amp;&amp; !is_in_range)    SignalException(AdES)else    memory[vAddr] &lt;- GPR[rt]
+当监视功能开启时，sw 指令需检查目标地址是否越界。
+题目分析
+T5 很复杂，但难度可能略低于去年的 withdraw。可能的一个难点是
+sw 的全部字节地址，其实就是 [vaddr, vaddr+3] 这个区间。我
+debug 许久才发现是一个条件中少加了括号，和 &amp;&amp; 和
+|| 的优先级有关，最终虚惊一场。
+助教问答
+以下为部分问题：
+
+看看测试程序和设计文档
+我是如何处理多个流水级、多条指令产生的异常的优先级的？
+如何判断一条指令是否处于延迟槽？
+我做这道题过程中遇到了什么问题
+我对计组课程有没有什么建议
+
+笔者的话
+P7 的课下可谓是最后一舞，笔者感觉比 P5
+还难。代码具体写法可以多参考一下 dalao
+的博客，此处只谈一些注意事项。通过 P7
+课下的弱测的难度就很大，每人刚写出来的代码往往都有数不清的
+bug，这时候就可以再次借助评测机了，不过 P7 和 MARS
+对拍就不合适了，只能找同学或者学长的 CPU
+来对拍，只有对拍几千轮都没有问题，那才敢比较放心。
+上机是 5 道做对 4
+道就算通过。开始后很拼手速，前四个题都是直接提交，如果有过不了的，那就需要现场
+debug。第五题一般是加新指令或者新异常，也可能两个都有，课下一定要充分理解每个异常是怎么产生和传递的，这样课上才能得心应手。另外
+P7 很多人会选择手动 gap，即只通过四道，会选择下周再试一次，因为 P7
+对成绩影响似乎大一点。还有一个细节，就是 handler.asm
+的代码也要打包提交（具体代码参考往届博客，反正这个自己写估计不太可能），不然用
+ISE 仿真时应该就没法处理异常的情况，也就很难 debug
+了（没错，我就忘交了）。
+P7
+结束了，那实验部分就告一段落，该开始理论部分的学习了。理论部分如果老师讲的浅，可以看其他老师班
+PPT，或者直接看王道书，王道上可以参考的主要就是存储系统，剩下的数制、流水线、总线、IO
+等也可以稍微参考，讲的都比较深，有些需要自己做取舍。另外 961
+的计组部分也可以做一做，仅有的两套往年题比较常规，去年的题量和难度感觉还是很大的，所以也做好心理准备（）
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+        <tag>Verilog</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO P6上机</title>
+    <url>/2025/12/01/BUAA-CO%20P6%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Verilog 实现流水线 CPU。
+第一次课上题目
+T1 mygo
+mygo-rs-rt
+RTL
+function pattern_value(g):    return count_leading_zeros(g) * 2 + count_ones(g)function characteristic_code(A):    sum &lt;- 0    for i in 0..7:        g &lt;- A[4*i+3 : 4*i]        sum &lt;- sum + pattern_value(g) * (i + 1)    return sum    MDU_Start(Busy_Cycles = 5)temp1 &lt;- characteristic_code(GPR[rs])temp2 &lt;- characteristic_code(GPR[rt])if (temp1 &gt; temp2)    HI &lt;- GPR[rs]    LO &lt;- GPR[rt]else if (temp1 &lt; temp2)    HI &lt;- GPR[rt]    LO &lt;- GPR[rs]else    HI &lt;- GPR[rs] ^ GPR[rt]    LO &lt;- GPR[rs] ^ GPR[rt]
+T2 jalx
+jalx-rs-rt-offset
+RTL
+temp &lt;- GPR[rs] ^ GPR[rt]x &lt;- temp[4:0]// Find the largest perfect square less than or equal to xwhile (!is_perfect_square(x))    x &lt;- x - 1GPR[x] &lt;- PC + 8PC &lt;- PC + 4 + sign_ext(offset||00)
+T3 lbo
+lbo-base-rt-offset
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]byte &lt;- vAddr[1:0]temp &lt;- memword[8*byte+7 : 8*byte]for i in 0..3:    temp1 &lt;- GPR[rt][8*i+7 : 8*i]    if (temp != temp1)        if (count_ones(temp) &gt; count_ones(temp1))            GPR[rt][8*i+7 : 8*i] &lt;- temp
+第二次课上题目
+T1 mujica
+mujica-rs-rt-imm16
+RTL
+ext32 &lt;- sign_ext(imm16)cnt1 &lt;- count_ones(imm16)if (cnt1 % 2 == 0)    temp &lt;- GPR[rs] &amp; ext32    GPR[rt] &lt;- temp + GPR[rt]else    temp &lt;- GPR[rs] | ext32    GPR[rt] &lt;- temp ^ GPR[rt]
+T2 botto
+botto-rs-rt-offset
+RTL
+function hamming_distance(x, y):    return count_ones(x ^ y)    hd &lt;- hamming_distance(GPR[rs], GPR[rt])if (hd &lt; 8)    PC &lt;- PC + 4 + sign_ext(offset||00)    GPR[rt] &lt;- hdelse if (hd &lt;= 24)    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rt] &gt;&gt;&gt; hdelse    PC &lt;- PC + 4    GPR[rs] &lt;- GPR[rs] | GPR[rt]
+T3 lwcm
+lwcm-base-rt-offset
+本题要求在 M 级维护一个 32 位寄存器 WD，复位值为
+32'h0。
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]if (memword == WD)    GPR[rt] &lt;- memwordelse    GPR[26] &lt;- memwordWD &lt;- memword
+题目分析
+第一次上机的 T1
+是乘除指令的变体，在乘除槽中添加相关运算，难度应该不算大，但是笔者最终也没有通过，可能是当时现场写的
+count_leading_zeros
+等函数，比较着急导致细节写错了吧。因此可以提前把这些函数都加到 CPU
+中，具体模板在上篇文章末。
+T2 做起来比较棘手，当时我看名字是 jalx，就一直当成
+jalr 的变体做的，但事后发现其实更像是 bltzal
+的变体，只不过无条件跳转而已，最终我很多点都 TLE 了，没有通过。T3
+比较简单。
+第二次上机明显比第一次简单，T1
+不涉及乘除槽，还是普通的运算类，需要注意这个题同时涉及了
+GPR[rs]、GPR[rt] 和 ext32，因此可以在 ALU 中再加一个输入端口。
+T2 有一个细节就是写入的寄存器地址可能是 rs 或者
+rt，而写入寄存器地址只有得到寄存器值之后才能确定，因此可以在 E
+级刚开始加一个特判，将正确的地址修正回来，本题阻塞逻辑我没有改，仅仅将新指令分到
+branch 类，然后自动采用的 b 类阻塞方式。T3
+是常见的条件访存类型，关于阻塞，我是判断如果 D 级需要用 rt 或者 26
+号寄存器值，才考虑阻塞。
+助教问答
+以下为部分问题：
+
+看看测试程序和设计文档
+讲解第二题的思路
+讲解乘除槽的实现思路
+我的评测机是如何写的
+
+笔者的话
+P6 相对 P5，CPU
+主要的修改点是增加了几条新指令、乘除槽、存储器外置，总体难度不大。上机的题型只有运算类题目可能出乘除相关的，其余两道和
+P5 差不多，一般而言简单一些。到了 P5、P6
+挂的人肯定就多了起来，不过也不用担心，每人有 3 次挂 P 的机会，只要通关
+P7，实验部分成绩就都差不多。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+        <tag>Verilog</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-ML 机器学习往年考题汇总</title>
+    <url>/2026/07/01/BUAA-ML%20%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%BE%80%E5%B9%B4%E8%80%83%E9%A2%98%E6%B1%87%E6%80%BB/</url>
     <content><![CDATA[写在前面
-本文将往年本研考题按知识模块归类，只保留了与期末复习范围一致的题目。
+本文将往年本研考题按知识模块归类，只保留了与期末复习范围一致的题目，从而省去了到处查找往年题目的麻烦。
 转载来源：
-本科：
+本科生：
 
 本2021
 本2023
@@ -1342,8 +1318,8 @@ MARS 对每条写 GRF 或者 DM
 研究生：
 
 研2019
-研2020（需要收费，完整内容见这里）
-研2020(1)（需要收费，完整内容见这里）
+研2020（需要付费，完整内容见这里）
+研2020(1)（需要付费，完整内容见这里）
 研2023
 研2024
 研2024(1)
@@ -1679,622 +1655,13 @@ PCA。掌握最大方差和最小均方误差的计算方法，能用数学语�
       </tags>
   </entry>
   <entry>
-    <title>BUAA-OO U2学习与反思</title>
-    <url>/2026/04/26/BUAA-OO%20U2%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
-    <content><![CDATA[第二单元 OO 学习与反思
-一、同步块的设置和锁的选择
-锁的设置与演变
-
-第五次作业：一开始，为了稳妥，我把主要的同步块都放在了共享的
-BaseQueue 里，
-offer、take、isEmpty
-这些方法全加上了
-synchronized。这时候逻辑比较简单，锁住队列本身就能解决大部分并发读写的问题，线程等待也是靠
-wait() 和 notifyAll()
-在队列对象上完成。
-第六次作业：到了第六次作业，加了检修机制和自由分配电梯的逻辑。我在各个电梯井
-ElevatorThread
-里加了一些状态控制，由于状态会被电梯和调度器同时访问，我在通知电梯改变状态的时候，借用了电梯专属的
-processQueue 的锁来做 notifyAll。此时调度器
-DispatchThread 拿 scheduleQueue
-的锁，电梯拿自己的 processQueue
-锁，分工明确，基本没有问题。
-第七次作业：这次的重点是换乘层 F2 的防撞。我给
-ElevatorShaft 专门加了个显式的公平锁
-ReentrantLock f2Lock。当任意一轿厢需要进入 F2
-层时，必须在执行 moveOneFloor 前通过
-f2Lock.lock()
-获取锁，离开后释放锁。同时，我将处理语句精简为仅包含进入、停留和离开 F2
-层的动作，使锁的粒度最小，保证安全的同时最大化了电梯的效率。
-
-锁与同步块内处理语句的关系
-随着作业迭代，我逐渐体会到，锁的作用不仅仅是“互斥”，更是为了保证同步块内的一组处理语句原子性地维护某个对象的属性，我们不能把紧密关联的操作拆分到不同的同步块中。
-
-队列的存取操作：在执行 offer 和
-take
-时，“检查队列状态”、“修改队列元素”、“唤醒等待线程”必须包裹在同一个
-synchronized
-块中。如果将检查和取数分开，就可能出现两个线程同时判断队列非空，然后试图取出同一个请求的危险情况。
-状态修改与通知的绑定：在 hw6
-中，调度器往电梯派发新请求或下发指令时，“修改共享状态”和“调用
-notifyAll()”这两步处理语句必须在同一个同步块内完成。如果先修改状态，出锁后再去
-notifyAll，这期间电梯可能恰好去检查状态并因错过了通知而陷入无休止的等待。
-多条件检查的原子性：在 hw7 的 F2
-防撞逻辑中，“检查对向轿厢是否占用 F2”以及“登记当前轿厢即将进入
-F2”这两步处理语句，必须包裹在同一个 f2Lock
-的临界区内。如果检查和登记被拆分，两部轿厢可能在同一时刻都发现 F2
-空闲，并同时进入 F2 发生碰撞。
-
-二、调度器设计
-调度器交互设计
-我的代码采用了层次化的调度架构：InputThread -&gt;
-ScheduleQueue -&gt; DispatchThread -&gt;
-ProcessQueue -&gt;
-ElevatorThread，如下图所示。
-调度器 DispatchThread
-作为中枢，一旦有新乘客请求，就将其从 ScheduleQueue
-中取出，并通过策略类 ShadowDispatchStrategy
-为其分配最合适的电梯，最后将乘客放入对应电梯的 ProcessQueue
-中，并通过 notifyAll()
-唤醒处于等待状态的电梯。这种设计实现了调度与执行的解耦，调度器不需要干预电梯的运行状态，只需通过队列进行基于数据的交互。
-调度策略与性能指标
-
-运行策略：单部电梯采用了经典的 LOOK
-算法，在当前方向上有请求时继续运行，否则反转方向，能有效减少不必要的移动时间。
-分配策略：从第六次作业开始，我实现了“影子电梯”策略。在分配乘客时，系统会深拷贝每一部电梯的当前状态，在后台通过模拟该电梯运行完所有请求以及所需的代价。
-多指标权衡：我影子电梯的代价函数综合考虑了运行时间和耗电量。时间代价根据模拟运行到达目标层的时间计算，耗电量代价则根据模拟过程中的
-ARRIVE、OPEN/CLOSE
-次数计算，最终将指标加权求和，寻找代价最小的电梯进行分配。针对可能的维护和双轿厢改造与回收，调度器会给这些电梯一些惩罚，避免将新乘客分配给它们。
-
-三、bug分析与debug方法
-出现过的bug
-我只有 hw7 互测中被人发现了bug。错误的输出部分如下：
-[49.8510]RECYCLE-ACCEPT-7[49.8520]RECYCLE-BEGIN-7[49.8530]RECEIVE-100-7
-原因是副轿厢 7 已经进入了 RECYCLE_BEGIN 状态，却还
-RECEIVE
-了新乘客。经过我的排查，发现我的调度器在计算代价的时候，副轿厢 7
-的状态可能还是正常的（或者正好处于
-REC_ACCEPT）。调度器决定把乘客分给 7
-号，但是在它计算完、准备输出接受信息的微小时间间隙里，副轿厢 7
-直接把乘客清空、关门，并输出了 RECYCLE-BEGIN
-改变了状态。等调度器输出 RECEIVE 的时候，副轿厢 7
-已经变成不可接收请求的状态了。总的来说，是因为我电梯调度和输出
-RECEIVE
-并没有被包裹在同一个原子操作里，导致被其他线程修改了状态。
-多线程程序的debug方法
-经历了这三次作业，我总结出了一套多线程调试方法：
-
-理清共享对象边界：在排查问题前，先明确哪些对象会被多个线程同时读写。对于不共享的局部状态，交由电梯线程独占推进即可，不需要过度担心并发。
-重点排查线程唤醒逻辑：可以利用输出语句检查
-wait() 和 notifyAll()
-的配对情况。特别关注如输入关闭、状态转换等边界事件，看看是否在这些特殊时刻漏了唤醒，导致线程睡死。
-针对输出日志反推状态：多线程由于难以稳定地单步断点调试，我们往往去参考输出日志。我会检查
-RECEIVE、IN、OUT
-是否成对出现，电梯的各种输出顺序是否符合题意。对报错的特定行，我根据前面的输出反推当时各个线程所处的状态。
-搭建评测机：我依旧会搭建评测机来进行高强度的生成请求。一旦评测报告错误，立马固定测试用例，保留当时的输入输出，然后再进行针对性的排查。
-
-四、线程安全与层次化设计
-线程安全
-线程安全不是随意在方法上加 synchronized
-就能实现，滥用锁反而会导致性能下降和死锁。我感觉，理清数据流动的模型是保障线程安全的前提。U2
-中，只有队列被多个线程共享，因此只需将队列封装为线程安全的类。对于电梯内部的载重、当前楼层等状态，只由电梯线程自己修改，天然是线程安全的，不需要额外加锁。同时，一定要保持锁的获取顺序一致，并避免在同步块内调用耗时的方法。
-层次化设计
-层次化设计也有效降低了系统的耦合度。从数据流向上，我的架构可以划分为“输入层
--&gt; 分派层 -&gt;
-执行层”。从类的结构上，我将“执行动作（ElevatorThread）”、“运行策略（MoveStrategy）”和“分配策略（ShadowDispatchStrategy）”严格剥离。面对
-hw7
-的复杂需求，由于具备良好的层次结构，我只需在电梯井层面维护两部电梯，并引入题干中新增的几个状态，而无需重构底层移动和开关门等逻辑。
-五、大模型使用心得
-
-模型名称：Gemini
-任务分工：我负责架构设计和核心状态机的定义等，并编写主要的核心代码，只有不太熟悉的地方，如
-synchronized
-等多线程相关代码的写法，才会询问大模型。写完后，大模型负责帮我检查代码逻辑和
-debug，比如说影子电梯深拷贝代码等。
-复杂任务中的优势：在面临多线程电梯这样复杂的任务时，大模型的逻辑梳理能力非常突出。当我描述双轿厢改造流程时，它能迅速生成清晰的状态机框架；在排查死锁时，把相关输入输出描述给大模型，它思考后往往能一针见血地指出问题。
-面临的困难：大模型由于缺乏整体代码库的上下文，有时会“自作主张”地引入一些不需要的类，如果直接复制粘贴，极易引入隐蔽的
-bug。
-总体感受：大模型是一位极为高效的助手，但多线程代码的底线还是必须由我们把控。只有自己深刻理解了并发机制，才能审查
-AI 代码，将其转化为真正的生产力。
-
-六、第二单元的体验与建议
-真实感受
-第二单元的电梯作业无疑是 OO
-中思维跨度最大的一环，从串行转向并发是一个痛苦但也充满成就感的过程。hw6
-中，我设计影子电梯调优耗费了大量精力，第七次作业的双轿厢逻辑中我也遇到了很多的细节问题，比如说在
-F2
-换乘的写法等。但最终看着电梯高效地运送着乘客而不发生任何死锁，这种获得感也是难以言喻的。
-课程建议
-希望能稍微介绍一下相关电梯调度名词具体是什么意思，比如量子电梯、自由竞争等，网上相关的资料也很少。
-]]></content>
-      <categories>
-        <category>面向对象</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>OO</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-OO U1学习与反思</title>
-    <url>/2026/03/31/BUAA-OO%20U1%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
-    <content><![CDATA[第一单元 OO 学习与反思
-一、 度量分析
-1. 类与复杂度分析
-基于最终的作业代码，我对核心类进行了度量分析：
-
-
-
-Class
-OCavg
-OCmax
-WMC
-
-
-
-
-ChoiceFactor
-1.5
-2
-3
-
-
-DeriveFactor
-2.5
-4
-5
-
-
-ExpFactor
-1
-1
-2
-
-
-Expr
-1.33
-2
-4
-
-
-FuncFactor
-2.67
-5
-8
-
-
-FuncFactor.RecCacheKey
-1.67
-3
-5
-
-
-FuncReg
-1
-1
-4
-
-
-FuncReg.FuncDef
-1
-1
-2
-
-
-FuncReg.RecDef
-1
-1
-15
-
-
-Lexer
-2.8
-9
-14
-
-
-MainClass
-3
-3
-3
-
-
-Mono
-4.04
-14
-105
-
-
-Number
-1
-1
-2
-
-
-Parser
-2.09
-7
-46
-
-
-Poly
-3.41
-10
-58
-
-
-Power
-2.5
-4
-5
-
-
-Processor
-2
-2
-2
-
-
-Sign
-3
-6
-9
-
-
-Term
-1.67
-3
-5
-
-
-
-根据表格可以看到，最复杂的三个类依次是
-Mono、Poly、Parser。在
-Mono
-类中，我定义了许多方法，不仅包括基本的代数运算（如求导等），还为了追求极致的最短输出长度而定义了化简方法，这在一定程度上违反了单一职责原则。Poly
-类则相对干练，主要负责加、减、乘、幂等多项式间的数学运算以及转化为字符串的
-toString。在 Parser
-中，我采用了递归下降的语法解析方式，针对每一种类型的因子和表达式都编写了解析方法，实现了较好的模块内聚。
-2. 方法复杂度分析
-结合上述类复杂度，我进一步使用工具对部分核心方法进行了度量：
-
-
-
-方法
-CogC
-ev(G)
-iv(G)
-v(G)
-
-
-
-
-Lexer.next()
-10
-2
-8
-9
-
-
-Parser.parseFactor()
-9
-7
-10
-10
-
-
-Poly.equals(Object)
-10
-8
-3
-9
-
-
-FuncFactor.solveRec(int, Poly)
-8
-2
-5
-5
-
-
-Parser.parseRecDef(Scanner)
-7
-3
-4
-5
-
-
-Mono.equals(Object)
-7
-7
-2
-8
-
-
-Poly.power(BigInteger)
-7
-3
-4
-6
-
-
-Poly.multiply(Poly)
-5
-2
-4
-5
-
-
-Mono.derive(String)
-4
-1
-5
-5
-
-
-Poly.toOptimalString(boolean)
-17
-7
-9
-12
-
-
-Mono.toOptimalString(boolean)
-21
-5
-16
-21
-
-
-
-从上表可以看出，Lexer.next() 和
-Parser.parseFactor()
-的分支极多，因为需要处理各种不同的符号和因子。同时
-Parser.parseRecDef(Scanner) 和
-FuncFactor.solveRec
-这类函数函数解析和代入时也具有中等规模的控制流复杂度。Mono
-和 Poly 的 toOptimalString
-承担了输出的任务，这些方法的控制流和圈复杂度非常高，后续如果继续迭代，应考虑将其抽离为独立的
-Printer 类。
-### 3. 类图与设计考虑
-
-classDiagram
-
-    class Factor
-    &lt;&lt;interface&gt;&gt; Factor
-
-    class Number
-    class Power
-    class ExpFactor
-    class FuncFactor
-    class ChoiceFactor
-    class DeriveFactor
-    class Expr
-
-    class Term
-    class Poly
-    class Mono
-    class Sign
-    class FuncReg
-
-    class MainClass
-    class Parser
-    class Lexer
-    class Processor
-
-    Factor &lt;|.. Number : 实现
-    Factor &lt;|.. Power : 实现
-    Factor &lt;|.. ExpFactor : 实现
-    Factor &lt;|.. FuncFactor : 实现
-    Factor &lt;|.. ChoiceFactor : 实现
-    Factor &lt;|.. DeriveFactor : 实现
-    Factor &lt;|.. Expr : 实现 (递归嵌套)
-
-    Expr *--  Term : 包含多个项
-    Term *--  Factor : 包含多个因子
-
-    Poly *--  Mono : 维护单项式 Map
-    Mono --&gt; Poly : 递归包含 expPoly
-    Mono --&gt; Sign : 使用 Sign 作为哈希键
-
-    MainClass --&gt; Parser : 调用
-    Parser --&gt; Lexer : 使用
-    Parser --&gt; Processor : 预处理
-    Parser ..&gt; Factor : 构建 AST 节点
-    FuncFactor --&gt; FuncReg : 查询函数定义
-
-    style Factor fill:#E6E6FA,stroke:#708090,stroke-width:2px
-    style Poly fill:#B0C4DE,stroke:#708090,stroke-width:1px
-    style Mono fill:#B0C4DE,stroke:#708090,stroke-width:1px
-
-顶层控制与解析模块
-
-MainClass：程序启动入口和全局调度者。
-Processor：预处理模块，主要负责清洗字符串中的连续正负号等。
-Lexer：词法分析器，将纯文本字符流转化为 Token 流。
-Parser：语法分析器，使用递归下降，将 Token
-流转化为抽象语法树（AST）。
-FuncReg：全局函数注册表，管理所有自定义函数及递推函数的定义。
-
-抽象语法树节点
-
-Factor ：因子接口，通过统一的 toPoly()
-方法实现了多态。
-Expr：表达式节点，由多个 Term
-的加减组合而成。
-Term：项节点，由多个 Factor
-的连乘组合而成。
-Number：常数因子节点，内部封装了大整数。
-Power：变量幂因子节点，形如 x^n 或 y^n，保存自变量符号及其指数。
-ExpFactor：指数函数因子节点，形如 (\exp(factor))^n，封装了内部表达式及外层乘方指数。
-FuncFactor：函数调用因子节点，负责查表
-FuncReg 并将具体实参代入。
-ChoiceFactor：选择式因子节点，专门保存并解析条件分支表达式
-[?:] 中的四个判断基元。
-DeriveFactor：求导算子因子节点，保存求偏导类型（dx,
-dy, grad）及其作用的表达式模块。
-
-核心引擎计算部分
-
-Poly：程序最核心的计算引擎，使用 HashMap
-维护单项式集合。它实现了多项式的各种代数运算与合并。
-Mono：最小代数运算单元，包含系数、自变量指数级别内部多层嵌套的
-exp 特征多项式。
-Sign：单项式特征类，将 Mono
-剔除系数后剩余的特征抽取为不可变属性，用作哈希键。
-
-
-二、 架构设计体验
-我在三次作业中的宏观架构演进一直保持着高度自洽，且具有良好的向后扩展能力。
-HW1：初识递归下降
-在 HW1，我紧贴指导书规范，建立了一套“词法分析 ⟶ 语法分析 ⟶ 抽象语法树
-⟶ 多项式计算”的架构。这一模型将表达式严格拆解为 Expr ⟶
-Term ⟶ Factor
-的文法节点体系。随后，我对所有层级的子节点统一落实了 toPoly
-这个方法。但在早期理解不深时，我的 Poly 更是粗犷地使用
-ArrayList 线性存储各项
-Mono，合并同类项时就稍显麻烦了，需要专门建立一个指数到系数的
-HashMap 来实现。
-HW2：引入指数函数、自定义函数与选择式因子
-HW2 引入了指数函数 exp()、自定义函数 f(x)
-以及选择式因子 [(A==B)?C:D]。现在单项式不仅有一个
-x 的指数，还包含了以 exp
-包裹的多项式。因此我主要做了以下重构：
-
-重构多项式底层：首先由于数据范围的变化，exponent
-类型需要改成大整数类，然后我将 Mono 扩展为
-Mono(BigInteger coefficient, BigInteger exponent, Poly expPoly)。此外，我还引入了内部类
-Sign ，即去掉系数后的指数和多项式部分， Poly
-类中的 ArrayList ，我也直接换成了从 Sign 到
-Mono 的 HashMap
-，这下就不需要写合并同类项方法了，而是自动实现合并。其实这里完全也可以用从
-Sign 到系数的 HashMap ，但这样的话我的 Mono
-类似乎就有点多余，因此我还是保留了看似复杂的前一种策略。
-函数代入环境字典：为了实现函数形参替换，我没有选择在字符串层次上进行字符串替换（这种应该很容易
-TLE），而是引入了环境字典
-Map&lt;String, Poly&gt; vars。在每个 AST 节点的
-toPoly 方法中传入该字典，从而实现函数调用的解析。
-
-而选择式因子对架构没有影响，按原有架构进行添加即可。
-HW3：求导、双变量与递推函数的加入
-经过 HW2 的小幅重构，面对 HW3 引入的双变量 x 和
-y、求导算子 dx/dy/grad 以及自定义递推函数
-f{n}(x)，我在架构上几乎没有改动。
-对于求导算子 DeriveFactor，我在底层的 Mono 和
-Poly 当中补充了专门的求导方法；针对 y
-的引入，仅需在 Mono 类中增加记录 y
-次幂的专门属性即可。这些新增部分在被 toPoly
-解析处理后，进行运算的依然是和 HW2
-类似的多项式，因此原本的加减乘除及输出逻辑基本不需要修改。
-新的迭代情景：引入三角函数
-如果引入三角函数因子sin(Factor) 与
-cos(Factor) ，并要求合并与化简：
-我目前的架构完全禁得住这项考验。我们只需声明 SinFactor 和
-CosFactor 实现 Factor 接口，并新增
-Parser 中的分支即可。真正的深入修改都在底层架构：我们要给
-Mono 与 Sign
-追加可以记录三角函数特征的属性。唯一的难点其实在于怎样运用诱导公式或两角和差公式等规律去对合并前的
-Poly 加以化简而已。
-
-三、 分析自己程序的 Bug
-在这三次作业的强测与互测中，我唯一被测出 Bug 的地方是在
-HW3，由于化简优化时复杂度控制不当而导致了 TLE。
-- 问题及特征：
-互测房里的同学针对我的代码逻辑，构造了一个使得代码 TLE
-的样例。我出问题的类是 Mono 中的
-toOptimalString() 方法。
-- 深层原因分析：
-原因是，我设定了多项式的项数在小范围时采用状态压缩 DP。该 Hack
-样例利用大量系数相邻的大整数，项数刚好达到我规定的上界，导致程序穷举中产生超时。
-- Bug 复杂度反思：
-回看前面的方法度量分析表，toOptimalString
-的圈复杂度和认知复杂度都比较高。这说明在编写时引入了过多复杂的逻辑分支。修改这个
-bug 的策略，我目前采用的是调小项数搜索范围的上界。
-
-四、 发现别人 Bug
-所采用的策略
-在互测环节中，我主要采用了以下策略：
-
-借助 AI 搭建评测机：我使用 Python
-搭建了评测机脚本。策略是通过大量随机生成的数据测试房间内的 8
-份作业代码，然后将结果使用 Sympy
-库对比来寻找一致性。这能有效找出一些基础的逻辑错误和格式问题，但因为数据是随机生成的，较难定向构造出使得程序
-TLE 的极端数据。
-结合源码阅读定向构造：针对评测机难以覆盖的盲区，我会尝试阅读别人的代码来设计测试用例：
-
-比如看到同学处理三目运算符 [(A==B)?X:Y]
-时将两种选择都进行了计算展开再剪裁，我就会在不选的那一方构造复杂的函数嵌套，使其
-TLE。
-看到有同学采用 String.replaceAll
-这种字符串替换来处理函数代入时，便可以尝试构造多层嵌套函数，使其因耗时太长而TLE。
-
-
-
-五、 分析自己进行的优化
-我在结果长度的化简优化上主要做了以下工作：
-1. 正项优先打印： 通过遍历 Poly 中的各个
-Mono，找到第一个常数系数为正的项并放到最前面输出，去掉了开头的正负号问题，这种优化十分稳定。
-2. 提取公因数： 对于 exp(factor)
-类型，我会遍历其内部各个系数的公约数，提取至外部以缩短总体长度。
-3. 状态压缩优化：
-对于需要拆开内部的项，当项数处于我设定的小范围时，使用状压 DP
-来寻找最优解；超过范围则原样输出。
-这些优化虽然缩减了字符串长度，但在保障了代码的常规简洁性的同时，却并未百分之百保证正确性。过于追求局部最短，使得某些化简方法的圈复杂度攀升，在个别极端数据下出现了
-TLE 的情况。后续的优化应该更加注意平衡正确性与性能之间的关系。
-
-六、 大模型相关使用
-在三次作业中，我只参考了 AI
-给出的架构思路、示例代码和修改建议，并未让其直接编写我的代码。当遇到输出错误、抛异常或是搭建评测机时的各种问题，将报错结合代码抛给
-AI 排查，效果往往非常好。总之，AI
-经过提示后可以精准发现代码逻辑方面的问题，并帮忙修补漏洞。但对于时间复杂度分析和构造那些能让代码运行超时的极端数据，它由于没有全局运行环境概念，仍显力不从心，这时候人工阅读源码构造更为可靠。
-
-七、 心得体会
-经过本单元的学习，我还是收获颇丰的。一开始听说我们要进行表达式深层编译解析时，便想起原先学后缀表达式时的痛苦。但是递归下降和抽象语法树的方法极大地解耦了难度。表达式先被切分为一个个
-Token，再由 Parser 解析对应部分，最终建立 AST。这时节点统一实现的
-toPoly()
-方法发挥功能，将一切降维成多项式，自下而上依次化简计算即可。相对之前理解的后缀表达式，代码行数虽然变多了，但可读性和扩展性却实现了质的飞跃。
-关于 AI 的使用，如今的 AI 驾驭 OO
-作业可以说游刃有余了。我会借此设计架构、学习算法以及进行 Debug
-和辅助构造测试，总体效果不错。但同时也深刻体会到，面向对象编程的相关思考与代码掌控等修养，依然是无法被
-AI 工具完全替代的。
-
-八、 未来方向建议
-整体而言，我们的 OO
-课在难度递进设计上已经非常合理了，第一单元的课程安排也很完备。唯独建议在性能优化方面，可以再多给一些相关的指导提示，或者在单元结束后公布一下
-std
-标程用的具体优化方法。我还是十分好奇采用什么方法能在时间限制下将表达式化至最短的。
-
-九、 思考题
-1.
-如何检查输入是否符合要求？
-建议进行双重检查，大致如下：
-首先在预处理入口处：使用正则表达式扫描字符串，排查非法符号、不合规操作符组合（如
-** 等）。第二层在 Parser
-递归下降流程中：如果遇到偏离文法规则的分支，可以直接抛出对应的自定义异常。
-2.
-如何精确计算一个合法输入的 cost？
-通过在各个抽象语法树节点类中声明 getCost()
-方法，可以实现自顶向下的递归计算。对于基础的加减乘除和常数，直接按指导书的运算法则进行累加或相乘；对于函数调用，需要将实参代入到函数定义的
-AST
-中生成新表达式，再递归计算；对于选择式因子，必须在计算时判断条件表达式是否恒等，从而动态累加正确分支的代价；最后，由于求导等算子涉及代价的指数增长，在内部实现时需使用
-BigInteger 来防溢出。
-]]></content>
-      <categories>
-        <category>面向对象</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>OO</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-ML 期末复习</title>
-    <url>/2026/07/01/BUAA-ML%20%E6%9C%9F%E6%9C%AB%E5%A4%8D%E4%B9%A0/</url>
+    <title>BUAA-ML 机器学习期末复习</title>
+    <url>/2026/07/01/BUAA-ML%20%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%9C%9F%E6%9C%AB%E5%A4%8D%E4%B9%A0/</url>
     <content><![CDATA[写在前面
 鉴于机器学习 PPT
-中内容庞杂，而期末考试题型又相对固定，因此本文将往年博客、PPT
+中内容庞杂，而期末考试题型又相对固定，因此本文对往年博客、PPT
 内容进行整理和精简，去掉了研究生机器学习课程中专有的内容（如 EM
-算法、概率图模型），以及本科期末通常不会考的内容（如半监督学习），从而只保留往年高频考查的核心知识点，便于复习和记忆。
+算法、概率图模型），以及本科期末通常不会考的内容（如半监督学习），只保留往年高频考查的核心知识点，便于期末复习和记忆。
 转载来源：
 
 theUHO
@@ -3398,6 +2765,103 @@ A/B 测试：结合 A/B
       </tags>
   </entry>
   <entry>
+    <title>BUAA-OOpre 课程总结</title>
+    <url>/2025/11/11/BUAA-OOpre%20%E8%AF%BE%E7%A8%8B%E6%80%BB%E7%BB%93/</url>
+    <content><![CDATA[一、架构设计
+继承与接口设计
+项目最终UML类图如下：
+
+采用模块化的思想，我的最终架构可以分为以下几个核心模块：
+1. 入口与控制层
+
+Main：程序入口，仅用于初始化Scanner、冒险者容器advs、关系管理器rm，并创建总控制器CommandUtil。
+CommandUtil：系统的总控制器。
+
+控制：负责解析所有用户命令。它从Main接收Scanner，通过switch语句分发指令（
+“aa”, “ab”, “fight”, “use” 等）。
+协作：作为协调者，调用 Adventurer
+类的业务方法和 RelationManager 的关系处理方法。
+
+
+2. 核心实体层
+
+Adventurer：管理冒险者的所有属性和行为。
+
+属性管理：管理基础属性（hitPoint,
+baseAtk, baseDef, mana,
+money）及状态（dead）。
+物品管理：
+
+items：存储冒险者拥有的所有物品。
+bottleBackpack：药水瓶背包，采用LinkedHashMap这一数据结构，通过重写removeEldestEntry方法，实现了“最多携带10个药水瓶，超出时移除最旧条目”的逻辑。
+
+技能与关系：spells
+存储学会的法术，superior和subordinates记录雇佣关系。
+行为管理：封装了addBottle,
+addEquipment, learnSpell,
+takeItem 等所有逻辑。
+
+
+3. 物品与技能系统
+
+Item
+(抽象类)：所有物品的顶层基类。
+Usable
+(接口)：定义了“可使用物品”的规范。
+Bottle
+(抽象类)：继承于Item，并实现了Usable接口。派生出HpBottle等具体药水类。
+Equipment
+(抽象类)：继承自Item。派生出Armour
+和Weapon (抽象类)。Weapon
+进一步派生出Sword 和Magicbook。
+Spell
+(抽象类)：实现了Usable接口。派生出HealSpell
+和AttackSpell。
+
+4. 关系管理模块
+
+RelationManager：负责处理冒险者间的雇佣关系，提供关系的添加、删除、死亡处理等操作。
+LrParser：配合CommandUtil
+使用的递归下降解析器，用于解析”lr”指令，并通过调用rm
+的方法建立雇佣关系。
+
+5. 工具/辅助类
+
+Factory：实现了工厂模式。提供一系列方法，如createBottle，用于创建对象实例。
+
+架构调整及考虑
+
+CommandUtil的添加：最初对指令的处理全部由Main类完成，随着指令的增加，Main类变得过于臃肿，且超出代码行数限制，因此引入该类专门负责读取和解析指令，使Main类仅仅作为程序入口。
+Factory的添加：随着迭代的进行，Bottle和Equipment等都有了多个子类，这时需要根据某一物品所属的子类名来相应地创建对象，为了降低项目的耦合度，便添加了Factory工厂类来专门创建对象。
+RelationManager的添加：第六次作业引入了雇佣关系，需要管理各个冒险者之间的关系，为避免Adventurer类中耦合度过高，引入了该类来统一完成关系的添加、删除、查询等操作。
+
+二、使用JUnit的心得体会
+
+JUnit即”Java单元测试“，指针对每一个Java类（主类除外），都编写多个测试函数来测试该类的方法是否达到了预期的功能，并测试各种不同情况下方法的稳健性，可以检测Java项目中是否存在低级的逻辑问题。
+之前的程序设计过程中，我们大多是通过构造测试数据，将程序的输出与答案进行对比，来排除程序的问题；而通过JUnit，我们可以初步检验每个类、每个方法的正确性，从而减少测试的工作量。
+JUnit促使我们思考边界情况。
+编写测试用例的过程，也是对自己代码的再次检查。我们可以测试很多种边界情况，比如正常参数、null、0等，当然前提必须是满足题干中的数据范围。这一步能提前找出很多代码漏洞，极大减少了后期调试的麻烦。
+
+三、学习OOPre的心得体会
+
+在OOPre的学习中，我掌握了Java的基本语法和常见的数据容器等。相比“原始”的C语言，Java语言明显更加现代，比如Java将C语言中复杂的指针替换成了“引用”。此外，C语言不注重类型的检查，有很多自动类型转化的例子，而Java却对此要求很严格，比如if和while的判断条件中必须是boolean类型，之前我们可能习惯了的if(a)，必须再改成if(a!=0)，此外还要多注意操作的某个对象是否为null，否则程序可能会抛出异常。
+我最大的收获是从“面向过程”到“面向对象”的思维转变。
+之前我们大多在完成一道道编程题目，仅仅追求AC，而不关注代码可读性、可扩展性等等。而现在我们要迭代开发项目，这便要求我们保持良好的代码风格，提高程序的可读性等。
+在学习工程模式等设计模式时，我也感受到开发的规范性，原来这些方法都有对应的理论支持，而不是凭空想出来的策略。比如我在第一部分架构设计中提到的Factory类，就是对“工厂模式”的一次具体实践，它帮助我将“对象的创建”与“对象的使用”解耦，降低了代码耦合度。
+在使用git的过程中，我也感受到了现代版本管理系统的强大功能，通过在终端输入指令或者图形化界面，我们便可以轻松实现一个项目的不同版本间的转换。但我的git相关知识还仅限于成功提交作业，希望在未来我能够进一步深入学习git相关知识。
+
+四、对OOPre课程的简单建议
+在听课过程中某些概念不好理解，比如“观察者模式”等，只听概念的话有一种云里雾里的感觉，希望以后多讲一些相关代码示例，从而提高学习效率。
+]]></content>
+      <categories>
+        <category>面向对象</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>OO</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>BUAA-OO U4学习与反思</title>
     <url>/2026/06/19/BUAA-OO%20U4%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
     <content><![CDATA[第四单元 OO 学习与反思
@@ -3726,93 +3190,212 @@ signals 子句时发生偏离。
       </tags>
   </entry>
   <entry>
-    <title>BUAA-OOpre 课程总结</title>
-    <url>/2025/11/11/BUAA-OOpre%20%E8%AF%BE%E7%A8%8B%E6%80%BB%E7%BB%93/</url>
-    <content><![CDATA[一、架构设计
-继承与接口设计
-项目最终UML类图如下：
+    <title>BUAA-CO 推荐题目汇总</title>
+    <url>/2025/12/09/BUAA-CO%20%E6%8E%A8%E8%8D%90%E9%A2%98%E7%9B%AE%E6%B1%87%E6%80%BB/</url>
+    <content><![CDATA[可能有些人会感到，计组有时没题可做了，即使在往届博客上看到题目，也没有相关的评测环境，难以确定是否做对，HDLBits
+上的题画风又不太一致，但其实 cscore 上就有很多的题目可以访问。
+比如某题目的网址如下：
+http://cscore.buaa.edu.cn/#/problem?ProblemId=334&amp;PieId=1338
+PieId 应该是每届和每届都不同，2406 对应的是 1338。ProblemId
+是题目编号，没有规律可言，但同一个 ProblemId
+似乎每届都能访问到题目。我们便可以先查到本届的 PieId，再按顺序遍历
+ProblemId（当然也可以直接访问我提供的
+ProblemId），如果打开了题目就将其截图或其他形式保存下来，从而就有很多题目可以做并评测了。
+可惜的是，笔者直到 P5
+时才在往届博客中看到这个方法，因此很多之前的题目都没用了，而 P6
+及以后的题又爬不到，因此这些题只能流传下去了（）
+源码和题目获取
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OS Lab3上机</title>
+    <url>/2026/04/29/BUAA-OS%20Lab3%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 MOS 进程管理与异常处理。
+课上题目
+Exam
+点击查看题面
+这道题在 RR 基础上，增加了 SRTF 调度算法，整体难度不大。
+Extra
+点击查看题面
+这道题增加了一种新的异常，要求实现其处理方法，和往届题目类似。
+笔者的话
+Lab3 内容依旧很丰富：从各种 env_
+开头的进程处理函数，到异常的分发，还涉及大量 C
+与汇编的相互调用，非常考验基础功底。
+Lab3 的上机题相对固定，根据往年情况，Exam
+通常是增加新的调度算法，Extra
+通常是增加新的异常，这次也不例外。但我中途出了个奇怪的问题：似乎误改了某个文件，而这个文件还很长，最后连自己也不知道到底动了哪里，只好切到
+lab3 分支把它复原，耽误了不少时间。
+这段经历带来的启发是：vim 编辑器的使用门槛较高，尤其和 VSCode
+比复杂了不少，许多人都用得不太顺手。可以让你的 AI 帮忙写一份合适的
+.vimrc，用起来会舒服很多，比如 set mouse=a
+可以让鼠标直接移动光标，不必一直 j
+k。此外，想同时看多个代码文件时，有人用
+tmux，但据说存在一些奇怪的兼容问题；也有人开多个跳板机；还有人直接进
+GitLab 仓库看代码，八仙过海各显神通。至于代码编辑，有人不愿用
+vim，直接在记事本里写代码，个人体验下来还是不如 CLion 或
+VSCode，最起码多了语法高亮等功能。当然最理想的方式是 ssh 连接到
+VSCode，能力强的同学可以尝试在短时间内配好 ssh，反正我没成功过（）
+Extra 也吃了准备不充分的亏，考前没有仔细看往届博客。lmhgg
+博客
+已经把这部分常用的代码整理好了，大家可以直接手抄或者打印下来带进考场，一定不要忘记
+OS
+上机是开卷的。有了这串代码，再做一做往年题目，相信这道题难度就不算大了。还有一点：如果代码运行结果有问题，一定要调试，而不要用肉眼
+debug。教程中有详细的 gdb 调试步骤，有余力可以学习；也可以采用 printf
+大法（在这里应该叫 printk
+大法），将一些中间变量输出出来观察。如果更用心一点，可以直接在相关头文件中加入一些调试宏，我写的宏如下：
+在 include/printk.h 中（内核态使用
+printk）：
+#ifndef DEBUGK_ENABLE#define DEBUGK_ENABLE 1#endif#if DEBUGK_ENABLE#define debugk(fmt, ...)                                                                           \	printk(&quot;[DEBUG] %s:%d:%s: &quot; fmt &quot;\n&quot;, __FILE__, __LINE__, __func__, ##__VA_ARGS__)#define debugk_int(x)                                                                              \	printk(&quot;[DEBUG] %s = %d\n&quot;, #x, (int)(x))#define debugk_uint(x)                                                                             \	printk(&quot;[DEBUG] %s = %u\n&quot;, #x, (u_int)(x))#define debugk_hex(x)                                                                              \	printk(&quot;[DEBUG] %s = 0x%x\n&quot;, #x, (u_int)(x))#define debugk_char(x)                                                                             \	printk(&quot;[DEBUG] %s = &#x27;%c&#x27; / 0x%x\n&quot;, #x, (char)(x), (u_int)(unsigned char)(x))#define debugk_str(x)                                                                              \	printk(&quot;[DEBUG] %s = \&quot;%s\&quot;\n&quot;, #x, (char *)(x))#define debugk_ptr(x)                                                                              \	printk(&quot;[DEBUG] %s = 0x%x\n&quot;, #x, (u_int)(x))#else#define debugk(fmt, ...) ((void)0)#define debugk_int(x) ((void)0)#define debugk_uint(x) ((void)0)#define debugk_hex(x) ((void)0)#define debugk_char(x) ((void)0)#define debugk_str(x) ((void)0)#define debugk_ptr(x) ((void)0)#endif
+在 user/include/lib.h 中（用户态使用
+debugf，前面加一段 #undef
+防止和内核态的宏冲突）：
+#ifdef debugk#undef debugk#endif#ifdef debugk_int#undef debugk_int#endif#ifdef debugk_uint#undef debugk_uint#endif#ifdef debugk_hex#undef debugk_hex#endif#ifdef debugk_char#undef debugk_char#endif#ifdef debugk_str#undef debugk_str#endif#ifdef debugk_ptr#undef debugk_ptr#endif#ifndef DEBUGK_ENABLE#define DEBUGK_ENABLE 1#endif#if DEBUGK_ENABLE#define debugk(fmt, ...)                                                                           \	debugf(&quot;[DEBUG] %s:%d:%s: &quot; fmt &quot;\n&quot;, __FILE__, __LINE__, __func__, ##__VA_ARGS__)#define debugk_int(x)                                                                              \	debugf(&quot;[DEBUG] %s = %d\n&quot;, #x, (int)(x))#define debugk_uint(x)                                                                             \	debugf(&quot;[DEBUG] %s = %u\n&quot;, #x, (u_int)(x))#define debugk_hex(x)                                                                              \	debugf(&quot;[DEBUG] %s = 0x%x\n&quot;, #x, (u_int)(x))#define debugk_char(x)                                                                             \	debugf(&quot;[DEBUG] %s = &#x27;%c&#x27; / 0x%x\n&quot;, #x, (char)(x), (u_int)(unsigned char)(x))#define debugk_str(x)                                                                              \	debugf(&quot;[DEBUG] %s = \&quot;%s\&quot;\n&quot;, #x, (char *)(x))#define debugk_ptr(x)                                                                              \	debugf(&quot;[DEBUG] %s = 0x%x\n&quot;, #x, (u_int)(x))#else#define debugk(fmt, ...) ((void)0)#define debugk_int(x) ((void)0)#define debugk_uint(x) ((void)0)#define debugk_hex(x) ((void)0)#define debugk_char(x) ((void)0)#define debugk_str(x) ((void)0)#define debugk_ptr(x) ((void)0)#endif
+这样在任何地方直接 debugk("...")
+就能输出调试信息了，还提供了几个针对常见类型（int / uint / hex / char /
+str / ptr）的快捷宏，一行就能把变量名和值都打出来。
+]]></content>
+      <categories>
+        <category>操作系统</category>
+      </categories>
+      <tags>
+        <tag>OS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OO U2学习与反思</title>
+    <url>/2026/04/26/BUAA-OO%20U2%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
+    <content><![CDATA[第二单元 OO 学习与反思
+一、同步块的设置和锁的选择
+锁的设置与演变
 
-采用模块化的思想，我的最终架构可以分为以下几个核心模块：
-1. 入口与控制层
+第五次作业：一开始，为了稳妥，我把主要的同步块都放在了共享的
+BaseQueue 里，
+offer、take、isEmpty
+这些方法全加上了
+synchronized。这时候逻辑比较简单，锁住队列本身就能解决大部分并发读写的问题，线程等待也是靠
+wait() 和 notifyAll()
+在队列对象上完成。
+第六次作业：到了第六次作业，加了检修机制和自由分配电梯的逻辑。我在各个电梯井
+ElevatorThread
+里加了一些状态控制，由于状态会被电梯和调度器同时访问，我在通知电梯改变状态的时候，借用了电梯专属的
+processQueue 的锁来做 notifyAll。此时调度器
+DispatchThread 拿 scheduleQueue
+的锁，电梯拿自己的 processQueue
+锁，分工明确，基本没有问题。
+第七次作业：这次的重点是换乘层 F2 的防撞。我给
+ElevatorShaft 专门加了个显式的公平锁
+ReentrantLock f2Lock。当任意一轿厢需要进入 F2
+层时，必须在执行 moveOneFloor 前通过
+f2Lock.lock()
+获取锁，离开后释放锁。同时，我将处理语句精简为仅包含进入、停留和离开 F2
+层的动作，使锁的粒度最小，保证安全的同时最大化了电梯的效率。
 
-Main：程序入口，仅用于初始化Scanner、冒险者容器advs、关系管理器rm，并创建总控制器CommandUtil。
-CommandUtil：系统的总控制器。
+锁与同步块内处理语句的关系
+随着作业迭代，我逐渐体会到，锁的作用不仅仅是“互斥”，更是为了保证同步块内的一组处理语句原子性地维护某个对象的属性，我们不能把紧密关联的操作拆分到不同的同步块中。
 
-控制：负责解析所有用户命令。它从Main接收Scanner，通过switch语句分发指令（
-“aa”, “ab”, “fight”, “use” 等）。
-协作：作为协调者，调用 Adventurer
-类的业务方法和 RelationManager 的关系处理方法。
+队列的存取操作：在执行 offer 和
+take
+时，“检查队列状态”、“修改队列元素”、“唤醒等待线程”必须包裹在同一个
+synchronized
+块中。如果将检查和取数分开，就可能出现两个线程同时判断队列非空，然后试图取出同一个请求的危险情况。
+状态修改与通知的绑定：在 hw6
+中，调度器往电梯派发新请求或下发指令时，“修改共享状态”和“调用
+notifyAll()”这两步处理语句必须在同一个同步块内完成。如果先修改状态，出锁后再去
+notifyAll，这期间电梯可能恰好去检查状态并因错过了通知而陷入无休止的等待。
+多条件检查的原子性：在 hw7 的 F2
+防撞逻辑中，“检查对向轿厢是否占用 F2”以及“登记当前轿厢即将进入
+F2”这两步处理语句，必须包裹在同一个 f2Lock
+的临界区内。如果检查和登记被拆分，两部轿厢可能在同一时刻都发现 F2
+空闲，并同时进入 F2 发生碰撞。
 
+二、调度器设计
+调度器交互设计
+我的代码采用了层次化的调度架构：InputThread -&gt;
+ScheduleQueue -&gt; DispatchThread -&gt;
+ProcessQueue -&gt;
+ElevatorThread，如下图所示。
+调度器 DispatchThread
+作为中枢，一旦有新乘客请求，就将其从 ScheduleQueue
+中取出，并通过策略类 ShadowDispatchStrategy
+为其分配最合适的电梯，最后将乘客放入对应电梯的 ProcessQueue
+中，并通过 notifyAll()
+唤醒处于等待状态的电梯。这种设计实现了调度与执行的解耦，调度器不需要干预电梯的运行状态，只需通过队列进行基于数据的交互。
+调度策略与性能指标
 
-2. 核心实体层
+运行策略：单部电梯采用了经典的 LOOK
+算法，在当前方向上有请求时继续运行，否则反转方向，能有效减少不必要的移动时间。
+分配策略：从第六次作业开始，我实现了“影子电梯”策略。在分配乘客时，系统会深拷贝每一部电梯的当前状态，在后台通过模拟该电梯运行完所有请求以及所需的代价。
+多指标权衡：我影子电梯的代价函数综合考虑了运行时间和耗电量。时间代价根据模拟运行到达目标层的时间计算，耗电量代价则根据模拟过程中的
+ARRIVE、OPEN/CLOSE
+次数计算，最终将指标加权求和，寻找代价最小的电梯进行分配。针对可能的维护和双轿厢改造与回收，调度器会给这些电梯一些惩罚，避免将新乘客分配给它们。
 
-Adventurer：管理冒险者的所有属性和行为。
+三、bug分析与debug方法
+出现过的bug
+我只有 hw7 互测中被人发现了bug。错误的输出部分如下：
+[49.8510]RECYCLE-ACCEPT-7[49.8520]RECYCLE-BEGIN-7[49.8530]RECEIVE-100-7
+原因是副轿厢 7 已经进入了 RECYCLE_BEGIN 状态，却还
+RECEIVE
+了新乘客。经过我的排查，发现我的调度器在计算代价的时候，副轿厢 7
+的状态可能还是正常的（或者正好处于
+REC_ACCEPT）。调度器决定把乘客分给 7
+号，但是在它计算完、准备输出接受信息的微小时间间隙里，副轿厢 7
+直接把乘客清空、关门，并输出了 RECYCLE-BEGIN
+改变了状态。等调度器输出 RECEIVE 的时候，副轿厢 7
+已经变成不可接收请求的状态了。总的来说，是因为我电梯调度和输出
+RECEIVE
+并没有被包裹在同一个原子操作里，导致被其他线程修改了状态。
+多线程程序的debug方法
+经历了这三次作业，我总结出了一套多线程调试方法：
 
-属性管理：管理基础属性（hitPoint,
-baseAtk, baseDef, mana,
-money）及状态（dead）。
-物品管理：
+理清共享对象边界：在排查问题前，先明确哪些对象会被多个线程同时读写。对于不共享的局部状态，交由电梯线程独占推进即可，不需要过度担心并发。
+重点排查线程唤醒逻辑：可以利用输出语句检查
+wait() 和 notifyAll()
+的配对情况。特别关注如输入关闭、状态转换等边界事件，看看是否在这些特殊时刻漏了唤醒，导致线程睡死。
+针对输出日志反推状态：多线程由于难以稳定地单步断点调试，我们往往去参考输出日志。我会检查
+RECEIVE、IN、OUT
+是否成对出现，电梯的各种输出顺序是否符合题意。对报错的特定行，我根据前面的输出反推当时各个线程所处的状态。
+搭建评测机：我依旧会搭建评测机来进行高强度的生成请求。一旦评测报告错误，立马固定测试用例，保留当时的输入输出，然后再进行针对性的排查。
 
-items：存储冒险者拥有的所有物品。
-bottleBackpack：药水瓶背包，采用LinkedHashMap这一数据结构，通过重写removeEldestEntry方法，实现了“最多携带10个药水瓶，超出时移除最旧条目”的逻辑。
+四、线程安全与层次化设计
+线程安全
+线程安全不是随意在方法上加 synchronized
+就能实现，滥用锁反而会导致性能下降和死锁。我感觉，理清数据流动的模型是保障线程安全的前提。U2
+中，只有队列被多个线程共享，因此只需将队列封装为线程安全的类。对于电梯内部的载重、当前楼层等状态，只由电梯线程自己修改，天然是线程安全的，不需要额外加锁。同时，一定要保持锁的获取顺序一致，并避免在同步块内调用耗时的方法。
+层次化设计
+层次化设计也有效降低了系统的耦合度。从数据流向上，我的架构可以划分为“输入层
+-&gt; 分派层 -&gt;
+执行层”。从类的结构上，我将“执行动作（ElevatorThread）”、“运行策略（MoveStrategy）”和“分配策略（ShadowDispatchStrategy）”严格剥离。面对
+hw7
+的复杂需求，由于具备良好的层次结构，我只需在电梯井层面维护两部电梯，并引入题干中新增的几个状态，而无需重构底层移动和开关门等逻辑。
+五、大模型使用心得
 
-技能与关系：spells
-存储学会的法术，superior和subordinates记录雇佣关系。
-行为管理：封装了addBottle,
-addEquipment, learnSpell,
-takeItem 等所有逻辑。
+模型名称：Gemini
+任务分工：我负责架构设计和核心状态机的定义等，并编写主要的核心代码，只有不太熟悉的地方，如
+synchronized
+等多线程相关代码的写法，才会询问大模型。写完后，大模型负责帮我检查代码逻辑和
+debug，比如说影子电梯深拷贝代码等。
+复杂任务中的优势：在面临多线程电梯这样复杂的任务时，大模型的逻辑梳理能力非常突出。当我描述双轿厢改造流程时，它能迅速生成清晰的状态机框架；在排查死锁时，把相关输入输出描述给大模型，它思考后往往能一针见血地指出问题。
+面临的困难：大模型由于缺乏整体代码库的上下文，有时会“自作主张”地引入一些不需要的类，如果直接复制粘贴，极易引入隐蔽的
+bug。
+总体感受：大模型是一位极为高效的助手，但多线程代码的底线还是必须由我们把控。只有自己深刻理解了并发机制，才能审查
+AI 代码，将其转化为真正的生产力。
 
-
-3. 物品与技能系统
-
-Item
-(抽象类)：所有物品的顶层基类。
-Usable
-(接口)：定义了“可使用物品”的规范。
-Bottle
-(抽象类)：继承于Item，并实现了Usable接口。派生出HpBottle等具体药水类。
-Equipment
-(抽象类)：继承自Item。派生出Armour
-和Weapon (抽象类)。Weapon
-进一步派生出Sword 和Magicbook。
-Spell
-(抽象类)：实现了Usable接口。派生出HealSpell
-和AttackSpell。
-
-4. 关系管理模块
-
-RelationManager：负责处理冒险者间的雇佣关系，提供关系的添加、删除、死亡处理等操作。
-LrParser：配合CommandUtil
-使用的递归下降解析器，用于解析”lr”指令，并通过调用rm
-的方法建立雇佣关系。
-
-5. 工具/辅助类
-
-Factory：实现了工厂模式。提供一系列方法，如createBottle，用于创建对象实例。
-
-架构调整及考虑
-
-CommandUtil的添加：最初对指令的处理全部由Main类完成，随着指令的增加，Main类变得过于臃肿，且超出代码行数限制，因此引入该类专门负责读取和解析指令，使Main类仅仅作为程序入口。
-Factory的添加：随着迭代的进行，Bottle和Equipment等都有了多个子类，这时需要根据某一物品所属的子类名来相应地创建对象，为了降低项目的耦合度，便添加了Factory工厂类来专门创建对象。
-RelationManager的添加：第六次作业引入了雇佣关系，需要管理各个冒险者之间的关系，为避免Adventurer类中耦合度过高，引入了该类来统一完成关系的添加、删除、查询等操作。
-
-二、使用JUnit的心得体会
-
-JUnit即”Java单元测试“，指针对每一个Java类（主类除外），都编写多个测试函数来测试该类的方法是否达到了预期的功能，并测试各种不同情况下方法的稳健性，可以检测Java项目中是否存在低级的逻辑问题。
-之前的程序设计过程中，我们大多是通过构造测试数据，将程序的输出与答案进行对比，来排除程序的问题；而通过JUnit，我们可以初步检验每个类、每个方法的正确性，从而减少测试的工作量。
-JUnit促使我们思考边界情况。
-编写测试用例的过程，也是对自己代码的再次检查。我们可以测试很多种边界情况，比如正常参数、null、0等，当然前提必须是满足题干中的数据范围。这一步能提前找出很多代码漏洞，极大减少了后期调试的麻烦。
-
-三、学习OOPre的心得体会
-
-在OOPre的学习中，我掌握了Java的基本语法和常见的数据容器等。相比“原始”的C语言，Java语言明显更加现代，比如Java将C语言中复杂的指针替换成了“引用”。此外，C语言不注重类型的检查，有很多自动类型转化的例子，而Java却对此要求很严格，比如if和while的判断条件中必须是boolean类型，之前我们可能习惯了的if(a)，必须再改成if(a!=0)，此外还要多注意操作的某个对象是否为null，否则程序可能会抛出异常。
-我最大的收获是从“面向过程”到“面向对象”的思维转变。
-之前我们大多在完成一道道编程题目，仅仅追求AC，而不关注代码可读性、可扩展性等等。而现在我们要迭代开发项目，这便要求我们保持良好的代码风格，提高程序的可读性等。
-在学习工程模式等设计模式时，我也感受到开发的规范性，原来这些方法都有对应的理论支持，而不是凭空想出来的策略。比如我在第一部分架构设计中提到的Factory类，就是对“工厂模式”的一次具体实践，它帮助我将“对象的创建”与“对象的使用”解耦，降低了代码耦合度。
-在使用git的过程中，我也感受到了现代版本管理系统的强大功能，通过在终端输入指令或者图形化界面，我们便可以轻松实现一个项目的不同版本间的转换。但我的git相关知识还仅限于成功提交作业，希望在未来我能够进一步深入学习git相关知识。
-
-四、对OOPre课程的简单建议
-在听课过程中某些概念不好理解，比如“观察者模式”等，只听概念的话有一种云里雾里的感觉，希望以后多讲一些相关代码示例，从而提高学习效率。
+六、第二单元的体验与建议
+真实感受
+第二单元的电梯作业无疑是 OO
+中思维跨度最大的一环，从串行转向并发是一个痛苦但也充满成就感的过程。hw6
+中，我设计影子电梯调优耗费了大量精力，第七次作业的双轿厢逻辑中我也遇到了很多的细节问题，比如说在
+F2
+换乘的写法等。但最终看着电梯高效地运送着乘客而不发生任何死锁，这种获得感也是难以言喻的。
+课程建议
+希望能稍微介绍一下相关电梯调度名词具体是什么意思，比如量子电梯、自由竞争等，网上相关的资料也很少。
 ]]></content>
       <categories>
         <category>面向对象</category>
@@ -3889,6 +3472,30 @@ C 语言指针的功底了。
       </tags>
   </entry>
   <entry>
+    <title>BUAA-OS Lab5上机</title>
+    <url>/2026/05/27/BUAA-OS%20Lab5%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 MOS 磁盘管理与文件系统。
+课上题目
+Exam
+点击查看题面
+这道题需要实现类似于 ls
+的功能，只要掌握了读取文件的那几个函数，难度就不大。
+Extra
+点击查看题面
+这道题要求增加三个文件相关的操作，其中一个给出了完整流程，另外两个可以照葫芦画瓢，相比往年难度也不大。
+笔者的话
+Lab5 是内容最丰富的一个
+Lab：从磁盘结构，到复杂的文件系统，涉及大量函数之间的相互调用。不过实际需要熟练使用的，主要是根据路径读取文件的那几个函数，其余部分大致理解即可。另外这一节涉及好几个相似的结构体，比如
+Fd、Filefd、Open，可以把这些结构体的定义打印出来带进考场方便查阅，甚至那些复杂的函数接口也可以印出来，一定要利用好开卷考试的这个特点。
+]]></content>
+      <categories>
+        <category>操作系统</category>
+      </categories>
+      <tags>
+        <tag>OS</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>BUAA-OS Lab2上机</title>
     <url>/2026/04/15/BUAA-OS%20Lab2%E4%B8%8A%E6%9C%BA/</url>
     <content><![CDATA[本节考查内容为 MOS 内存管理。
@@ -3907,87 +3514,8 @@ pte_va() 和 pde_va() 的 30 分。
 逐渐上难度。这一部分内容繁杂：宏形式的双向链表、虚拟内存管理的一系列函数、以及
 TLB 相关机制，整套流程理清下来我花了很长时间。
 这次的
-Extra，鉴于当时多数人对自映射理解都不深入，根据往年情况能做出来的人极少，也算是
-lmhgg 留下的一道杰作。
-]]></content>
-      <categories>
-        <category>操作系统</category>
-      </categories>
-      <tags>
-        <tag>OS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-OS Lab3上机</title>
-    <url>/2026/04/29/BUAA-OS%20Lab3%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 MOS 进程管理与异常处理。
-课上题目
-Exam
-点击查看题面
-这道题在 RR 基础上，增加了 SRTF 调度算法，整体难度不大。
-Extra
-点击查看题面
-这道题增加了一种新的异常，要求实现其处理方法，和往届题目类似。
-笔者的话
-Lab3 内容依旧很丰富：从各种 env_
-开头的进程处理函数，到异常的分发，还涉及大量 C
-与汇编的相互调用，非常考验基础功底。
-Lab3 的上机题相对固定，根据往年情况，Exam
-通常是增加新的调度算法，Extra
-通常是增加新的异常，这次也不例外。但我中途出了个奇怪的问题：似乎误改了某个文件，而这个文件还很长，最后连自己也不知道到底动了哪里，只好切到
-lab3 分支把它复原，耽误了不少时间。
-这段经历带来的启发是：vim 编辑器的使用门槛较高，尤其和 VSCode
-比复杂了不少，许多人都用得不太顺手。可以让你的 AI 帮忙写一份合适的
-.vimrc，用起来会舒服很多，比如 set mouse=a
-可以让鼠标直接移动光标，不必一直 j
-k。此外，想同时看多个代码文件时，有人用
-tmux，但据说存在一些奇怪的兼容问题；也有人开多个跳板机；还有人直接进
-GitLab 仓库看代码，八仙过海各显神通。至于代码编辑，有人不愿用
-vim，直接在记事本里写代码，个人体验下来还是不如 CLion 或
-VSCode，最起码多了语法高亮等功能。当然最理想的方式是 ssh 连接到
-VSCode，能力强的同学可以尝试在短时间内配好 ssh，反正我没成功过（）
-Extra 也吃了准备不充分的亏，考前没有仔细看往届博客。lmhgg
-博客
-已经把这部分常用的代码整理好了，大家可以直接手抄或者打印下来带进考场，一定不要忘记
-OS
-上机是开卷的。有了这串代码，再做一做往年题目，相信这道题难度就不算大了。还有一点：如果代码运行结果有问题，一定要调试，而不要用肉眼
-debug。教程中有详细的 gdb 调试步骤，有余力可以学习；也可以采用 printf
-大法（在这里应该叫 printk
-大法），将一些中间变量输出出来观察。如果更用心一点，可以直接在相关头文件中加入一些调试宏，我写的宏如下：
-在 include/printk.h 中（内核态使用
-printk）：
-#ifndef DEBUGK_ENABLE#define DEBUGK_ENABLE 1#endif#if DEBUGK_ENABLE#define debugk(fmt, ...)                                                                           \	printk(&quot;[DEBUG] %s:%d:%s: &quot; fmt &quot;\n&quot;, __FILE__, __LINE__, __func__, ##__VA_ARGS__)#define debugk_int(x)                                                                              \	printk(&quot;[DEBUG] %s = %d\n&quot;, #x, (int)(x))#define debugk_uint(x)                                                                             \	printk(&quot;[DEBUG] %s = %u\n&quot;, #x, (u_int)(x))#define debugk_hex(x)                                                                              \	printk(&quot;[DEBUG] %s = 0x%x\n&quot;, #x, (u_int)(x))#define debugk_char(x)                                                                             \	printk(&quot;[DEBUG] %s = &#x27;%c&#x27; / 0x%x\n&quot;, #x, (char)(x), (u_int)(unsigned char)(x))#define debugk_str(x)                                                                              \	printk(&quot;[DEBUG] %s = \&quot;%s\&quot;\n&quot;, #x, (char *)(x))#define debugk_ptr(x)                                                                              \	printk(&quot;[DEBUG] %s = 0x%x\n&quot;, #x, (u_int)(x))#else#define debugk(fmt, ...) ((void)0)#define debugk_int(x) ((void)0)#define debugk_uint(x) ((void)0)#define debugk_hex(x) ((void)0)#define debugk_char(x) ((void)0)#define debugk_str(x) ((void)0)#define debugk_ptr(x) ((void)0)#endif
-在 user/include/lib.h 中（用户态使用
-debugf，前面加一段 #undef
-防止和内核态的宏冲突）：
-#ifdef debugk#undef debugk#endif#ifdef debugk_int#undef debugk_int#endif#ifdef debugk_uint#undef debugk_uint#endif#ifdef debugk_hex#undef debugk_hex#endif#ifdef debugk_char#undef debugk_char#endif#ifdef debugk_str#undef debugk_str#endif#ifdef debugk_ptr#undef debugk_ptr#endif#ifndef DEBUGK_ENABLE#define DEBUGK_ENABLE 1#endif#if DEBUGK_ENABLE#define debugk(fmt, ...)                                                                           \	debugf(&quot;[DEBUG] %s:%d:%s: &quot; fmt &quot;\n&quot;, __FILE__, __LINE__, __func__, ##__VA_ARGS__)#define debugk_int(x)                                                                              \	debugf(&quot;[DEBUG] %s = %d\n&quot;, #x, (int)(x))#define debugk_uint(x)                                                                             \	debugf(&quot;[DEBUG] %s = %u\n&quot;, #x, (u_int)(x))#define debugk_hex(x)                                                                              \	debugf(&quot;[DEBUG] %s = 0x%x\n&quot;, #x, (u_int)(x))#define debugk_char(x)                                                                             \	debugf(&quot;[DEBUG] %s = &#x27;%c&#x27; / 0x%x\n&quot;, #x, (char)(x), (u_int)(unsigned char)(x))#define debugk_str(x)                                                                              \	debugf(&quot;[DEBUG] %s = \&quot;%s\&quot;\n&quot;, #x, (char *)(x))#define debugk_ptr(x)                                                                              \	debugf(&quot;[DEBUG] %s = 0x%x\n&quot;, #x, (u_int)(x))#else#define debugk(fmt, ...) ((void)0)#define debugk_int(x) ((void)0)#define debugk_uint(x) ((void)0)#define debugk_hex(x) ((void)0)#define debugk_char(x) ((void)0)#define debugk_str(x) ((void)0)#define debugk_ptr(x) ((void)0)#endif
-这样在任何地方直接 debugk("...")
-就能输出调试信息了，还提供了几个针对常见类型（int / uint / hex / char /
-str / ptr）的快捷宏，一行就能把变量名和值都打出来。
-]]></content>
-      <categories>
-        <category>操作系统</category>
-      </categories>
-      <tags>
-        <tag>OS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-OS Lab5上机</title>
-    <url>/2026/05/27/BUAA-OS%20Lab5%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 MOS 磁盘管理与文件系统。
-课上题目
-Exam
-点击查看题面
-这道题需要实现类似于 ls
-的功能，只要掌握了读取文件的那几个函数，难度就不大。
-Extra
-点击查看题面
-这道题要求增加三个文件相关的操作，其中一个给出了完整流程，另外两个可以照葫芦画瓢，相比往年难度也不大。
-笔者的话
-Lab5 是内容最丰富的一个
-Lab：从磁盘结构，到复杂的文件系统，涉及大量函数之间的相互调用。不过实际需要熟练使用的，主要是根据路径读取文件的那几个函数，其余部分大致理解即可。另外这一节涉及好几个相似的结构体，比如
-Fd、Filefd、Open，可以把这些结构体的定义打印出来带进考场方便查阅，甚至那些复杂的函数接口也可以印出来，一定要利用好开卷考试的这个特点。
+Extra，鉴于当时多数人对自映射理解都不深入，做出来的人极少，也算是 lmhgg
+留下的一道杰作。
 ]]></content>
       <categories>
         <category>操作系统</category>
@@ -4022,82 +3550,475 @@ Lab4 的主要内容是理解系统调用的完整链路，此外 fork
       </tags>
   </entry>
   <entry>
-    <title>BUAA-信号处理与信息推断 期末考题回忆版</title>
-    <url>/2026/06/15/BUAA-%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E4%B8%8E%E4%BF%A1%E6%81%AF%E6%8E%A8%E6%96%AD%20%E6%9C%9F%E6%9C%AB%E8%80%83%E9%A2%98%E5%9B%9E%E5%BF%86%E7%89%88/</url>
-    <content><![CDATA[写在前面
-本文为 2026
-春季学期《信号处理与信息推断》课程期末考试的回忆整理版本，题干表述在原始记忆基础上做了润色，部分历史事件补充了可查证的背景资料，供后续同学参考。
+    <title>BUAA-OO U1学习与反思</title>
+    <url>/2026/03/31/BUAA-OO%20U1%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
+    <content><![CDATA[第一单元 OO 学习与反思
+一、 度量分析
+1. 类与复杂度分析
+基于最终的作业代码，我对核心类进行了度量分析：
+
+
+
+Class
+OCavg
+OCmax
+WMC
+
+
+
+
+ChoiceFactor
+1.5
+2
+3
+
+
+DeriveFactor
+2.5
+4
+5
+
+
+ExpFactor
+1
+1
+2
+
+
+Expr
+1.33
+2
+4
+
+
+FuncFactor
+2.67
+5
+8
+
+
+FuncFactor.RecCacheKey
+1.67
+3
+5
+
+
+FuncReg
+1
+1
+4
+
+
+FuncReg.FuncDef
+1
+1
+2
+
+
+FuncReg.RecDef
+1
+1
+15
+
+
+Lexer
+2.8
+9
+14
+
+
+MainClass
+3
+3
+3
+
+
+Mono
+4.04
+14
+105
+
+
+Number
+1
+1
+2
+
+
+Parser
+2.09
+7
+46
+
+
+Poly
+3.41
+10
+58
+
+
+Power
+2.5
+4
+5
+
+
+Processor
+2
+2
+2
+
+
+Sign
+3
+6
+9
+
+
+Term
+1.67
+3
+5
+
+
+
+根据表格可以看到，最复杂的三个类依次是
+Mono、Poly、Parser。在
+Mono
+类中，我定义了许多方法，不仅包括基本的代数运算（如求导等），还为了追求极致的最短输出长度而定义了化简方法，这在一定程度上违反了单一职责原则。Poly
+类则相对干练，主要负责加、减、乘、幂等多项式间的数学运算以及转化为字符串的
+toString。在 Parser
+中，我采用了递归下降的语法解析方式，针对每一种类型的因子和表达式都编写了解析方法，实现了较好的模块内聚。
+2. 方法复杂度分析
+结合上述类复杂度，我进一步使用工具对部分核心方法进行了度量：
+
+
+
+方法
+CogC
+ev(G)
+iv(G)
+v(G)
+
+
+
+
+Lexer.next()
+10
+2
+8
+9
+
+
+Parser.parseFactor()
+9
+7
+10
+10
+
+
+Poly.equals(Object)
+10
+8
+3
+9
+
+
+FuncFactor.solveRec(int, Poly)
+8
+2
+5
+5
+
+
+Parser.parseRecDef(Scanner)
+7
+3
+4
+5
+
+
+Mono.equals(Object)
+7
+7
+2
+8
+
+
+Poly.power(BigInteger)
+7
+3
+4
+6
+
+
+Poly.multiply(Poly)
+5
+2
+4
+5
+
+
+Mono.derive(String)
+4
+1
+5
+5
+
+
+Poly.toOptimalString(boolean)
+17
+7
+9
+12
+
+
+Mono.toOptimalString(boolean)
+21
+5
+16
+21
+
+
+
+从上表可以看出，Lexer.next() 和
+Parser.parseFactor()
+的分支极多，因为需要处理各种不同的符号和因子。同时
+Parser.parseRecDef(Scanner) 和
+FuncFactor.solveRec
+这类函数函数解析和代入时也具有中等规模的控制流复杂度。Mono
+和 Poly 的 toOptimalString
+承担了输出的任务，这些方法的控制流和圈复杂度非常高，后续如果继续迭代，应考虑将其抽离为独立的
+Printer 类。
+### 3. 类图与设计考虑
+
+classDiagram
+
+    class Factor
+    &lt;&lt;interface&gt;&gt; Factor
+
+    class Number
+    class Power
+    class ExpFactor
+    class FuncFactor
+    class ChoiceFactor
+    class DeriveFactor
+    class Expr
+
+    class Term
+    class Poly
+    class Mono
+    class Sign
+    class FuncReg
+
+    class MainClass
+    class Parser
+    class Lexer
+    class Processor
+
+    Factor &lt;|.. Number : 实现
+    Factor &lt;|.. Power : 实现
+    Factor &lt;|.. ExpFactor : 实现
+    Factor &lt;|.. FuncFactor : 实现
+    Factor &lt;|.. ChoiceFactor : 实现
+    Factor &lt;|.. DeriveFactor : 实现
+    Factor &lt;|.. Expr : 实现 (递归嵌套)
+
+    Expr *--  Term : 包含多个项
+    Term *--  Factor : 包含多个因子
+
+    Poly *--  Mono : 维护单项式 Map
+    Mono --&gt; Poly : 递归包含 expPoly
+    Mono --&gt; Sign : 使用 Sign 作为哈希键
+
+    MainClass --&gt; Parser : 调用
+    Parser --&gt; Lexer : 使用
+    Parser --&gt; Processor : 预处理
+    Parser ..&gt; Factor : 构建 AST 节点
+    FuncFactor --&gt; FuncReg : 查询函数定义
+
+    style Factor fill:#E6E6FA,stroke:#708090,stroke-width:2px
+    style Poly fill:#B0C4DE,stroke:#708090,stroke-width:1px
+    style Mono fill:#B0C4DE,stroke:#708090,stroke-width:1px
+
+顶层控制与解析模块
+
+MainClass：程序启动入口和全局调度者。
+Processor：预处理模块，主要负责清洗字符串中的连续正负号等。
+Lexer：词法分析器，将纯文本字符流转化为 Token 流。
+Parser：语法分析器，使用递归下降，将 Token
+流转化为抽象语法树（AST）。
+FuncReg：全局函数注册表，管理所有自定义函数及递推函数的定义。
+
+抽象语法树节点
+
+Factor ：因子接口，通过统一的 toPoly()
+方法实现了多态。
+Expr：表达式节点，由多个 Term
+的加减组合而成。
+Term：项节点，由多个 Factor
+的连乘组合而成。
+Number：常数因子节点，内部封装了大整数。
+Power：变量幂因子节点，形如 x^n 或 y^n，保存自变量符号及其指数。
+ExpFactor：指数函数因子节点，形如 (\exp(factor))^n，封装了内部表达式及外层乘方指数。
+FuncFactor：函数调用因子节点，负责查表
+FuncReg 并将具体实参代入。
+ChoiceFactor：选择式因子节点，专门保存并解析条件分支表达式
+[?:] 中的四个判断基元。
+DeriveFactor：求导算子因子节点，保存求偏导类型（dx,
+dy, grad）及其作用的表达式模块。
+
+核心引擎计算部分
+
+Poly：程序最核心的计算引擎，使用 HashMap
+维护单项式集合。它实现了多项式的各种代数运算与合并。
+Mono：最小代数运算单元，包含系数、自变量指数级别内部多层嵌套的
+exp 特征多项式。
+Sign：单项式特征类，将 Mono
+剔除系数后剩余的特征抽取为不可变属性，用作哈希键。
+
+
+二、 架构设计体验
+我在三次作业中的宏观架构演进一直保持着高度自洽，且具有良好的向后扩展能力。
+HW1：初识递归下降
+在 HW1，我紧贴指导书规范，建立了一套“词法分析 ⟶ 语法分析 ⟶ 抽象语法树
+⟶ 多项式计算”的架构。这一模型将表达式严格拆解为 Expr ⟶
+Term ⟶ Factor
+的文法节点体系。随后，我对所有层级的子节点统一落实了 toPoly
+这个方法。但在早期理解不深时，我的 Poly 更是粗犷地使用
+ArrayList 线性存储各项
+Mono，合并同类项时就稍显麻烦了，需要专门建立一个指数到系数的
+HashMap 来实现。
+HW2：引入指数函数、自定义函数与选择式因子
+HW2 引入了指数函数 exp()、自定义函数 f(x)
+以及选择式因子 [(A==B)?C:D]。现在单项式不仅有一个
+x 的指数，还包含了以 exp
+包裹的多项式。因此我主要做了以下重构：
+
+重构多项式底层：首先由于数据范围的变化，exponent
+类型需要改成大整数类，然后我将 Mono 扩展为
+Mono(BigInteger coefficient, BigInteger exponent, Poly expPoly)。此外，我还引入了内部类
+Sign ，即去掉系数后的指数和多项式部分， Poly
+类中的 ArrayList ，我也直接换成了从 Sign 到
+Mono 的 HashMap
+，这下就不需要写合并同类项方法了，而是自动实现合并。其实这里完全也可以用从
+Sign 到系数的 HashMap ，但这样的话我的 Mono
+类似乎就有点多余，因此我还是保留了看似复杂的前一种策略。
+函数代入环境字典：为了实现函数形参替换，我没有选择在字符串层次上进行字符串替换（这种应该很容易
+TLE），而是引入了环境字典
+Map&lt;String, Poly&gt; vars。在每个 AST 节点的
+toPoly 方法中传入该字典，从而实现函数调用的解析。
+
+而选择式因子对架构没有影响，按原有架构进行添加即可。
+HW3：求导、双变量与递推函数的加入
+经过 HW2 的小幅重构，面对 HW3 引入的双变量 x 和
+y、求导算子 dx/dy/grad 以及自定义递推函数
+f{n}(x)，我在架构上几乎没有改动。
+对于求导算子 DeriveFactor，我在底层的 Mono 和
+Poly 当中补充了专门的求导方法；针对 y
+的引入，仅需在 Mono 类中增加记录 y
+次幂的专门属性即可。这些新增部分在被 toPoly
+解析处理后，进行运算的依然是和 HW2
+类似的多项式，因此原本的加减乘除及输出逻辑基本不需要修改。
+新的迭代情景：引入三角函数
+如果引入三角函数因子sin(Factor) 与
+cos(Factor) ，并要求合并与化简：
+我目前的架构完全禁得住这项考验。我们只需声明 SinFactor 和
+CosFactor 实现 Factor 接口，并新增
+Parser 中的分支即可。真正的深入修改都在底层架构：我们要给
+Mono 与 Sign
+追加可以记录三角函数特征的属性。唯一的难点其实在于怎样运用诱导公式或两角和差公式等规律去对合并前的
+Poly 加以化简而已。
+
+三、 分析自己程序的 Bug
+在这三次作业的强测与互测中，我唯一被测出 Bug 的地方是在
+HW3，由于化简优化时复杂度控制不当而导致了 TLE。
+- 问题及特征：
+互测房里的同学针对我的代码逻辑，构造了一个使得代码 TLE
+的样例。我出问题的类是 Mono 中的
+toOptimalString() 方法。
+- 深层原因分析：
+原因是，我设定了多项式的项数在小范围时采用状态压缩 DP。该 Hack
+样例利用大量系数相邻的大整数，项数刚好达到我规定的上界，导致程序穷举中产生超时。
+- Bug 复杂度反思：
+回看前面的方法度量分析表，toOptimalString
+的圈复杂度和认知复杂度都比较高。这说明在编写时引入了过多复杂的逻辑分支。修改这个
+bug 的策略，我目前采用的是调小项数搜索范围的上界。
+
+四、 发现别人 Bug
+所采用的策略
+在互测环节中，我主要采用了以下策略：
+
+借助 AI 搭建评测机：我使用 Python
+搭建了评测机脚本。策略是通过大量随机生成的数据测试房间内的 8
+份作业代码，然后将结果使用 Sympy
+库对比来寻找一致性。这能有效找出一些基础的逻辑错误和格式问题，但因为数据是随机生成的，较难定向构造出使得程序
+TLE 的极端数据。
+结合源码阅读定向构造：针对评测机难以覆盖的盲区，我会尝试阅读别人的代码来设计测试用例：
+
+比如看到同学处理三目运算符 [(A==B)?X:Y]
+时将两种选择都进行了计算展开再剪裁，我就会在不选的那一方构造复杂的函数嵌套，使其
+TLE。
+看到有同学采用 String.replaceAll
+这种字符串替换来处理函数代入时，便可以尝试构造多层嵌套函数，使其因耗时太长而TLE。
+
+
+
+五、 分析自己进行的优化
+我在结果长度的化简优化上主要做了以下工作：
+1. 正项优先打印： 通过遍历 Poly 中的各个
+Mono，找到第一个常数系数为正的项并放到最前面输出，去掉了开头的正负号问题，这种优化十分稳定。
+2. 提取公因数： 对于 exp(factor)
+类型，我会遍历其内部各个系数的公约数，提取至外部以缩短总体长度。
+3. 状态压缩优化：
+对于需要拆开内部的项，当项数处于我设定的小范围时，使用状压 DP
+来寻找最优解；超过范围则原样输出。
+这些优化虽然缩减了字符串长度，但在保障了代码的常规简洁性的同时，却并未百分之百保证正确性。过于追求局部最短，使得某些化简方法的圈复杂度攀升，在个别极端数据下出现了
+TLE 的情况。后续的优化应该更加注意平衡正确性与性能之间的关系。
+
+六、 大模型相关使用
+在三次作业中，我只参考了 AI
+给出的架构思路、示例代码和修改建议，并未让其直接编写我的代码。当遇到输出错误、抛异常或是搭建评测机时的各种问题，将报错结合代码抛给
+AI 排查，效果往往非常好。总之，AI
+经过提示后可以精准发现代码逻辑方面的问题，并帮忙修补漏洞。但对于时间复杂度分析和构造那些能让代码运行超时的极端数据，它由于没有全局运行环境概念，仍显力不从心，这时候人工阅读源码构造更为可靠。
+
+七、 心得体会
+经过本单元的学习，我还是收获颇丰的。一开始听说我们要进行表达式深层编译解析时，便想起原先学后缀表达式时的痛苦。但是递归下降和抽象语法树的方法极大地解耦了难度。表达式先被切分为一个个
+Token，再由 Parser 解析对应部分，最终建立 AST。这时节点统一实现的
+toPoly()
+方法发挥功能，将一切降维成多项式，自下而上依次化简计算即可。相对之前理解的后缀表达式，代码行数虽然变多了，但可读性和扩展性却实现了质的飞跃。
+关于 AI 的使用，如今的 AI 驾驭 OO
+作业可以说游刃有余了。我会借此设计架构、学习算法以及进行 Debug
+和辅助构造测试，总体效果不错。但同时也深刻体会到，面向对象编程的相关思考与代码掌控等修养，依然是无法被
+AI 工具完全替代的。
+
+八、 未来方向建议
+整体而言，我们的 OO
+课在难度递进设计上已经非常合理了，第一单元的课程安排也很完备。唯独建议在性能优化方面，可以再多给一些相关的指导提示，或者在单元结束后公布一下
+std
+标程用的具体优化方法。我还是十分好奇采用什么方法能在时间限制下将表达式化至最短的。
+
+九、 思考题
 1.
-写出贝叶斯定理的完整数学表达式，并分别叙述”后验概率”、“先验概率”与”似然概率”三者在贝叶斯推断框架中的含义，结合一个具体实例加以说明。
+如何检查输入是否符合要求？
+建议进行双重检查，大致如下：
+首先在预处理入口处：使用正则表达式扫描字符串，排查非法符号、不合规操作符组合（如
+** 等）。第二层在 Parser
+递归下降流程中：如果遇到偏离文法规则的分支，可以直接抛出对应的自定义异常。
 2.
-分别叙述随机事件”独立”与”条件独立”的含义，并分别举例说明。
-3.
-某项疾病检测中，已知人群中该疾病的患病率、患病条件下检测结果为阳性的概率，以及未患病条件下检测结果为阳性的概率。请利用贝叶斯定理，求某受试者在检测结果为阳性的条件下，其真实患病的概率（原题中给出了具体数值）。
-4.
-一位来自德国的经济学家在近三届世界杯前均对最终冠军的归属做出了公开预测，并连续三次预测正确。因此有人认为，其对本届世界杯冠军的预测同样值得信赖。请问你是否认同这一看法？请从贝叶斯信息推断的角度阐述你的理由。
-5.
-网络上流传的各类”高分秘籍”通常宣称：由于高分学生普遍具备若干共同特征，因此普通学生只要模仿并践行这些特征，也能获得高分。请运用贝叶斯定理，指出上述推理逻辑中存在的问题（要求显式写出相关数学公式）。
-6. 在经典的”狼来了”寓言中，假设孩子诚实的先验概率为
-0.9，在孩子诚实的条件下单次骗人的概率为
-0.1，在孩子不诚实的条件下单次骗人的概率为
-0.7，且两次骗人事件在给定孩子诚实性的条件下相互独立。请计算在观测到孩子连续两次说谎之后，村民仍认为该孩子诚实的后验概率。
-7.
-你近日突发腹痛，就医后医生判断该症状可能由两种疾病之一引起。现已知其中一种疾病条件下出现腹痛的概率，为得出可信的鉴别诊断结论，你还需要以下哪一项额外信息？请写出所选选项并说明理由。
-A. 另一种疾病条件下出现腹痛的概率
-B. 该疾病条件下出现其他症状的概率
-C. 另一种疾病条件下出现其他症状的概率
-8.
-作为一名大二/大三阶段的本科生，你面前有以下四条主要发展路径：保研本校、考研外校、出国留学、直接就业。请从中选择其一作为个人目标，运用分层描述法对实现该目标的过程进行建模，并根据个人经验设定相关概率，估算最终目标达成的概率。
-9. 本题原型为美国加利福尼亚州最高法院于 1968 年 3 月
-11 日审结的经典判例 People v. Collins（68 Cal. 2d
-319）。案情概要如下：
-美国加利福尼亚州某市曾发生一起街头抢劫案。案发时，一名年长的女性受害人在人行道上遭到一名年轻女子从背后袭击并被夺走钱包，随后目击者见到该女子迅速逃入一辆停在附近的黄色汽车，车辆由一名男性驾驶员接应后驶离现场。综合案发现场及沿途多名目击者提供的证词，警方整理出如下嫌疑人特征：驾驶员为一名蓄有胡须并留有小胡子的黑人男性，女性同伙为一名梳有金色马尾辫的白人女性，二人为一对跨种族情侣，逃逸所用车辆为一辆黄色汽车。数日后，警方以一对与上述描述较为吻合的男女嫌疑人
-Malcolm Ricardo Collins 及其同伴为被告提起公诉。
-由于本案的物证与直接目击辨认均存在一定不确定性，控方在庭审中转而采取了一种当时颇为新颖的证明策略：传唤一名数学教师作为专家证人出庭，向陪审团讲解概率论中的乘法法则。该专家在陈述过程中未讨论各特征之间是否存在条件依赖关系，直接以”相互独立”作为默认前提。控方进而请陪审团就上述六项特征在总人群中出现的频率分别做出估计，并采用了如下的示例数值：
-
-
-
-特征
-控方所采用的估计频率
-
-
-
-
-男方蓄有胡须
-1/10
-
-
-男方留有小胡子
-1/4
-
-
-女方为金发
-1/3
-
-
-女方梳有马尾辫
-1/10
-
-
-所驾车辆为黄色
-1/10
-
-
-男女为跨种族情侣同乘一车
-1/1000
-
-
-
-控方将上述六项频率逐项直接相乘，得到”随机一对情侣同时具备全部六项特征”的联合概率约为
-1/12{,}000{,}000。控方据此向陪审团陈词：具备如此稀有特征组合的情侣在人群中出现的概率极低，这对被告不可能仅是巧合意义上的”恰好符合特征者”，因此几乎必然即为本案真凶。陪审团采纳了控方的上述推理，最终作出有罪判决。案件随后被被告上诉至加州最高法院。请运用贝叶斯信息推断的思维框架，指出上述控方概率推理过程中存在的问题。
-10.
-请结合本学期学习本课程的整体感受，谈谈你在本课程中的体会与收获，说明令你印象最为深刻的一个案例，并对授课教师提出建议。
+如何精确计算一个合法输入的 cost？
+通过在各个抽象语法树节点类中声明 getCost()
+方法，可以实现自顶向下的递归计算。对于基础的加减乘除和常数，直接按指导书的运算法则进行累加或相乘；对于函数调用，需要将实参代入到函数定义的
+AST
+中生成新表达式，再递归计算；对于选择式因子，必须在计算时判断条件表达式是否恒等，从而动态累加正确分支的代价；最后，由于求导等算子涉及代价的指数增长，在内部实现时需使用
+BigInteger 来防溢出。
 ]]></content>
       <categories>
-        <category>信号处理与信息推断</category>
+        <category>面向对象</category>
       </categories>
       <tags>
-        <tag>Bayes</tag>
+        <tag>Java</tag>
+        <tag>OO</tag>
       </tags>
   </entry>
   <entry>
@@ -7011,6 +6932,85 @@ P(H|E) = P(H)
 看守先验，警惕操纵：不要被极具共鸣的“伪实锤”裹挟，警惕媒体有偏采样的毒害，拒绝成为信息茧房里的偏执狂。
 
 愿你在未来的生活、学习与决策中，将“先验-观测-更新-后验”的心智循环周而复始地运行下去。承认世界之不确定，拥抱信息之更新，做一个个体认知不断进化、终身自我修正的贝叶斯主义者。
+]]></content>
+      <categories>
+        <category>信号处理与信息推断</category>
+      </categories>
+      <tags>
+        <tag>Bayes</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-信号处理与信息推断 期末考题回忆版</title>
+    <url>/2026/06/15/BUAA-%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E4%B8%8E%E4%BF%A1%E6%81%AF%E6%8E%A8%E6%96%AD%20%E6%9C%9F%E6%9C%AB%E8%80%83%E9%A2%98%E5%9B%9E%E5%BF%86%E7%89%88/</url>
+    <content><![CDATA[写在前面
+本文为 2026
+春季学期《信号处理与信息推断》课程期末考试的回忆整理版本，题干表述在原始记忆基础上做了润色，部分历史事件补充了可查证的背景资料，供后续同学参考。
+1.
+写出贝叶斯定理的完整数学表达式，并分别叙述”后验概率”、“先验概率”与”似然概率”三者在贝叶斯推断框架中的含义，结合一个具体实例加以说明。
+2.
+分别叙述随机事件”独立”与”条件独立”的含义，并分别举例说明。
+3.
+某项疾病检测中，已知人群中该疾病的患病率、患病条件下检测结果为阳性的概率，以及未患病条件下检测结果为阳性的概率。请利用贝叶斯定理，求某受试者在检测结果为阳性的条件下，其真实患病的概率（原题中给出了具体数值）。
+4.
+一位来自德国的经济学家在近三届世界杯前均对最终冠军的归属做出了公开预测，并连续三次预测正确。因此有人认为，其对本届世界杯冠军的预测同样值得信赖。请问你是否认同这一看法？请从贝叶斯信息推断的角度阐述你的理由。
+5.
+网络上流传的各类”高分秘籍”通常宣称：由于高分学生普遍具备若干共同特征，因此普通学生只要模仿并践行这些特征，也能获得高分。请运用贝叶斯定理，指出上述推理逻辑中存在的问题（要求显式写出相关数学公式）。
+6. 在经典的”狼来了”寓言中，假设孩子诚实的先验概率为
+0.9，在孩子诚实的条件下单次骗人的概率为
+0.1，在孩子不诚实的条件下单次骗人的概率为
+0.7，且两次骗人事件在给定孩子诚实性的条件下相互独立。请计算在观测到孩子连续两次说谎之后，村民仍认为该孩子诚实的后验概率。
+7.
+你近日突发腹痛，就医后医生判断该症状可能由两种疾病之一引起。现已知其中一种疾病条件下出现腹痛的概率，为得出可信的鉴别诊断结论，你还需要以下哪一项额外信息？请写出所选选项并说明理由。
+A. 另一种疾病条件下出现腹痛的概率
+B. 该疾病条件下出现其他症状的概率
+C. 另一种疾病条件下出现其他症状的概率
+8.
+作为一名大二/大三阶段的本科生，你面前有以下四条主要发展路径：保研本校、考研外校、出国留学、直接就业。请从中选择其一作为个人目标，运用分层描述法对实现该目标的过程进行建模，并根据个人经验设定相关概率，估算最终目标达成的概率。
+9. 本题原型为美国加利福尼亚州最高法院于 1968 年 3 月
+11 日审结的经典判例 People v. Collins（68 Cal. 2d
+319）。案情概要如下：
+美国加利福尼亚州某市曾发生一起街头抢劫案。案发时，一名年长的女性受害人在人行道上遭到一名年轻女子从背后袭击并被夺走钱包，随后目击者见到该女子迅速逃入一辆停在附近的黄色汽车，车辆由一名男性驾驶员接应后驶离现场。综合案发现场及沿途多名目击者提供的证词，警方整理出如下嫌疑人特征：驾驶员为一名蓄有胡须并留有小胡子的黑人男性，女性同伙为一名梳有金色马尾辫的白人女性，二人为一对跨种族情侣，逃逸所用车辆为一辆黄色汽车。数日后，警方以一对与上述描述较为吻合的男女嫌疑人
+Malcolm Ricardo Collins 及其同伴为被告提起公诉。
+由于本案的物证与直接目击辨认均存在一定不确定性，控方在庭审中转而采取了一种当时颇为新颖的证明策略：传唤一名数学教师作为专家证人出庭，向陪审团讲解概率论中的乘法法则。该专家在陈述过程中未讨论各特征之间是否存在条件依赖关系，直接以”相互独立”作为默认前提。控方进而请陪审团就上述六项特征在总人群中出现的频率分别做出估计，并采用了如下的示例数值：
+
+
+
+特征
+控方所采用的估计频率
+
+
+
+
+男方蓄有胡须
+1/10
+
+
+男方留有小胡子
+1/4
+
+
+女方为金发
+1/3
+
+
+女方梳有马尾辫
+1/10
+
+
+所驾车辆为黄色
+1/10
+
+
+男女为跨种族情侣同乘一车
+1/1000
+
+
+
+控方将上述六项频率逐项直接相乘，得到”随机一对情侣同时具备全部六项特征”的联合概率约为
+1/12{,}000{,}000。控方据此向陪审团陈词：具备如此稀有特征组合的情侣在人群中出现的概率极低，这对被告不可能仅是巧合意义上的”恰好符合特征者”，因此几乎必然即为本案真凶。陪审团采纳了控方的上述推理，最终作出有罪判决。案件随后被被告上诉至加州最高法院。请运用贝叶斯信息推断的思维框架，指出上述控方概率推理过程中存在的问题。
+10.
+请结合本学期学习本课程的整体感受，谈谈你在本课程中的体会与收获，说明令你印象最为深刻的一个案例，并对授课教师提出建议。
 ]]></content>
       <categories>
         <category>信号处理与信息推断</category>
