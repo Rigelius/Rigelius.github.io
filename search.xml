@@ -274,6 +274,200 @@ Numeric Type 属性，一定要改成 Unsigned 而不是
       </tags>
   </entry>
   <entry>
+    <title>BUAA-CO P2上机</title>
+    <url>/2025/10/27/BUAA-CO%20P2%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 MIPS 汇编语言，三道题目一般至少两道会给参考 C
+代码，考验 MIPS 代码的编写能力。
+课上题目
+T1 工厂选址
+任务描述
+假设你正在编写城市规划核心功能。需要在给定的 n 个候选坐标点 (x,
+y) 中，筛选出一个符合特定条件的点用于建造工厂。
+筛选条件：
+
+象限限制：候选点必须位于平面直角坐标系的
+第二象限 或
+第四象限（不包含坐标轴）。
+面积最大化：该点向两坐标轴作垂线，与原点 (0,0)
+所围成的矩形面积必须是所有满足条件点中最大的。
+
+你需要编写 MIPS 汇编程序实现该逻辑，输出选定点的坐标。
+判定逻辑
+有效性判定：
+对于输入坐标 (x,
+y)，该点有效当且仅当满足以下二者之一：
+
+第二象限：x &lt; 0 且 y &gt; 0
+第四象限：x &gt; 0 且 y &lt; 0
+注：位于第一、三象限或坐标轴上的点应直接忽略。
+
+优化目标：
+计算矩形面积 Area = |x| \times
+|y|。
+
+若存在多个点的面积同为最大值，输出 输入顺序最靠前
+的那一组坐标。
+题目保证输入中至少存在一个满足条件的点。
+
+数据规模：
+
+n \le 1000
+0 \le |x|, |y| \le 10^9
+
+输入输出格式
+输入格式：
+
+第 1 行：输入一个整数 n，代表坐标总数。
+随后的 2n
+行：依次输入每个点的坐标信息。对于第 i
+个点（0 \le i &lt; n），先输入 x_i，再输入 y_i
+
+输出格式：
+
+输出一行，包含两个整数 x 和 y（即选定点的坐标），中间用一个空格分隔。
+
+输入样例：
+416-47-9-118-8
+输出样例：
+16 -4
+参考代码 (C语言)
+#include &lt;stdio.h&gt;int main(void) &#123;    int n;    scanf(&quot;%d&quot;, &amp;n);    long long best_area = 0;    int best_x = 0, best_y = 0;    for (int i = 0; i &lt; n; i++) &#123;        int x, y;        scanf(&quot;%d%d&quot;, &amp;x, &amp;y);        if (x == 0 || y == 0) continue;        if ((x &gt; 0 &amp;&amp; y &gt; 0) || (x &lt; 0 &amp;&amp; y &lt; 0)) continue;        int ax = x &gt;= 0 ? x : -x;        int ay = y &gt;= 0 ? y : -y;                long long area = (long long) ax * ay;        if (area &gt; best_area) &#123;            best_area = area;            best_x = x;            best_y = y;        &#125;    &#125;    printf(&quot;%d %d\n&quot;, best_x, best_y);    return 0;&#125;
+T2 K 递增
+任务描述
+使用 MIPS 汇编语言编写程序，计算将给定数组转换为 K
+递增数组 所需的最少操作次数。
+K 递增定义：
+给定一个下标从 0 开始、包含 n
+个正整数的数组 arr，以及一个正整数
+k。
+如果对于每个满足 k \le i \le n-1
+的下标 i，都有 arr[i-k] \le arr[i]，那么称 arr 是 K 递增的。
+输入输出格式
+输入格式：
+
+第 1 行：输入一个整数 n，表示数组大小 (1
+\le n \le 20)。
+第 2 行 至 第 n+1
+行：每行输入一个整数，依次为数组 arr
+的元素。
+第 n+2 行：输入一个整数 k，表示 K 递增的参数 (1 \le k \le n-1)。
+
+输出格式：
+
+输出一个整数，表示使数组成为 K 递增数组所需的最少操作次数。
+
+输入样例 1：
+5543211
+输出样例 1：
+4
+输入样例 2：
+65342612
+输出样例 2：
+3
+参考代码 (C语言)
+#include &lt;stdio.h&gt;#define MAX_N 20int computeLIS(int *subseq, int m) &#123;    if (m == 0) return 0;    int dp[MAX_N];    int maxLen = 1;    for (int i = 0; i &lt; m; i++) &#123;        dp[i] = 1;    &#125;    for (int i = 1; i &lt; m; i++) &#123;        for (int j = 0; j &lt; i; j++) &#123;            if (subseq[i] &gt;= subseq[j]) &#123;                if (dp[j] + 1 &gt; dp[i]) &#123;                    dp[i] = dp[j] + 1;                &#125;            &#125;        &#125;        maxLen = maxLen &gt; dp[i] ? maxLen : dp[i];    &#125;    return maxLen;&#125;int kIncreasing(int* arr, int arrSize, int k) &#123;    int ans = 0;    for (int i = 0; i &lt; k; i++) &#123;        int subseq[MAX_N];        int m = 0;        for (int j = i; j &lt; arrSize; j += k) &#123;            subseq[m++] = arr[j];        &#125;        int lisLen = computeLIS(subseq, m);        ans += (m - lisLen);    &#125;    return ans;&#125;int main() &#123;    int n, k;    scanf(&quot;%d&quot;, &amp;n);    int arr[MAX_N];    for (int i = 0; i &lt; n; i++) &#123;        scanf(&quot;%d&quot;, &amp;arr[i]);    &#125;    scanf(&quot;%d&quot;, &amp;k);    printf(&quot;%d&quot;, kIncreasing(arr, n, k));        return 0; &#125;
+T3 文件夹大小
+任务描述
+给定一个项目的目录树结构，树中的每个节点要么是文件，要么是文件夹。请实现一个
+MIPS 汇编程序，支持对文件系统的多次查询。
+对于每次查询给定的节点编号，你需要计算并输出该节点的
+“子树总大小”：
+
+若该节点为文件，则输出其自身大小。
+若该节点为文件夹，则输出该文件夹内所有内容（包含直接子文件、子文件夹及其递归包含的所有文件）的大小之和。
+注：文件夹本身的大小视为 0。
+
+输入输出格式
+输入格式：
+
+第 1 行：一个整数 n，表示节点总数（编号 1 \sim n）。
+节点描述部分：接下来按编号从小到大（先描述节点
+1，再描述节点 2…）依次输入 n
+个节点的详细信息。对于每个节点：
+
+先输入一行整数 type（0 或
+1）。
+若 type = 0
+(文件)：
+
+下一行输入一个整数 size，表示文件大小。
+
+若 type = 1
+(文件夹)：
+
+下一行输入一个整数 k，表示子节点数量。
+再接下来输入 k
+个整数，依次代表子节点的编号。
+
+
+查询部分：
+
+输入一个整数 q，表示查询次数。
+接下来 q 行，每行一个整数 id，表示要查询的节点编号（保证 id 合法）。
+
+
+输出格式：
+
+对每个查询输出一行整数，表示该节点对应的子树总大小。
+
+约束与样例
+约束条件：
+
+1 \le n \le 150
+文件大小 0 \le size \le 10^6
+所有文件大小总和 \le 10^9
+总边数 \le 800
+查询次数 q \le 60
+
+输入样例：
+5122 30100114020013135
+输出样例：
+120201
+参考代码 (C语言)
+#include &lt;stdio.h&gt;#define MAXN 155#define MAXE 805int n;int nodeType[MAXN];     // 0: 文件, 1: 文件夹int fileSizeVal[MAXN];  // 文件大小(文件夹为0)int headAdj[MAXN];      // 邻接表头int toEdge[MAXE], nextEdge[MAXE];int edgeCnt;void add_edge(int u, int v) &#123;    toEdge[edgeCnt] = v;    nextEdge[edgeCnt] = headAdj[u];    headAdj[u] = edgeCnt++;&#125;int dfs_sum(int u) &#123;    if (nodeType[u] == 0) &#123;        return fileSizeVal[u];    &#125;    int size = 0;    for (int e = headAdj[u]; e != -1; e = nextEdge[e]) &#123;        int v = toEdge[e];        size += dfs_sum(v);    &#125;    return size;&#125;int main() &#123;    for(int i=0; i&lt;MAXN; i++) headAdj[i] = -1;         edgeCnt = 0;    scanf(&quot;%d&quot;, &amp;n);        for (int i = 1; i &lt;= n; i++) &#123;        int t, x;        scanf(&quot;%d&quot;, &amp;t);                 if (t == 0) &#123;            nodeType[i] = 0;            scanf(&quot;%d&quot;, &amp;x);             fileSizeVal[i] = x;        &#125; else &#123;            nodeType[i] = 1;            int k;            scanf(&quot;%d&quot;, &amp;k);             for (int j = 0; j &lt; k; j++) &#123;                int v;                scanf(&quot;%d&quot;, &amp;v);                add_edge(i, v);            &#125;        &#125;    &#125;    int q;    scanf(&quot;%d&quot;, &amp;q);    while (q--) &#123;        int id;        scanf(&quot;%d&quot;, &amp;id);        int ans = dfs_sum(id);        printf(&quot;%d\n&quot;, ans);    &#125;    return 0;&#125;
+题目分析
+T1 唯一可能卡住的点是代码中的
+long long，要用两个寄存器来表示一个 long long
+型变量，那么如何比较两个 long long
+变量的大小呢？设两个数分别是a=\{a1,a0\},b=\{b1,b0\}，那么 a&gt;b 不是 a1&gt;b1 \&amp;\&amp; a0&gt;b0，而应该是
+a1&gt;b1||a1==b1\&amp;\&amp;a0&gt;b0，和字典序类似。
+T3 的话，while
+循环见的次数不太多，我一开始写错了，其它的地方都是直接翻译就行。
+助教问答
+以下为部分问题：
+
+MIPS 编程中宏的作用
+我是否采用直接翻译 C 代码的方法？
+一些寄存器的含义，$ra、HI、LO、PC
+等
+
+笔者的话
+编写 MIPS
+代码，每个人都有自己的方法，我比较习惯于一字不差的翻译，将每一行 C
+代码都直接翻译成
+MIPS，而不会加一些优化之类的，这样的好处是一般不会出错。由于 MIPS
+语言可读性太差，因此我一般会使用 .eqv
+来重命名某些寄存器，比如 T1 中 C 代码出现了 n, x, y
+等变量，那么我就会直接
+.eqv n,$s0，.eqv x,$s1，.eqv y,$s2
+等，这样的话不必书写复杂的寄存器名，而是直接用其对应的变量名就好了。宏也是一个提高代码可读性的方法，下面是我用的宏，上机开始前可以先将这些模版默写出来：
+.macro readInt(%int)	li $v0,5	syscall	move %int,$v0.end_macro.macro printInt(%int)	move $a0,%int	li $v0,1	syscall.end_macro.macro printStr(%str)	move $a0,%str	li $v0,4	syscall.end_macro.macro index(%ans,%i,%j,%n)	mult %i,%n	mflo %ans	add %ans,%ans,%j	sll %ans,%ans,2.end_macro.macro return0	li $v0,10	syscall.end_macro.macro for(%reg,%begin,%end,%for,%for_end)	move %reg,%begin	%for:		slt $t7,%reg,%end		beq $t7,$0,%for_end.end_macro.macro for_end(%reg,%for,%for_end)		add %reg,%reg,1		j %for	%for_end:.end_macro.macro push(%r)	add $sp,$sp,-4	sw %r,($sp).end_macro.macro pop(%r)	lw %r,($sp)	add $sp,$sp,4.end_macro
+P2
+的一个重难点就是递归函数的编写，关于寄存器保护有一套原则，但是鉴于人们经常出错，有人选择直接将
+32
+个寄存器全部保护起来，总之如果始终不知道应该保护哪些，就只能采用这种方法了。
+另外写汇编代码时有很多细节，稍不注意就错了，且 debug 难度也很大，所以
+P2 很多人都没有过，不过也问题不大，P3 之前对分数影响微乎其微。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+        <tag>MIPS</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>BUAA-CO P1上机</title>
     <url>/2025/10/20/BUAA-CO%20P1%E4%B8%8A%E6%9C%BA/</url>
     <content><![CDATA[本节考查内容为
@@ -573,6 +767,60 @@ testbench，不要因为某题简单就不写，因为最后助教会一一检�
       </tags>
   </entry>
   <entry>
+    <title>BUAA-CO P4上机</title>
+    <url>/2025/11/10/BUAA-CO%20P4%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 Verilog 实现单周期 CPU。
+课上题目
+T1 brc
+brc-rs-rt-rd
+RTL
+temp &lt;- GPR[rs][4:0]if (temp &lt; 25 &amp;&amp; count_ones(GPR[rt][temp+7:temp]) % 2 == 0)    GPR[rd] &lt;- reverse(GPR[rt])else    GPR[rd] &lt;- GPR[rt]
+T2 cabc
+cabc-rs-rt-offset
+RTL
+cross1 &lt;- GPR[rs][23:16]||GPR[rt][7:0]||GPR[rs][31:24]||GPR[rt][15:8]cross2 &lt;- GPR[rt][7:0]||GPR[rs][23:16]||GPR[rt][31:24]||GPR[rs][15:8]xor_result &lt;- cross1 ^ cross2cnt1 &lt;- count_zeros(xor_result[31:16])cnt2 &lt;- count_zeros(xor_result[15:0])if (cnt1 == cnt2)    PC &lt;- PC + 4 + sign_ext(offset||00)else    GPR[rt] &lt;- xor_result
+T3 lhboc
+lhboc-base-rt-offset
+RTL
+vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]temp1 &lt;- count_ones(memword[15:0])temp2 &lt;- count_ones(memword[31:16])if (temp1 &gt;= temp2)    GPR[rt] &lt;- sign_ext(memword[15:0])else    GPR[rt] &lt;- sign_ext(memword[31:16])
+题目分析
+T1 是运算类指令，新加一个 ALUOp 的取值，然后在 ALU
+中加入对应的计算逻辑。T2 是跳转类指令的变体，可以仿照 beq
+来添加，但注意不跳转时还要写寄存器。T3 是访存类指令，仿照
+lw 来做，本质就是对 lw
+回写寄存器的数据加了一些处理而已。
+助教问答
+以下为部分问题：
+
+看看测试程序和设计文档
+CTRL 模块的实现思路，EXT 输入的来源是什么，beq 指令的数据通路
+Verilog 中使用什么函数读取机器码
+我的评测机是不是全自动的？评测机生成的汇编程序是否有效？如何保证
+sw 和 lw 指令的地址偏移量是合法的？
+
+笔者的话
+从 P4 开始就要迭代开发 Verilog CPU 了，P4 课下就是直接将 P3
+的电路转化成 Verilog 代码，难度不大。还是可以自己加一些额外的指令，比如
+j、jalr
+等。另外可以提前预留出接口，比如将新加的指令提前命名成 new0
+变量，新加的信号命名成 newSign
+并连接到对应的模块等等，上机时直接修改就行了。
+添加每一个新指令，我一般都是从
+CTRL（控制模块）开始，每设置一个控制信号的值，就在对应的模块中增加新逻辑，如
+NPCOp 对应 NPC 模块，DMWr 对应
+DM，这样不容易漏。另外也有学长建议过使用 git
+来管理版本，学有余力也可以尝试。上机时间紧，且我对 git
+的掌握尚不熟练，所以我没有尝试过。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
+        <tag>Verilog</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>BUAA-CO P3上机</title>
     <url>/2025/11/03/BUAA-CO%20P3%E4%B8%8A%E6%9C%BA/</url>
     <content><![CDATA[本节考查内容为 Logisim 实现单周期 CPU。
@@ -632,400 +880,6 @@ lh、lb、sh、sb
       <tags>
         <tag>Logisim</tag>
         <tag>CO</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO P4上机</title>
-    <url>/2025/11/10/BUAA-CO%20P4%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 Verilog 实现单周期 CPU。
-课上题目
-T1 brc
-brc-rs-rt-rd
-RTL
-temp &lt;- GPR[rs][4:0]if (temp &lt; 25 &amp;&amp; count_ones(GPR[rt][temp+7:temp]) % 2 == 0)    GPR[rd] &lt;- reverse(GPR[rt])else    GPR[rd] &lt;- GPR[rt]
-T2 cabc
-cabc-rs-rt-offset
-RTL
-cross1 &lt;- GPR[rs][23:16]||GPR[rt][7:0]||GPR[rs][31:24]||GPR[rt][15:8]cross2 &lt;- GPR[rt][7:0]||GPR[rs][23:16]||GPR[rt][31:24]||GPR[rs][15:8]xor_result &lt;- cross1 ^ cross2cnt1 &lt;- count_zeros(xor_result[31:16])cnt2 &lt;- count_zeros(xor_result[15:0])if (cnt1 == cnt2)    PC &lt;- PC + 4 + sign_ext(offset||00)else    GPR[rt] &lt;- xor_result
-T3 lhboc
-lhboc-base-rt-offset
-RTL
-vAddr &lt;- GPR[base] + sign_ext(offset)pAddr &lt;- vAddr[31:2]||00memword &lt;- memory[pAddr]temp1 &lt;- count_ones(memword[15:0])temp2 &lt;- count_ones(memword[31:16])if (temp1 &gt;= temp2)    GPR[rt] &lt;- sign_ext(memword[15:0])else    GPR[rt] &lt;- sign_ext(memword[31:16])
-题目分析
-T1 是运算类指令，新加一个 ALUOp 的取值，然后在 ALU
-中加入对应的计算逻辑。T2 是跳转类指令的变体，可以仿照 beq
-来添加，但注意不跳转时还要写寄存器。T3 是访存类指令，仿照
-lw 来做，本质就是对 lw
-回写寄存器的数据加了一些处理而已。
-助教问答
-以下为部分问题：
-
-看看测试程序和设计文档
-CTRL 模块的实现思路，EXT 输入的来源是什么，beq 指令的数据通路
-Verilog 中使用什么函数读取机器码
-我的评测机是不是全自动的？评测机生成的汇编程序是否有效？如何保证
-sw 和 lw 指令的地址偏移量是合法的？
-
-笔者的话
-从 P4 开始就要迭代开发 Verilog CPU 了，P4 课下就是直接将 P3
-的电路转化成 Verilog 代码，难度不大。还是可以自己加一些额外的指令，比如
-j、jalr
-等。另外可以提前预留出接口，比如将新加的指令提前命名成 new0
-变量，新加的信号命名成 newSign
-并连接到对应的模块等等，上机时直接修改就行了。
-添加每一个新指令，我一般都是从
-CTRL（控制模块）开始，每设置一个控制信号的值，就在对应的模块中增加新逻辑，如
-NPCOp 对应 NPC 模块，DMWr 对应
-DM，这样不容易漏。另外也有学长建议过使用 git
-来管理版本，学有余力也可以尝试。上机时间紧，且我对 git
-的掌握尚不熟练，所以我没有尝试过。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>CO</tag>
-        <tag>Verilog</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO P2上机</title>
-    <url>/2025/10/27/BUAA-CO%20P2%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 MIPS 汇编语言，三道题目一般至少两道会给参考 C
-代码，考验 MIPS 代码的编写能力。
-课上题目
-T1 工厂选址
-任务描述
-假设你正在编写城市规划核心功能。需要在给定的 n 个候选坐标点 (x,
-y) 中，筛选出一个符合特定条件的点用于建造工厂。
-筛选条件：
-
-象限限制：候选点必须位于平面直角坐标系的
-第二象限 或
-第四象限（不包含坐标轴）。
-面积最大化：该点向两坐标轴作垂线，与原点 (0,0)
-所围成的矩形面积必须是所有满足条件点中最大的。
-
-你需要编写 MIPS 汇编程序实现该逻辑，输出选定点的坐标。
-判定逻辑
-有效性判定：
-对于输入坐标 (x,
-y)，该点有效当且仅当满足以下二者之一：
-
-第二象限：x &lt; 0 且 y &gt; 0
-第四象限：x &gt; 0 且 y &lt; 0
-注：位于第一、三象限或坐标轴上的点应直接忽略。
-
-优化目标：
-计算矩形面积 Area = |x| \times
-|y|。
-
-若存在多个点的面积同为最大值，输出 输入顺序最靠前
-的那一组坐标。
-题目保证输入中至少存在一个满足条件的点。
-
-数据规模：
-
-n \le 1000
-0 \le |x|, |y| \le 10^9
-
-输入输出格式
-输入格式：
-
-第 1 行：输入一个整数 n，代表坐标总数。
-随后的 2n
-行：依次输入每个点的坐标信息。对于第 i
-个点（0 \le i &lt; n），先输入 x_i，再输入 y_i
-
-输出格式：
-
-输出一行，包含两个整数 x 和 y（即选定点的坐标），中间用一个空格分隔。
-
-输入样例：
-416-47-9-118-8
-输出样例：
-16 -4
-参考代码 (C语言)
-#include &lt;stdio.h&gt;int main(void) &#123;    int n;    scanf(&quot;%d&quot;, &amp;n);    long long best_area = 0;    int best_x = 0, best_y = 0;    for (int i = 0; i &lt; n; i++) &#123;        int x, y;        scanf(&quot;%d%d&quot;, &amp;x, &amp;y);        if (x == 0 || y == 0) continue;        if ((x &gt; 0 &amp;&amp; y &gt; 0) || (x &lt; 0 &amp;&amp; y &lt; 0)) continue;        int ax = x &gt;= 0 ? x : -x;        int ay = y &gt;= 0 ? y : -y;                long long area = (long long) ax * ay;        if (area &gt; best_area) &#123;            best_area = area;            best_x = x;            best_y = y;        &#125;    &#125;    printf(&quot;%d %d\n&quot;, best_x, best_y);    return 0;&#125;
-T2 K 递增
-任务描述
-使用 MIPS 汇编语言编写程序，计算将给定数组转换为 K
-递增数组 所需的最少操作次数。
-K 递增定义：
-给定一个下标从 0 开始、包含 n
-个正整数的数组 arr，以及一个正整数
-k。
-如果对于每个满足 k \le i \le n-1
-的下标 i，都有 arr[i-k] \le arr[i]，那么称 arr 是 K 递增的。
-输入输出格式
-输入格式：
-
-第 1 行：输入一个整数 n，表示数组大小 (1
-\le n \le 20)。
-第 2 行 至 第 n+1
-行：每行输入一个整数，依次为数组 arr
-的元素。
-第 n+2 行：输入一个整数 k，表示 K 递增的参数 (1 \le k \le n-1)。
-
-输出格式：
-
-输出一个整数，表示使数组成为 K 递增数组所需的最少操作次数。
-
-输入样例 1：
-5543211
-输出样例 1：
-4
-输入样例 2：
-65342612
-输出样例 2：
-3
-参考代码 (C语言)
-#include &lt;stdio.h&gt;#define MAX_N 20int computeLIS(int *subseq, int m) &#123;    if (m == 0) return 0;    int dp[MAX_N];    int maxLen = 1;    for (int i = 0; i &lt; m; i++) &#123;        dp[i] = 1;    &#125;    for (int i = 1; i &lt; m; i++) &#123;        for (int j = 0; j &lt; i; j++) &#123;            if (subseq[i] &gt;= subseq[j]) &#123;                if (dp[j] + 1 &gt; dp[i]) &#123;                    dp[i] = dp[j] + 1;                &#125;            &#125;        &#125;        maxLen = maxLen &gt; dp[i] ? maxLen : dp[i];    &#125;    return maxLen;&#125;int kIncreasing(int* arr, int arrSize, int k) &#123;    int ans = 0;    for (int i = 0; i &lt; k; i++) &#123;        int subseq[MAX_N];        int m = 0;        for (int j = i; j &lt; arrSize; j += k) &#123;            subseq[m++] = arr[j];        &#125;        int lisLen = computeLIS(subseq, m);        ans += (m - lisLen);    &#125;    return ans;&#125;int main() &#123;    int n, k;    scanf(&quot;%d&quot;, &amp;n);    int arr[MAX_N];    for (int i = 0; i &lt; n; i++) &#123;        scanf(&quot;%d&quot;, &amp;arr[i]);    &#125;    scanf(&quot;%d&quot;, &amp;k);    printf(&quot;%d&quot;, kIncreasing(arr, n, k));        return 0; &#125;
-T3 文件夹大小
-任务描述
-给定一个项目的目录树结构，树中的每个节点要么是文件，要么是文件夹。请实现一个
-MIPS 汇编程序，支持对文件系统的多次查询。
-对于每次查询给定的节点编号，你需要计算并输出该节点的
-“子树总大小”：
-
-若该节点为文件，则输出其自身大小。
-若该节点为文件夹，则输出该文件夹内所有内容（包含直接子文件、子文件夹及其递归包含的所有文件）的大小之和。
-注：文件夹本身的大小视为 0。
-
-输入输出格式
-输入格式：
-
-第 1 行：一个整数 n，表示节点总数（编号 1 \sim n）。
-节点描述部分：接下来按编号从小到大（先描述节点
-1，再描述节点 2…）依次输入 n
-个节点的详细信息。对于每个节点：
-
-先输入一行整数 type（0 或
-1）。
-若 type = 0
-(文件)：
-
-下一行输入一个整数 size，表示文件大小。
-
-若 type = 1
-(文件夹)：
-
-下一行输入一个整数 k，表示子节点数量。
-再接下来输入 k
-个整数，依次代表子节点的编号。
-
-
-查询部分：
-
-输入一个整数 q，表示查询次数。
-接下来 q 行，每行一个整数 id，表示要查询的节点编号（保证 id 合法）。
-
-
-输出格式：
-
-对每个查询输出一行整数，表示该节点对应的子树总大小。
-
-约束与样例
-约束条件：
-
-1 \le n \le 150
-文件大小 0 \le size \le 10^6
-所有文件大小总和 \le 10^9
-总边数 \le 800
-查询次数 q \le 60
-
-输入样例：
-5122 30100114020013135
-输出样例：
-120201
-参考代码 (C语言)
-#include &lt;stdio.h&gt;#define MAXN 155#define MAXE 805int n;int nodeType[MAXN];     // 0: 文件, 1: 文件夹int fileSizeVal[MAXN];  // 文件大小(文件夹为0)int headAdj[MAXN];      // 邻接表头int toEdge[MAXE], nextEdge[MAXE];int edgeCnt;void add_edge(int u, int v) &#123;    toEdge[edgeCnt] = v;    nextEdge[edgeCnt] = headAdj[u];    headAdj[u] = edgeCnt++;&#125;int dfs_sum(int u) &#123;    if (nodeType[u] == 0) &#123;        return fileSizeVal[u];    &#125;    int size = 0;    for (int e = headAdj[u]; e != -1; e = nextEdge[e]) &#123;        int v = toEdge[e];        size += dfs_sum(v);    &#125;    return size;&#125;int main() &#123;    for(int i=0; i&lt;MAXN; i++) headAdj[i] = -1;         edgeCnt = 0;    scanf(&quot;%d&quot;, &amp;n);        for (int i = 1; i &lt;= n; i++) &#123;        int t, x;        scanf(&quot;%d&quot;, &amp;t);                 if (t == 0) &#123;            nodeType[i] = 0;            scanf(&quot;%d&quot;, &amp;x);             fileSizeVal[i] = x;        &#125; else &#123;            nodeType[i] = 1;            int k;            scanf(&quot;%d&quot;, &amp;k);             for (int j = 0; j &lt; k; j++) &#123;                int v;                scanf(&quot;%d&quot;, &amp;v);                add_edge(i, v);            &#125;        &#125;    &#125;    int q;    scanf(&quot;%d&quot;, &amp;q);    while (q--) &#123;        int id;        scanf(&quot;%d&quot;, &amp;id);        int ans = dfs_sum(id);        printf(&quot;%d\n&quot;, ans);    &#125;    return 0;&#125;
-题目分析
-T1 唯一可能卡住的点是代码中的
-long long，要用两个寄存器来表示一个 long long
-型变量，那么如何比较两个 long long
-变量的大小呢？设两个数分别是a=\{a1,a0\},b=\{b1,b0\}，那么 a&gt;b 不是 a1&gt;b1 \&amp;\&amp; a0&gt;b0，而应该是
-a1&gt;b1||a1==b1\&amp;\&amp;a0&gt;b0，和字典序类似。
-T3 的话，while
-循环见的次数不太多，我一开始写错了，其它的地方都是直接翻译就行。
-助教问答
-以下为部分问题：
-
-MIPS 编程中宏的作用
-我是否采用直接翻译 C 代码的方法？
-一些寄存器的含义，$ra、HI、LO、PC
-等
-
-笔者的话
-编写 MIPS
-代码，每个人都有自己的方法，我比较习惯于一字不差的翻译，将每一行 C
-代码都直接翻译成
-MIPS，而不会加一些优化之类的，这样的好处是一般不会出错。由于 MIPS
-语言可读性太差，因此我一般会使用 .eqv
-来重命名某些寄存器，比如 T1 中 C 代码出现了 n, x, y
-等变量，那么我就会直接
-.eqv n,$s0，.eqv x,$s1，.eqv y,$s2
-等，这样的话不必书写复杂的寄存器名，而是直接用其对应的变量名就好了。宏也是一个提高代码可读性的方法，下面是我用的宏，上机开始前可以先将这些模版默写出来：
-.macro readInt(%int)	li $v0,5	syscall	move %int,$v0.end_macro.macro printInt(%int)	move $a0,%int	li $v0,1	syscall.end_macro.macro printStr(%str)	move $a0,%str	li $v0,4	syscall.end_macro.macro index(%ans,%i,%j,%n)	mult %i,%n	mflo %ans	add %ans,%ans,%j	sll %ans,%ans,2.end_macro.macro return0	li $v0,10	syscall.end_macro.macro for(%reg,%begin,%end,%for,%for_end)	move %reg,%begin	%for:		slt $t7,%reg,%end		beq $t7,$0,%for_end.end_macro.macro for_end(%reg,%for,%for_end)		add %reg,%reg,1		j %for	%for_end:.end_macro.macro push(%r)	add $sp,$sp,-4	sw %r,($sp).end_macro.macro pop(%r)	lw %r,($sp)	add $sp,$sp,4.end_macro
-P2
-的一个重难点就是递归函数的编写，关于寄存器保护有一套原则，但是鉴于人们经常出错，有人选择直接将
-32
-个寄存器全部保护起来，总之如果始终不知道应该保护哪些，就只能采用这种方法了。
-另外写汇编代码时有很多细节，稍不注意就错了，且 debug 难度也很大，所以
-P2 很多人都没有过，不过也问题不大，P3 之前对分数影响微乎其微。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>CO</tag>
-        <tag>MIPS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO Pre上机</title>
-    <url>/2025/09/29/BUAA-CO%20Pre%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节主要是掌握三个工具，三道题目依次为 Logisim、Verilog、MIPS。
-课上题目
-T1 推箱子
-任务描述
-我们需要在 Logisim
-中设计一个软电路来模拟简易的推箱子游戏。游戏地图构建在一个二维平面直角坐标系中，范围是
-0 \le x, y \le 5 的正方形区域（共 6 \times 6 个点）。
-箱子的起始位置（包括 Reset 后）固定在 (0,0)，目标位置固定在 (5,5)。
-地图中包含 6 个固定的障碍点，分别为：(1,1)、(1,2)、(2,1)、(3,4)、(4,3)、(4,4)。
-控制逻辑
-系统输入 (dx, dy)
-表示箱子的移动变化量，且保证只会出现 (0,0)、(1,0)
-或 (0,1) 这三种情况。
-设当前坐标为 (x, y)，则预期坐标为
-(x+dx, y+dy)：
-
-如果预期坐标合法（即在地图边界内且不是障碍），则在下一周期将箱子移动到该位置；
-如果预期坐标非法（越界或撞墙），则箱子保持原地不动，并将报错信号
-flag 置为 1（持续一个周期）。
-
-输出判定
-
-当箱子成功到达目标点 (5,5)
-时，输出信号 out 为 1，否则为 0。
-flag 信号默认为 0，仅在尝试非法移动时置为 1。
-
-接口列表
-
-输入：clk (时钟), reset
-(复位), dx (x位移), dy (y位移)
-输出：out (到达目标),
-flag (非法移动报错)
-
-T2 翻涌数字
-题目描述
-将 32 位输入 a 视为 8 个 4
-位宽的数，分别命名为 a_0, a_1, \dots,
-a_7（其中a_i = a[(i + 1) \cdot 4 - 1 :
-i \cdot 4]）。
-对每一个 a_i
-进行前缀和计算，公式如下：
-a_i = \sum_{j=0}^{i} a_j
-计算规则
-
-溢出处理：若累加结果超过 4 位，仅保留低 4 位（即对
-16 取模）。
-输出格式：将计算后的 a_i 按原顺序拼接，作为 32 位输出
-out。
-
-样例
-
-输入：32'h11111111
-输出：32'h87654321
-
-接口列表
-
-输入：a[31:0]
-输出：out[31:0]
-
-T3 子矩阵提取
-题目描述
-编写 MIPS 汇编程序，从一个 4 \times
-4 的大矩阵 A 中，提取以 (i, j) 为左上角、大小为 m \times n 的子矩阵。
-输入格式
-输入共 20 行，均通过 syscall 读取整数：
-
-第 1-16 行：依次输入大矩阵 A 的元素 t（按行优先顺序，即第 0 行第 0 列、第 0 行第
-1 列……）。
-第 17 行：子矩阵行数 m (1 \le m \le
-4)。
-第 18 行：子矩阵列数 n (1 \le n \le
-4)。
-第 19 行：起始行坐标 i (0 \le i \le
-3)。
-第 20 行：起始列坐标 j (0 \le j \le
-3)。
-
-输出格式
-
-合法提取：输出 m \times
-n 的子矩阵。共 m 行，每行 n 个元素，元素间用空格分隔。
-越界报错：若子矩阵超出大矩阵边界，仅输出字符串
-Out of bounds。
-
-约定与约束
-
-矩阵索引从 0 开始。
-请勿使用 .globl main。
-程序结束时必须使用以下代码：
-li $v0, 10syscall
-
-测试样例
-
-样例 1
-
-Input:
-123456789101112131415162211
-Output:
-6 710 11
-
-样例 2
-
-Input:
-432187651211109131415163222
-Output:
-Out of bounds
-
-
-题目分析
-T1
-是状态机问题，题干可能看上去比较新颖。一定不要自己搭组合电路，而是用
-Logisim 的 Analyze Circuit
-功能，输入真值表，自动产生对应的组合电路。还有可以多多利用 Logisim
-的子电路功能，将具体的组合逻辑放到子电路，从而使顶端模块清爽、简洁。还要注意
-flag 置 1 要持续一周期，因此在它前面还要加一个寄存器。
-T2 比较简单，使用 for 循环即可，但是 for
-循环似乎很多人都忘了怎么写了（也包括我在内），不用循环的话直接展开也不难。还有如果定义成
-4 位的变量，Verilog 似乎默认会自动取模，因此模 16 也可以不写。
-T3 中规中矩，一定要多利用宏，例如
-readInt、printInt、printStr
-等，for
-循环也可以封装成宏。但本题我犯了一个错误：我定义了一个
-printStr 宏函数，这个函数会在内部在 .data
-段中定义一个字符串，可能是由于字节不对齐的原因，使用这个函数后之后的地址可能不是
-4 的整数倍，因此程序不能正确运行，修改后就成功 AC
-了。因此尽量不要在函数内部定义字符串，而是在 .data
-里面定义好，并且先定义数组，再定义字符串，就可以尽量避免这种字节不对齐的问题。
-笔者的话
-Pre
-上机不占分，主要是熟悉一下形式，这次是只有做出三道才算通过，建议上机前再读一遍指导书，基本的知识点要牢记，比如状态机设计、Verilog
-中 for 循环的写法、MIPS 编程等等。还有，前几次上机 21:00
-后还可以继续做到 22:00，同时可以查看每道题的提示，因此不用太过担心。
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>Logisim</tag>
-        <tag>CO</tag>
-        <tag>Verilog</tag>
-        <tag>MIPS</tag>
       </tags>
   </entry>
   <entry>
@@ -1301,6 +1155,176 @@ P7，实验部分成绩就都差不多。
       <tags>
         <tag>CO</tag>
         <tag>Verilog</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO Pre上机</title>
+    <url>/2025/09/29/BUAA-CO%20Pre%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节主要是掌握三个工具，三道题目依次为 Logisim、Verilog、MIPS。
+课上题目
+T1 推箱子
+任务描述
+我们需要在 Logisim
+中设计一个软电路来模拟简易的推箱子游戏。游戏地图构建在一个二维平面直角坐标系中，范围是
+0 \le x, y \le 5 的正方形区域（共 6 \times 6 个点）。
+箱子的起始位置（包括 Reset 后）固定在 (0,0)，目标位置固定在 (5,5)。
+地图中包含 6 个固定的障碍点，分别为：(1,1)、(1,2)、(2,1)、(3,4)、(4,3)、(4,4)。
+控制逻辑
+系统输入 (dx, dy)
+表示箱子的移动变化量，且保证只会出现 (0,0)、(1,0)
+或 (0,1) 这三种情况。
+设当前坐标为 (x, y)，则预期坐标为
+(x+dx, y+dy)：
+
+如果预期坐标合法（即在地图边界内且不是障碍），则在下一周期将箱子移动到该位置；
+如果预期坐标非法（越界或撞墙），则箱子保持原地不动，并将报错信号
+flag 置为 1（持续一个周期）。
+
+输出判定
+
+当箱子成功到达目标点 (5,5)
+时，输出信号 out 为 1，否则为 0。
+flag 信号默认为 0，仅在尝试非法移动时置为 1。
+
+接口列表
+
+输入：clk (时钟), reset
+(复位), dx (x位移), dy (y位移)
+输出：out (到达目标),
+flag (非法移动报错)
+
+T2 翻涌数字
+题目描述
+将 32 位输入 a 视为 8 个 4
+位宽的数，分别命名为 a_0, a_1, \dots,
+a_7（其中a_i = a[(i + 1) \cdot 4 - 1 :
+i \cdot 4]）。
+对每一个 a_i
+进行前缀和计算，公式如下：
+a_i = \sum_{j=0}^{i} a_j
+计算规则
+
+溢出处理：若累加结果超过 4 位，仅保留低 4 位（即对
+16 取模）。
+输出格式：将计算后的 a_i 按原顺序拼接，作为 32 位输出
+out。
+
+样例
+
+输入：32'h11111111
+输出：32'h87654321
+
+接口列表
+
+输入：a[31:0]
+输出：out[31:0]
+
+T3 子矩阵提取
+题目描述
+编写 MIPS 汇编程序，从一个 4 \times
+4 的大矩阵 A 中，提取以 (i, j) 为左上角、大小为 m \times n 的子矩阵。
+输入格式
+输入共 20 行，均通过 syscall 读取整数：
+
+第 1-16 行：依次输入大矩阵 A 的元素 t（按行优先顺序，即第 0 行第 0 列、第 0 行第
+1 列……）。
+第 17 行：子矩阵行数 m (1 \le m \le
+4)。
+第 18 行：子矩阵列数 n (1 \le n \le
+4)。
+第 19 行：起始行坐标 i (0 \le i \le
+3)。
+第 20 行：起始列坐标 j (0 \le j \le
+3)。
+
+输出格式
+
+合法提取：输出 m \times
+n 的子矩阵。共 m 行，每行 n 个元素，元素间用空格分隔。
+越界报错：若子矩阵超出大矩阵边界，仅输出字符串
+Out of bounds。
+
+约定与约束
+
+矩阵索引从 0 开始。
+请勿使用 .globl main。
+程序结束时必须使用以下代码：
+li $v0, 10syscall
+
+测试样例
+
+样例 1
+
+Input:
+123456789101112131415162211
+Output:
+6 710 11
+
+样例 2
+
+Input:
+432187651211109131415163222
+Output:
+Out of bounds
+
+
+题目分析
+T1
+是状态机问题，题干可能看上去比较新颖。一定不要自己搭组合电路，而是用
+Logisim 的 Analyze Circuit
+功能，输入真值表，自动产生对应的组合电路。还有可以多多利用 Logisim
+的子电路功能，将具体的组合逻辑放到子电路，从而使顶端模块清爽、简洁。还要注意
+flag 置 1 要持续一周期，因此在它前面还要加一个寄存器。
+T2 比较简单，使用 for 循环即可，但是 for
+循环似乎很多人都忘了怎么写了（也包括我在内），不用循环的话直接展开也不难。还有如果定义成
+4 位的变量，Verilog 似乎默认会自动取模，因此模 16 也可以不写。
+T3 中规中矩，一定要多利用宏，例如
+readInt、printInt、printStr
+等，for
+循环也可以封装成宏。但本题我犯了一个错误：我定义了一个
+printStr 宏函数，这个函数会在内部在 .data
+段中定义一个字符串，可能是由于字节不对齐的原因，使用这个函数后之后的地址可能不是
+4 的整数倍，因此程序不能正确运行，修改后就成功 AC
+了。因此尽量不要在函数内部定义字符串，而是在 .data
+里面定义好，并且先定义数组，再定义字符串，就可以尽量避免这种字节不对齐的问题。
+笔者的话
+Pre
+上机不占分，主要是熟悉一下形式，这次是只有做出三道才算通过，建议上机前再读一遍指导书，基本的知识点要牢记，比如状态机设计、Verilog
+中 for 循环的写法、MIPS 编程等等。还有，前几次上机 21:00
+后还可以继续做到 22:00，同时可以查看每道题的提示，因此不用太过担心。
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>Logisim</tag>
+        <tag>CO</tag>
+        <tag>MIPS</tag>
+        <tag>Verilog</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-CO 推荐题目汇总</title>
+    <url>/2025/12/09/BUAA-CO%20%E6%8E%A8%E8%8D%90%E9%A2%98%E7%9B%AE%E6%B1%87%E6%80%BB/</url>
+    <content><![CDATA[可能有些人会感到，计组有时没题可做了，即使在往届博客上看到题目，也没有相关的评测环境，难以确定是否做对，HDLBits
+上的题画风又不太一致，但其实 cscore 上就有很多的题目可以访问。
+比如某题目的网址如下：
+http://cscore.buaa.edu.cn/#/problem?ProblemId=334&amp;PieId=1338
+PieId 应该是每届和每届都不同，2406 对应的是 1338。ProblemId
+是题目编号，没有规律可言，但同一个 ProblemId
+似乎每届都能访问到题目。我们便可以先查到本届的 PieId，再按顺序遍历
+ProblemId（当然也可以直接访问我提供的
+ProblemId），如果打开了题目就将其截图或其他形式保存下来，从而就有很多题目可以做并评测了。
+可惜的是，笔者直到 P5
+时才在往届博客中看到这个方法，因此很多之前的题目都没用了，而 P6
+及以后的题又爬不到，因此这些题只能流传下去了（）
+源码和题目获取
+]]></content>
+      <categories>
+        <category>计算机组成</category>
+      </categories>
+      <tags>
+        <tag>CO</tag>
       </tags>
   </entry>
   <entry>
@@ -1652,6 +1676,943 @@ PCA。掌握最大方差和最小均方误差的计算方法，能用数学语�
       </categories>
       <tags>
         <tag>ML</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OO U1学习与反思</title>
+    <url>/2026/03/31/BUAA-OO%20U1%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
+    <content><![CDATA[第一单元 OO 学习与反思
+一、 度量分析
+1. 类与复杂度分析
+基于最终的作业代码，我对核心类进行了度量分析：
+
+
+
+Class
+OCavg
+OCmax
+WMC
+
+
+
+
+ChoiceFactor
+1.5
+2
+3
+
+
+DeriveFactor
+2.5
+4
+5
+
+
+ExpFactor
+1
+1
+2
+
+
+Expr
+1.33
+2
+4
+
+
+FuncFactor
+2.67
+5
+8
+
+
+FuncFactor.RecCacheKey
+1.67
+3
+5
+
+
+FuncReg
+1
+1
+4
+
+
+FuncReg.FuncDef
+1
+1
+2
+
+
+FuncReg.RecDef
+1
+1
+15
+
+
+Lexer
+2.8
+9
+14
+
+
+MainClass
+3
+3
+3
+
+
+Mono
+4.04
+14
+105
+
+
+Number
+1
+1
+2
+
+
+Parser
+2.09
+7
+46
+
+
+Poly
+3.41
+10
+58
+
+
+Power
+2.5
+4
+5
+
+
+Processor
+2
+2
+2
+
+
+Sign
+3
+6
+9
+
+
+Term
+1.67
+3
+5
+
+
+
+根据表格可以看到，最复杂的三个类依次是
+Mono、Poly、Parser。在
+Mono
+类中，我定义了许多方法，不仅包括基本的代数运算（如求导等），还为了追求极致的最短输出长度而定义了化简方法，这在一定程度上违反了单一职责原则。Poly
+类则相对干练，主要负责加、减、乘、幂等多项式间的数学运算以及转化为字符串的
+toString。在 Parser
+中，我采用了递归下降的语法解析方式，针对每一种类型的因子和表达式都编写了解析方法，实现了较好的模块内聚。
+2. 方法复杂度分析
+结合上述类复杂度，我进一步使用工具对部分核心方法进行了度量：
+
+
+
+方法
+CogC
+ev(G)
+iv(G)
+v(G)
+
+
+
+
+Lexer.next()
+10
+2
+8
+9
+
+
+Parser.parseFactor()
+9
+7
+10
+10
+
+
+Poly.equals(Object)
+10
+8
+3
+9
+
+
+FuncFactor.solveRec(int, Poly)
+8
+2
+5
+5
+
+
+Parser.parseRecDef(Scanner)
+7
+3
+4
+5
+
+
+Mono.equals(Object)
+7
+7
+2
+8
+
+
+Poly.power(BigInteger)
+7
+3
+4
+6
+
+
+Poly.multiply(Poly)
+5
+2
+4
+5
+
+
+Mono.derive(String)
+4
+1
+5
+5
+
+
+Poly.toOptimalString(boolean)
+17
+7
+9
+12
+
+
+Mono.toOptimalString(boolean)
+21
+5
+16
+21
+
+
+
+从上表可以看出，Lexer.next() 和
+Parser.parseFactor()
+的分支极多，因为需要处理各种不同的符号和因子。同时
+Parser.parseRecDef(Scanner) 和
+FuncFactor.solveRec
+这类函数函数解析和代入时也具有中等规模的控制流复杂度。Mono
+和 Poly 的 toOptimalString
+承担了输出的任务，这些方法的控制流和圈复杂度非常高，后续如果继续迭代，应考虑将其抽离为独立的
+Printer 类。
+### 3. 类图与设计考虑
+
+classDiagram
+
+    class Factor
+    &lt;&lt;interface&gt;&gt; Factor
+
+    class Number
+    class Power
+    class ExpFactor
+    class FuncFactor
+    class ChoiceFactor
+    class DeriveFactor
+    class Expr
+
+    class Term
+    class Poly
+    class Mono
+    class Sign
+    class FuncReg
+
+    class MainClass
+    class Parser
+    class Lexer
+    class Processor
+
+    Factor &lt;|.. Number : 实现
+    Factor &lt;|.. Power : 实现
+    Factor &lt;|.. ExpFactor : 实现
+    Factor &lt;|.. FuncFactor : 实现
+    Factor &lt;|.. ChoiceFactor : 实现
+    Factor &lt;|.. DeriveFactor : 实现
+    Factor &lt;|.. Expr : 实现 (递归嵌套)
+
+    Expr *--  Term : 包含多个项
+    Term *--  Factor : 包含多个因子
+
+    Poly *--  Mono : 维护单项式 Map
+    Mono --&gt; Poly : 递归包含 expPoly
+    Mono --&gt; Sign : 使用 Sign 作为哈希键
+
+    MainClass --&gt; Parser : 调用
+    Parser --&gt; Lexer : 使用
+    Parser --&gt; Processor : 预处理
+    Parser ..&gt; Factor : 构建 AST 节点
+    FuncFactor --&gt; FuncReg : 查询函数定义
+
+    style Factor fill:#E6E6FA,stroke:#708090,stroke-width:2px
+    style Poly fill:#B0C4DE,stroke:#708090,stroke-width:1px
+    style Mono fill:#B0C4DE,stroke:#708090,stroke-width:1px
+
+顶层控制与解析模块
+
+MainClass：程序启动入口和全局调度者。
+Processor：预处理模块，主要负责清洗字符串中的连续正负号等。
+Lexer：词法分析器，将纯文本字符流转化为 Token 流。
+Parser：语法分析器，使用递归下降，将 Token
+流转化为抽象语法树（AST）。
+FuncReg：全局函数注册表，管理所有自定义函数及递推函数的定义。
+
+抽象语法树节点
+
+Factor ：因子接口，通过统一的 toPoly()
+方法实现了多态。
+Expr：表达式节点，由多个 Term
+的加减组合而成。
+Term：项节点，由多个 Factor
+的连乘组合而成。
+Number：常数因子节点，内部封装了大整数。
+Power：变量幂因子节点，形如 x^n 或 y^n，保存自变量符号及其指数。
+ExpFactor：指数函数因子节点，形如 (\exp(factor))^n，封装了内部表达式及外层乘方指数。
+FuncFactor：函数调用因子节点，负责查表
+FuncReg 并将具体实参代入。
+ChoiceFactor：选择式因子节点，专门保存并解析条件分支表达式
+[?:] 中的四个判断基元。
+DeriveFactor：求导算子因子节点，保存求偏导类型（dx,
+dy, grad）及其作用的表达式模块。
+
+核心引擎计算部分
+
+Poly：程序最核心的计算引擎，使用 HashMap
+维护单项式集合。它实现了多项式的各种代数运算与合并。
+Mono：最小代数运算单元，包含系数、自变量指数级别内部多层嵌套的
+exp 特征多项式。
+Sign：单项式特征类，将 Mono
+剔除系数后剩余的特征抽取为不可变属性，用作哈希键。
+
+
+二、 架构设计体验
+我在三次作业中的宏观架构演进一直保持着高度自洽，且具有良好的向后扩展能力。
+HW1：初识递归下降
+在 HW1，我紧贴指导书规范，建立了一套“词法分析 ⟶ 语法分析 ⟶ 抽象语法树
+⟶ 多项式计算”的架构。这一模型将表达式严格拆解为 Expr ⟶
+Term ⟶ Factor
+的文法节点体系。随后，我对所有层级的子节点统一落实了 toPoly
+这个方法。但在早期理解不深时，我的 Poly 更是粗犷地使用
+ArrayList 线性存储各项
+Mono，合并同类项时就稍显麻烦了，需要专门建立一个指数到系数的
+HashMap 来实现。
+HW2：引入指数函数、自定义函数与选择式因子
+HW2 引入了指数函数 exp()、自定义函数 f(x)
+以及选择式因子 [(A==B)?C:D]。现在单项式不仅有一个
+x 的指数，还包含了以 exp
+包裹的多项式。因此我主要做了以下重构：
+
+重构多项式底层：首先由于数据范围的变化，exponent
+类型需要改成大整数类，然后我将 Mono 扩展为
+Mono(BigInteger coefficient, BigInteger exponent, Poly expPoly)。此外，我还引入了内部类
+Sign ，即去掉系数后的指数和多项式部分， Poly
+类中的 ArrayList ，我也直接换成了从 Sign 到
+Mono 的 HashMap
+，这下就不需要写合并同类项方法了，而是自动实现合并。其实这里完全也可以用从
+Sign 到系数的 HashMap ，但这样的话我的 Mono
+类似乎就有点多余，因此我还是保留了看似复杂的前一种策略。
+函数代入环境字典：为了实现函数形参替换，我没有选择在字符串层次上进行字符串替换（这种应该很容易
+TLE），而是引入了环境字典
+Map&lt;String, Poly&gt; vars。在每个 AST 节点的
+toPoly 方法中传入该字典，从而实现函数调用的解析。
+
+而选择式因子对架构没有影响，按原有架构进行添加即可。
+HW3：求导、双变量与递推函数的加入
+经过 HW2 的小幅重构，面对 HW3 引入的双变量 x 和
+y、求导算子 dx/dy/grad 以及自定义递推函数
+f{n}(x)，我在架构上几乎没有改动。
+对于求导算子 DeriveFactor，我在底层的 Mono 和
+Poly 当中补充了专门的求导方法；针对 y
+的引入，仅需在 Mono 类中增加记录 y
+次幂的专门属性即可。这些新增部分在被 toPoly
+解析处理后，进行运算的依然是和 HW2
+类似的多项式，因此原本的加减乘除及输出逻辑基本不需要修改。
+新的迭代情景：引入三角函数
+如果引入三角函数因子sin(Factor) 与
+cos(Factor) ，并要求合并与化简：
+我目前的架构完全禁得住这项考验。我们只需声明 SinFactor 和
+CosFactor 实现 Factor 接口，并新增
+Parser 中的分支即可。真正的深入修改都在底层架构：我们要给
+Mono 与 Sign
+追加可以记录三角函数特征的属性。唯一的难点其实在于怎样运用诱导公式或两角和差公式等规律去对合并前的
+Poly 加以化简而已。
+
+三、 分析自己程序的 Bug
+在这三次作业的强测与互测中，我唯一被测出 Bug 的地方是在
+HW3，由于化简优化时复杂度控制不当而导致了 TLE。
+- 问题及特征：
+互测房里的同学针对我的代码逻辑，构造了一个使得代码 TLE
+的样例。我出问题的类是 Mono 中的
+toOptimalString() 方法。
+- 深层原因分析：
+原因是，我设定了多项式的项数在小范围时采用状态压缩 DP。该 Hack
+样例利用大量系数相邻的大整数，项数刚好达到我规定的上界，导致程序穷举中产生超时。
+- Bug 复杂度反思：
+回看前面的方法度量分析表，toOptimalString
+的圈复杂度和认知复杂度都比较高。这说明在编写时引入了过多复杂的逻辑分支。修改这个
+bug 的策略，我目前采用的是调小项数搜索范围的上界。
+
+四、 发现别人 Bug
+所采用的策略
+在互测环节中，我主要采用了以下策略：
+
+借助 AI 搭建评测机：我使用 Python
+搭建了评测机脚本。策略是通过大量随机生成的数据测试房间内的 8
+份作业代码，然后将结果使用 Sympy
+库对比来寻找一致性。这能有效找出一些基础的逻辑错误和格式问题，但因为数据是随机生成的，较难定向构造出使得程序
+TLE 的极端数据。
+结合源码阅读定向构造：针对评测机难以覆盖的盲区，我会尝试阅读别人的代码来设计测试用例：
+
+比如看到同学处理三目运算符 [(A==B)?X:Y]
+时将两种选择都进行了计算展开再剪裁，我就会在不选的那一方构造复杂的函数嵌套，使其
+TLE。
+看到有同学采用 String.replaceAll
+这种字符串替换来处理函数代入时，便可以尝试构造多层嵌套函数，使其因耗时太长而TLE。
+
+
+
+五、 分析自己进行的优化
+我在结果长度的化简优化上主要做了以下工作：
+1. 正项优先打印： 通过遍历 Poly 中的各个
+Mono，找到第一个常数系数为正的项并放到最前面输出，去掉了开头的正负号问题，这种优化十分稳定。
+2. 提取公因数： 对于 exp(factor)
+类型，我会遍历其内部各个系数的公约数，提取至外部以缩短总体长度。
+3. 状态压缩优化：
+对于需要拆开内部的项，当项数处于我设定的小范围时，使用状压 DP
+来寻找最优解；超过范围则原样输出。
+这些优化虽然缩减了字符串长度，但在保障了代码的常规简洁性的同时，却并未百分之百保证正确性。过于追求局部最短，使得某些化简方法的圈复杂度攀升，在个别极端数据下出现了
+TLE 的情况。后续的优化应该更加注意平衡正确性与性能之间的关系。
+
+六、 大模型相关使用
+在三次作业中，我只参考了 AI
+给出的架构思路、示例代码和修改建议，并未让其直接编写我的代码。当遇到输出错误、抛异常或是搭建评测机时的各种问题，将报错结合代码抛给
+AI 排查，效果往往非常好。总之，AI
+经过提示后可以精准发现代码逻辑方面的问题，并帮忙修补漏洞。但对于时间复杂度分析和构造那些能让代码运行超时的极端数据，它由于没有全局运行环境概念，仍显力不从心，这时候人工阅读源码构造更为可靠。
+
+七、 心得体会
+经过本单元的学习，我还是收获颇丰的。一开始听说我们要进行表达式深层编译解析时，便想起原先学后缀表达式时的痛苦。但是递归下降和抽象语法树的方法极大地解耦了难度。表达式先被切分为一个个
+Token，再由 Parser 解析对应部分，最终建立 AST。这时节点统一实现的
+toPoly()
+方法发挥功能，将一切降维成多项式，自下而上依次化简计算即可。相对之前理解的后缀表达式，代码行数虽然变多了，但可读性和扩展性却实现了质的飞跃。
+关于 AI 的使用，如今的 AI 驾驭 OO
+作业可以说游刃有余了。我会借此设计架构、学习算法以及进行 Debug
+和辅助构造测试，总体效果不错。但同时也深刻体会到，面向对象编程的相关思考与代码掌控等修养，依然是无法被
+AI 工具完全替代的。
+
+八、 未来方向建议
+整体而言，我们的 OO
+课在难度递进设计上已经非常合理了，第一单元的课程安排也很完备。唯独建议在性能优化方面，可以再多给一些相关的指导提示，或者在单元结束后公布一下
+std
+标程用的具体优化方法。我还是十分好奇采用什么方法能在时间限制下将表达式化至最短的。
+
+九、 思考题
+1.
+如何检查输入是否符合要求？
+建议进行双重检查，大致如下：
+首先在预处理入口处：使用正则表达式扫描字符串，排查非法符号、不合规操作符组合（如
+** 等）。第二层在 Parser
+递归下降流程中：如果遇到偏离文法规则的分支，可以直接抛出对应的自定义异常。
+2.
+如何精确计算一个合法输入的 cost？
+通过在各个抽象语法树节点类中声明 getCost()
+方法，可以实现自顶向下的递归计算。对于基础的加减乘除和常数，直接按指导书的运算法则进行累加或相乘；对于函数调用，需要将实参代入到函数定义的
+AST
+中生成新表达式，再递归计算；对于选择式因子，必须在计算时判断条件表达式是否恒等，从而动态累加正确分支的代价；最后，由于求导等算子涉及代价的指数增长，在内部实现时需使用
+BigInteger 来防溢出。
+]]></content>
+      <categories>
+        <category>面向对象</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>OO</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OO U2学习与反思</title>
+    <url>/2026/04/26/BUAA-OO%20U2%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
+    <content><![CDATA[第二单元 OO 学习与反思
+一、同步块的设置和锁的选择
+锁的设置与演变
+
+第五次作业：一开始，为了稳妥，我把主要的同步块都放在了共享的
+BaseQueue 里，
+offer、take、isEmpty
+这些方法全加上了
+synchronized。这时候逻辑比较简单，锁住队列本身就能解决大部分并发读写的问题，线程等待也是靠
+wait() 和 notifyAll()
+在队列对象上完成。
+第六次作业：到了第六次作业，加了检修机制和自由分配电梯的逻辑。我在各个电梯井
+ElevatorThread
+里加了一些状态控制，由于状态会被电梯和调度器同时访问，我在通知电梯改变状态的时候，借用了电梯专属的
+processQueue 的锁来做 notifyAll。此时调度器
+DispatchThread 拿 scheduleQueue
+的锁，电梯拿自己的 processQueue
+锁，分工明确，基本没有问题。
+第七次作业：这次的重点是换乘层 F2 的防撞。我给
+ElevatorShaft 专门加了个显式的公平锁
+ReentrantLock f2Lock。当任意一轿厢需要进入 F2
+层时，必须在执行 moveOneFloor 前通过
+f2Lock.lock()
+获取锁，离开后释放锁。同时，我将处理语句精简为仅包含进入、停留和离开 F2
+层的动作，使锁的粒度最小，保证安全的同时最大化了电梯的效率。
+
+锁与同步块内处理语句的关系
+随着作业迭代，我逐渐体会到，锁的作用不仅仅是“互斥”，更是为了保证同步块内的一组处理语句原子性地维护某个对象的属性，我们不能把紧密关联的操作拆分到不同的同步块中。
+
+队列的存取操作：在执行 offer 和
+take
+时，“检查队列状态”、“修改队列元素”、“唤醒等待线程”必须包裹在同一个
+synchronized
+块中。如果将检查和取数分开，就可能出现两个线程同时判断队列非空，然后试图取出同一个请求的危险情况。
+状态修改与通知的绑定：在 hw6
+中，调度器往电梯派发新请求或下发指令时，“修改共享状态”和“调用
+notifyAll()”这两步处理语句必须在同一个同步块内完成。如果先修改状态，出锁后再去
+notifyAll，这期间电梯可能恰好去检查状态并因错过了通知而陷入无休止的等待。
+多条件检查的原子性：在 hw7 的 F2
+防撞逻辑中，“检查对向轿厢是否占用 F2”以及“登记当前轿厢即将进入
+F2”这两步处理语句，必须包裹在同一个 f2Lock
+的临界区内。如果检查和登记被拆分，两部轿厢可能在同一时刻都发现 F2
+空闲，并同时进入 F2 发生碰撞。
+
+二、调度器设计
+调度器交互设计
+我的代码采用了层次化的调度架构：InputThread -&gt;
+ScheduleQueue -&gt; DispatchThread -&gt;
+ProcessQueue -&gt;
+ElevatorThread，如下图所示。
+调度器 DispatchThread
+作为中枢，一旦有新乘客请求，就将其从 ScheduleQueue
+中取出，并通过策略类 ShadowDispatchStrategy
+为其分配最合适的电梯，最后将乘客放入对应电梯的 ProcessQueue
+中，并通过 notifyAll()
+唤醒处于等待状态的电梯。这种设计实现了调度与执行的解耦，调度器不需要干预电梯的运行状态，只需通过队列进行基于数据的交互。
+调度策略与性能指标
+
+运行策略：单部电梯采用了经典的 LOOK
+算法，在当前方向上有请求时继续运行，否则反转方向，能有效减少不必要的移动时间。
+分配策略：从第六次作业开始，我实现了“影子电梯”策略。在分配乘客时，系统会深拷贝每一部电梯的当前状态，在后台通过模拟该电梯运行完所有请求以及所需的代价。
+多指标权衡：我影子电梯的代价函数综合考虑了运行时间和耗电量。时间代价根据模拟运行到达目标层的时间计算，耗电量代价则根据模拟过程中的
+ARRIVE、OPEN/CLOSE
+次数计算，最终将指标加权求和，寻找代价最小的电梯进行分配。针对可能的维护和双轿厢改造与回收，调度器会给这些电梯一些惩罚，避免将新乘客分配给它们。
+
+三、bug分析与debug方法
+出现过的bug
+我只有 hw7 互测中被人发现了bug。错误的输出部分如下：
+[49.8510]RECYCLE-ACCEPT-7[49.8520]RECYCLE-BEGIN-7[49.8530]RECEIVE-100-7
+原因是副轿厢 7 已经进入了 RECYCLE_BEGIN 状态，却还
+RECEIVE
+了新乘客。经过我的排查，发现我的调度器在计算代价的时候，副轿厢 7
+的状态可能还是正常的（或者正好处于
+REC_ACCEPT）。调度器决定把乘客分给 7
+号，但是在它计算完、准备输出接受信息的微小时间间隙里，副轿厢 7
+直接把乘客清空、关门，并输出了 RECYCLE-BEGIN
+改变了状态。等调度器输出 RECEIVE 的时候，副轿厢 7
+已经变成不可接收请求的状态了。总的来说，是因为我电梯调度和输出
+RECEIVE
+并没有被包裹在同一个原子操作里，导致被其他线程修改了状态。
+多线程程序的debug方法
+经历了这三次作业，我总结出了一套多线程调试方法：
+
+理清共享对象边界：在排查问题前，先明确哪些对象会被多个线程同时读写。对于不共享的局部状态，交由电梯线程独占推进即可，不需要过度担心并发。
+重点排查线程唤醒逻辑：可以利用输出语句检查
+wait() 和 notifyAll()
+的配对情况。特别关注如输入关闭、状态转换等边界事件，看看是否在这些特殊时刻漏了唤醒，导致线程睡死。
+针对输出日志反推状态：多线程由于难以稳定地单步断点调试，我们往往去参考输出日志。我会检查
+RECEIVE、IN、OUT
+是否成对出现，电梯的各种输出顺序是否符合题意。对报错的特定行，我根据前面的输出反推当时各个线程所处的状态。
+搭建评测机：我依旧会搭建评测机来进行高强度的生成请求。一旦评测报告错误，立马固定测试用例，保留当时的输入输出，然后再进行针对性的排查。
+
+四、线程安全与层次化设计
+线程安全
+线程安全不是随意在方法上加 synchronized
+就能实现，滥用锁反而会导致性能下降和死锁。我感觉，理清数据流动的模型是保障线程安全的前提。U2
+中，只有队列被多个线程共享，因此只需将队列封装为线程安全的类。对于电梯内部的载重、当前楼层等状态，只由电梯线程自己修改，天然是线程安全的，不需要额外加锁。同时，一定要保持锁的获取顺序一致，并避免在同步块内调用耗时的方法。
+层次化设计
+层次化设计也有效降低了系统的耦合度。从数据流向上，我的架构可以划分为“输入层
+-&gt; 分派层 -&gt;
+执行层”。从类的结构上，我将“执行动作（ElevatorThread）”、“运行策略（MoveStrategy）”和“分配策略（ShadowDispatchStrategy）”严格剥离。面对
+hw7
+的复杂需求，由于具备良好的层次结构，我只需在电梯井层面维护两部电梯，并引入题干中新增的几个状态，而无需重构底层移动和开关门等逻辑。
+五、大模型使用心得
+
+模型名称：Gemini
+任务分工：我负责架构设计和核心状态机的定义等，并编写主要的核心代码，只有不太熟悉的地方，如
+synchronized
+等多线程相关代码的写法，才会询问大模型。写完后，大模型负责帮我检查代码逻辑和
+debug，比如说影子电梯深拷贝代码等。
+复杂任务中的优势：在面临多线程电梯这样复杂的任务时，大模型的逻辑梳理能力非常突出。当我描述双轿厢改造流程时，它能迅速生成清晰的状态机框架；在排查死锁时，把相关输入输出描述给大模型，它思考后往往能一针见血地指出问题。
+面临的困难：大模型由于缺乏整体代码库的上下文，有时会“自作主张”地引入一些不需要的类，如果直接复制粘贴，极易引入隐蔽的
+bug。
+总体感受：大模型是一位极为高效的助手，但多线程代码的底线还是必须由我们把控。只有自己深刻理解了并发机制，才能审查
+AI 代码，将其转化为真正的生产力。
+
+六、第二单元的体验与建议
+真实感受
+第二单元的电梯作业无疑是 OO
+中思维跨度最大的一环，从串行转向并发是一个痛苦但也充满成就感的过程。hw6
+中，我设计影子电梯调优耗费了大量精力，第七次作业的双轿厢逻辑中我也遇到了很多的细节问题，比如说在
+F2
+换乘的写法等。但最终看着电梯高效地运送着乘客而不发生任何死锁，这种获得感也是难以言喻的。
+课程建议
+希望能稍微介绍一下相关电梯调度名词具体是什么意思，比如量子电梯、自由竞争等，网上相关的资料也很少。
+]]></content>
+      <categories>
+        <category>面向对象</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>OO</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OO U3学习与反思</title>
+    <url>/2026/06/02/BUAA-OO%20U3%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
+    <content><![CDATA[第三单元 OO 学习与反思
+一、JML 和规格驱动开发
+JML 契约式设计
+JML 本质上是在 Java 接口外面再套一层形式化约束。它通过
+requires、ensures、assignable 和
+signals
+等，明确了方法的前置条件、后置条件、可修改状态以及异常抛出条件。相比于自然语言，JML
+可以准确地约束方法的规格。在 OOP
+中，它作为实现者与调用者之间的契约，消除了语义上的歧义。
+规格驱动开发
+这一单元最明显的变化就是写代码前先看规格。规格开发的主要优势有：
+1. 实现自由度与结果约束：只要对外状态满足
+ensures，内部用
+HashMap、TreeSet，还是自己写容器，都可以。比如有的方法
+JML
+写得像全局遍历，但实现时完全没必要照着翻译成循环。只要返回值和状态变化对，内部可以做缓存，也可以增量维护。
+2. 测试驱动：JML 为测试提供了清晰的依据。通过直接对照
+ensures 和 signals
+子句，可以很容易地推导出测试的分支和边界情况，从而编写出高覆盖率的单元测试。
+二、JUnit 测试经验总结
+在本单元的测试中，我针对 JML
+的完整性进行验证，包括正常结果返回、状态变化以及异常情况，体现在以下三个方法的测试中：
+queryMutualFollowingSum 的测试里，我没有复用 src
+里动态维护 mutualFollowingSum
+的逻辑，而是单独写了一套双重遍历节点的朴素算法。这样测出来才有意义。数据覆盖了空图、单向关注、对称互关、不成环这些情况，主要用来确认边增删之后缓存计数没有跑偏。
+测 cleanSpamComments
+时，麻烦点在副作用。这个方法会改评论列表，所以调用前要先做快照。测试除了看删除数量和关键字最大出现次数，还要看剩下的评论顺序是否保持，playCount、likes
+这类无关属性有没有被动到。针对字符串匹配，我补了通配符边界词和重叠匹配，以确保严格符合题目要求。
+recommendNthUp 更偏排序规则。测试覆盖了
+rank 非法、候选集为空、分数相同按 ID
+排序、排除自己和已关注用户等情况。它是纯查询方法，所以我还测了连续调用后内部状态不变。
+三、三次作业的迭代
+第一次作业：社交图谱与视频推送
+第一次作业主要是基础的用户社交图谱和视频推送。为了保证查询效率，我在
+Network 里用 HashMap 管理 userMap
+和 videoMap。
+在用户关系维护方面，我直接在 User 类中使用两个
+HashMap（following 和
+followers）来记录关注和被关注关系，以此替代低效的全局查找。queryMutualFollowingSum
+我没有每次重新算，而是在 followUser 和
+unfollowUser 里动态维护
+mutualFollowingSum，查询时就是 O(1)。
+视频接收这里，receivedVideos 经常要头插，所以我写了一个
+IndexedList。另外，User 里维护长度为 4 的
+followerAgeCounts 数组，以此在 O(1)
+的时间内返回各个年龄段粉丝的占比。
+第二次作业：互动状态与缓存
+第二次作业引入了点赞、投币、视频热度等互动状态。难点不是某个单独方法，而是一次操作会牵连多个对象。比如投币要改用户余额、视频硬币数、UP
+主硬币数，还要在 User 的 contributions Map
+里更新贡献度。
+为了少做全量查询，我在 User 里维护了
+watchedVideos、likedVideos 等集合，也用
+contributions 存各个用户的贡献度。Video
+里添加评论时用 commentIdSet
+防重。cleanSpamComments 用双指针配合
+comments.subList().clear()
+清理，避免一边遍历一边频繁删除。清理过的关键字用
+cleanKeywords 记下来，防止重复计算。
+queryLongestDecSeq 是这一阶段比较容易 TLE 的点。我用了
+longestDirty 脏位和 longestDecSeqCache
+缓存。图结构没变就直接返回缓存；只要关注关系变化，就把脏位打上，从而保证了平均情况下的高查询效率。
+第三次作业：热度推荐与模块化
+第三次作业加了推荐相关方法，代码量已经快超 500
+行了（不过好像听说代码风格测试并不卡500行？），我在 Network
+里尽量只做调度，把具体状态维护放回实体类。
+queryMostPopularVideo 用了
+Map&lt;String, TreeSet&lt;Video&gt;&gt; typeHotRank。TreeSet
+按 heat 和 id
+排序。凡是会影响视频热度的操作，更新前先从对应 TreeSet
+里移除，改完热度再插回去。这样每种类型的视频都能保持有序，查询最热视频时不用临时排序。
+User 的 influence
+也没有每次遍历所有上传视频，而是在热度变化时通过回调增量更新
+influences 数组。recommendNthUp
+用了类似快速选择的策略，避免全量排序。写完这块以后最大的感觉就是：推荐逻辑不难，难的是别让它把前面维护好的状态一起拖慢。
+
+
+社交网络
+
+四、如何发现迭代中的方法和容器变化
+在历次作业中，准确找出需要修改的方法和容器是很重要的一环。我发现不能只看新增加的方法，已有的老方法在规格上也可能发生了变化。
+首先是对比接口暴露的状态模型。比如在第三次作业中，UserInterface
+的模型描述里新增了关于不同类型视频的数量统计要求。看到这个新增的模型属性，我就在
+User 类中新增了一个 typeCounts
+数组，在每次观看视频时同步更新它。
+其次是检查副作用 assignable
+的变化。有时候老方法的代码核心逻辑没变，但在新版本中允许修改的变量范围变大了。比如有的方法原本只修改自身属性，后来允许修改其他类的集合。如果漏看了这部分
+assignable
+的扩展，只按原来的逻辑写，就会导致数据没有同步更新。
+另外就是对比方法签名。如果返回类型或参数数量如果变了，原来调用的地方和涉及的数据存储格式基本都需要做相应的修改，这一点编译器通常会报错提示，但也需要我们去更新相关的代码链路。
+五、如何发现性能瓶颈
+JML
+只描述结果要求，不会考虑底层的计算开销。如果直接把规格翻译成循环，强测里基本迟早会出事。
+我会先看量词复杂度。如果 JML 里出现了多重嵌套的 \exists
+和 \forall，或者要求计算全局的
+\sum，把它直接写成嵌套循环一般就会达到 O(N²)
+以上的复杂度。遇到这类方法，我会在本地造一些比较大的数据来测试它的执行时间。
+然后看读写频率。对于像互相关注总数、粉丝年龄分布这种查询次数远大于修改次数的属性，每次查询都重新计算显然太慢了。我选择在关注、取关等操作发生时顺便更新这些值。就像代码里维护
+bestContributorId 一样，通过增量维护把复杂度降下来。
+图算法更适合缓存。像 queryLongestDecSeq
+这种方法每次计算开销很大，我采用了带脏位的缓存机制。不过使用缓存时必须保证状态的一致性，也就是在任何会改变图结构的方法里，都要记得把
+longestDirty 设为
+true，防止出现缓存和实际状态不符的问题。
+六、Bug 与原因分析
+得益于规格驱动开发的严谨性，在三次作业的中测、强测和互测环节中，我的代码都没有被测出
+Bug。期间还发生了一个小插曲：在 hw10
+的强测中，由于评测机波动，第六个数据点最初被误判为错误，好在后续重测后证实了那只是评测机自身的问题。这虽然让我虚惊一场，但也最终证明了代码的正确性。
+不过在本地开发迭代的过程中，我也踩过一些坑。这些经历让我意识到规格开发中有几个很容易出错的地方：
+1. 遗漏副作用：在 hw10
+迭代过程中，增加投币功能时，不仅要修改视频本身的
+coins，还需要同步增加该视频上传者的 coins
+以及记录 contribution。起初我没有仔细对照 JML 中新增的
+assignable
+语句，只修改了视频侧，结果状态不同步。多对象更新基本可以当成一个小事务处理，不能有一丝遗漏。
+2. 异常抛出顺序：JML
+规格中异常不仅有明确的判断先后顺序，构造异常时传入的 ID
+参数也有严格要求。最初我在抛出异常时未按规则排序，或者传入的 ID
+顺序错位，导致 JUnit 测试中捕获到的异常信息不匹配。
+七、大模型使用体会
+这一单元里，我更愿意把大语言模型当规格阅读助手和评测机生成器，而不是直接写最终代码的工具。我使用的
+Code Agent 主要是 Codex 。
+它的显著优势在于：可以快速把长篇的 JML
+翻译成自然语言、列出可能的边界条件、提醒某个方法需要检查哪些副作用，还可以帮助生成繁琐的
+JUnit 单元测试。使用这些 Agent
+来开展自动化测试、批量构造测试样例等还是很方便的，极大地提高了效率。对于版本变更比对，将新旧版本的接口文件发给它，它能迅速列出所有变更点，比肉眼比对高效得多。
+但大模型的局限性也很明显：它往往倾向于直译
+JML，给出“看起来正确但慢”的朴素实现，完全忽略强测中的性能压力。要想让大模型设计出好的架构或是恰当的设计模式，需要我们提供极高质量的提示词。因此我经常使用一些提示词优化器来优化我的输入，向大模型更精准地传达意图，从而引导其输出更优的方案。
+八、JML“击鼓传花”研讨课感悟
+在第二次研讨课上的 JML
+“击鼓传花”游戏中，我获得了许多关于团队协作的启发。
+在本次活动中，我所在的链路题目是计算两个正整数的最大公约数。初始的自然语言需求明确规定了接收正整数
+a 和 b，前置条件为大于 0，且在输入小于等于 0 时抛出
+IllegalArgumentException 异常。
+1. 发现的 JML Bug
+在从 JML 翻译回自然语言，或者从 NL 编写 JML
+的过程中，很容易出理解的偏差。例如在我们组其他同学的链路中，就出现了：
+- 边界条件遗漏或变形：有的同学在 JML
+转自然语言时遗漏了边界条件，把 &gt;= 0 错误地记作了
+&gt; 0。或者对于某些特殊边界，原本要求返回“空
+Map”，在传递中却被替换成了“返回 null”。
+-
+逻辑符号被忽视：在转述过程中，某些逻辑非符号（!）极容易被忽视，导致某一处表述出现明显的语义反转和偏离。
+-
+异常触发条件写错：自然语言表述的异常抛出条件由于不够严谨，导致后续在写
+signals 子句时发生偏离。
+2. 需求与边界在传递中的变化
+游戏过程中，需求和边界常常会发生不可逆的变化。不过，因为我出的 gcd
+题目数学逻辑比较纯粹，大家都不容易搞错，所以我们这条链路取得了 5
+分满分。这也让我体会到：只要初始的需求足够严谨，后面传错的概率就小很多。有些自然语言觉得理所当然的条件，必须得像数学公式一样一条条严格约束，不然很容易产生误解。
+3. 多人组队编程的建议与措施
+为了在未来的多人开发中统一对需求的理解，我认为应该采取以下措施：
+- 统一接口规范：JML
+的核心在于提供接口规范，而不是强制所有人写出一样的代码。我们只要求大家的实现符合一个统一的接口，至于方法内部实现只要没有性能瓶颈，无需强行统一。
+-
+严格定义初始需求：在动手编码前，需求分析必须做到形式化般的严谨。即便是看似简单的自然语言，也要杜绝任何歧义，明确写出前提和异常分支。
+-
+多重细致校验：在代码编写时，必须进行细致的逻辑复盘，严防类似遗漏
+! 等低级错误造成雪崩。
+]]></content>
+      <categories>
+        <category>面向对象</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>OO</tag>
+        <tag>JML</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OO U4学习与反思</title>
+    <url>/2026/06/19/BUAA-OO%20U4%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
+    <content><![CDATA[第四单元 OO 学习与反思
+这学期的 OO
+课程到这里基本告一段落了。回顾四个单元，课程不仅是在考察代码能力，更是在引导我们改变开发习惯。本文主要围绕第四单元的图书馆系统，结合前三个单元的作业，对自己在架构设计、测试方法上的思维演进进行一个整体复盘，同时也会分享一下使用大模型辅助建模的实际体验。
+一、 第四单元正向建模与开发
+第四单元的任务是实现并不断扩展一个图书馆管理系统。随着迭代推进，需求一直在增加：从最初单纯的借书、还书和预约（hw13），到加入精品书架、阅读室和评分机制（hw14），最后又引入了比较繁琐的信用分、借阅期限以及续借规则（hw15）。在这一阶段，我认为正向建模的方法帮我理清楚了思路。
+1. 一阶类图：构建系统骨架
+动手敲代码之前，我们需要先在 StarUML
+里完成一阶类图。它的主要意义在于限制开发初期的随意性，强制把核心业务解耦。针对复杂的题面，我首先尝试把核心实体和场地对象分离出来：
+
+核心实体：提取了
+Reader（维护读者的状态等）和
+Book（维护单本图书的状态和流转历史）。
+业务场所：分离出了
+Bookshelf（普通书架）、BorrowAndReturnOffice（借还处）和
+AppointmentOffice（预约处）。
+
+一阶类图不仅明确了系统大概需要哪些类，还初步划定了各个类的职责。正是因为有了这层约束，我在后续写代码时，才没有把所有控制逻辑全塞给
+MainClass 或某一个庞大的 Manager
+类。这让初期的业务逻辑比较清晰。
+2.
+二阶类图：对齐实现与设计的偏差
+随着编码的深入，一阶类图中一些设计肯定会需要修改。比如在 hw14
+中加入精品书架和阅览室后，原本统一的书架类就显得不够用了，我只能在代码里拆分出
+TreasuredBookshelf、ReadingRoom 以及
+RatingOffice 来分散业务；到了 hw15，Reader
+的状态需要同时兼顾借书数量、信用分和逾期情况，不得不补充大量新字段。
+这时候二阶类图的价值就体现出来了。它要求我们把迭代后的实际架构重新反映到模型中去。通过完善二阶类图，比如细化
+LibraryManager 中
+returnBook、borrowBook
+的参数列表，我尽量确保了 UML
+模型能真实反映代码，而不是变成一份单纯的设计文档。
+二、 架构设计与模型追踪
+在第四单元的设计中，我的原则是尽量遵循单一职责和高内聚低耦合的原则。我将系统分为了这些层次：
+1. 核心架构划分
+
+实体对象（Book,
+Reader）：主要负责管理自身的数据状态。Book
+包含 ISBN 和具体的副本信息；Reader
+则把借书上限、信用分计算、逾期判断等规则封装在内部，这样可以极大减轻管理类的负担。
+业务场所对象（Bookshelf,
+TreasuredBookshelf, ReadingRoom,
+AppointmentOffice, BorrowAndReturnOffice,
+RatingOffice）：承担各个场所内的具体查询与书籍转移操作。例如
+TreasuredBookshelf 单独处理 B
+类和高分图书的管理；RatingOffice 接收用户的评分。
+统筹中枢（LibraryManager）：作为系统的调度中心，它有前面的各种场地实例和用户表。它的职责是统筹
+borrowBook、returnBook、pickBook
+等请求，并在闭馆阶段调用 arrange() 方法搬运书籍。
+
+2. 追踪关系分析
+为了通过评测，我花了不少时间在代码和模型的对齐上：
+- 类与属性的映射：UML
+模型里的每一个核心类都在代码中有完全对应的 Java 类。比如 UML 中
+LibraryManager 和
+Bookshelf、ReadingRoom 的组合或聚合关联，在
+LibraryManager.java 里都对应着成员变量的声明。
+-
+状态流转与交互的映射：在画状态机和顺序图时，我重点描述了一本书在各个场馆之间的流转路线。在实际代码中，这些状态变化是由
+LibraryManager
+的方法来驱动的。假设要归还一本应该放在精品书架的书，LibraryManager
+会先调用借还处的接收逻辑，在闭馆时把它从借还处取出来，存进
+TreasuredBookshelf。顺序图里的每一次跨对象交互，都能在代码的方法调用中找到一致的函数。
+三、 大模型辅助正向建模
+在这一单元里，我尝试了用大模型来辅助生成 UML
+的相关数据。它在处理繁琐的形式化转换时效率很高，但如果不加限制，也很容易出现理解偏差或者过度设计的问题。
+1. 实际使用中的优缺点
+
+效率提升：要把多个 Java 方法的定义手动录到 StarUML
+里是非常枯燥且易错的。我把这部分代码发给大模型，它能在很短时间内把它们翻译成标准的
+UML 格式，这就搞定了不少体力活。
+理解偏差：如果直接把作业需求扔给大模型让它设计，它往往会自作聪明地加入一些复杂的设计模式，这就把问题复杂化了。另外，在生成顺序图时，它也经常无视“跨类调用的方法必须是
+public”这个重要的代码规范。
+
+2. 引导大模型的策略
+经历了这些问题后，我总结了几条给大模型写提示词的经验：
+1.
+结构化提供背景：先让模型提取出领域里的基本名词，确定好讨论的前提，别一开始就让它输出完整设计。
+2.
+设定严格的边界：在让它生成交互逻辑时，必须把课程的特殊要求作为前提给它定死。比如明确说明：“不要使用策略模式或命令模式，直接在
+LibraryManager
+里面写分发方法”，“不同类之间相互调用时，对应的方法必须是
+public”。这样能有效规范它的发挥。
+3.
+通过极端场景验证：我会构思一些复杂的场景去测试它的逻辑。比如问它：“如果一个读者成功预约了一本
+B 类图书，但在保留期内该读者因为另一本书逾期未还导致信用分降到 80
+分以下，那他还能不能正常取走这本 B
+类图书？”通过这种极端情况，可以促使大模型暴露出它的设计漏洞。
+四、 架构设计思维的演进
+回顾整个学期的作业，我觉得自己在架构设计上的思路经历了明显的转变：
+
+第一单元（表达式解析）
+通过学习递归下降，我搭建了 Lexer 和
+Parser，并设计了表达式的树形结构（由 Expr,
+Term, Factor 派生出 FuncFactor,
+ExpFactor, ChoiceFactor 以及
+Poly,
+Mono）。这是我第一次体会到利用多态和树结构来解耦问题的好处。
+第二单元（多线程电梯）
+这个单元加入了多线程机制，我实现了
+InputThread、DispatchThread 和
+ElevatorThread，并且在 hw7
+里处理了容易冲突的双轿厢电梯（ShadowElevator 和
+ElevatorShaft）。这个过程让我意识到，好的设计不仅仅是多建几个类，关键在于如何把策略和执行分离开。通过独立出
+DispatchStrategy 和
+MoveStrategy，电梯本身变成了只负责执行动作的载体，复杂的判断交给了调度器。同时我也摸索出了怎么给
+BaseQueue 这类共享资源合理加锁，以避免死锁和轮询。
+第三单元（JML 社交网络）
+这一单元主要围绕社交网络展开，我的关注点转移到了契约式编程上。JML
+强调每个方法都要有清晰的前置和后置条件。在遵循契约的基础上，我也学着在架构里添加了一些辅助类（如
+NetworkHelper 和
+IndexedList），通过相关图算法进行空间换时间的优化，以应对大量查询可能带来的
+TLE 问题。
+第四单元（UML 图书馆）
+在最后的正向建模阶段，课程要求我们在真正编写业务逻辑前，先用类图分析静态结构，用状态图理清生命周期，用顺序图规划动态交互。这让我逐渐摆脱了拿到需求就直接写代码的习惯，开始用一种更系统的工程思路去开发。
+
+五、 测试思维的演进
+随着系统复杂度的提高，我的测试方法也跟着进行了升级：
+
+U1 自动化对拍测试
+初期主要是依靠 Python 脚本调用 SymPy
+生成大量随机表达式，然后和自己程序的输出进行对比。这算是比较典型的黑盒测试，用来找一些语法解析上的疏漏。
+U2 场景化并发施压
+在多线程环境下，普通的随机测试很难暴露出死锁或者线程竞争的问题。我开始学着人为构造一些高压场景，比如在极短的时间窗口内，向同一楼层发送大量请求，或者针对双轿厢在换乘层的会车情况进行专门的压力测试。
+U3 基于规格的等价类划分
+有了 JML 之后，测试就有了直接的参考依据。我开始根据
+requires 和 exceptional_behavior
+的说明去做等价类划分，专门针对各种抛出异常的情况、容器容量上限以及边界值编写
+JUnit 测试。这让测试变得更有系统性。
+U4 状态追踪与长序列覆盖
+图书馆系统的很多 Bug
+不会在单次操作中暴露，而是需要经过一系列长流程后才会出现。所以我的测试重心变成基于状态机的路径覆盖测试。通过对照状态图，我设计了各种包含跨日期信用分扣除、不同书架间书籍移动的长用例，重点检查对象的状态在多次运转后是否还能保持一致。
+
+六、 课程收获总结
+这学期的 OO 课程很有挑战性，带给我的收获不仅是 Java
+语法的提升，更是开发思维的转变：
+
+对复杂度的拆解能力：从一开始写大而全的方法，到后来学会用抽象语法树解析文本、用分发器隔离并发逻辑、用
+JML 明确函数边界、用 UML
+规划系统结构，我逐渐掌握了该如何一步步把复杂需求拆解成可维护的代码。
+更全面的工程意识：我逐渐改掉了以前只为让程序跑通就行的习惯。现在在写代码前，我会下意识地去考虑“这个类的职责对不对”、“资源上锁的方式会不会出问题”以及“以后要是增加新功能，现在的代码改起来方不方便”。
+排错与抗压能力：无论是长时间排查电梯死锁问题、想办法优化图查询的性能，还是在画图时一遍遍修改
+UML 细节，这些经历都锻炼了我的耐心和严谨度。
+
+总而言之，经过这四个单元的练习，面向对象对我来说不再只是一个抽象的概念，而是变成了实际解决复杂工程问题的一套方法论。再见，2026
+OO！感谢这段痛并快乐着的旅程，它将成为我程序生涯中无可替代的宝贵财富！
+]]></content>
+      <categories>
+        <category>面向对象</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>OO</tag>
+        <tag>UML</tag>
       </tags>
   </entry>
   <entry>
@@ -2862,550 +3823,6 @@ JUnit促使我们思考边界情况。
       </tags>
   </entry>
   <entry>
-    <title>BUAA-OO U4学习与反思</title>
-    <url>/2026/06/19/BUAA-OO%20U4%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
-    <content><![CDATA[第四单元 OO 学习与反思
-这学期的 OO
-课程到这里基本告一段落了。回顾四个单元，课程不仅是在考察代码能力，更是在引导我们改变开发习惯。本文主要围绕第四单元的图书馆系统，结合前三个单元的作业，对自己在架构设计、测试方法上的思维演进进行一个整体复盘，同时也会分享一下使用大模型辅助建模的实际体验。
-一、 第四单元正向建模与开发
-第四单元的任务是实现并不断扩展一个图书馆管理系统。随着迭代推进，需求一直在增加：从最初单纯的借书、还书和预约（hw13），到加入精品书架、阅读室和评分机制（hw14），最后又引入了比较繁琐的信用分、借阅期限以及续借规则（hw15）。在这一阶段，我认为正向建模的方法帮我理清楚了思路。
-1. 一阶类图：构建系统骨架
-动手敲代码之前，我们需要先在 StarUML
-里完成一阶类图。它的主要意义在于限制开发初期的随意性，强制把核心业务解耦。针对复杂的题面，我首先尝试把核心实体和场地对象分离出来：
-
-核心实体：提取了
-Reader（维护读者的状态等）和
-Book（维护单本图书的状态和流转历史）。
-业务场所：分离出了
-Bookshelf（普通书架）、BorrowAndReturnOffice（借还处）和
-AppointmentOffice（预约处）。
-
-一阶类图不仅明确了系统大概需要哪些类，还初步划定了各个类的职责。正是因为有了这层约束，我在后续写代码时，才没有把所有控制逻辑全塞给
-MainClass 或某一个庞大的 Manager
-类。这让初期的业务逻辑比较清晰。
-2.
-二阶类图：对齐实现与设计的偏差
-随着编码的深入，一阶类图中一些设计肯定会需要修改。比如在 hw14
-中加入精品书架和阅览室后，原本统一的书架类就显得不够用了，我只能在代码里拆分出
-TreasuredBookshelf、ReadingRoom 以及
-RatingOffice 来分散业务；到了 hw15，Reader
-的状态需要同时兼顾借书数量、信用分和逾期情况，不得不补充大量新字段。
-这时候二阶类图的价值就体现出来了。它要求我们把迭代后的实际架构重新反映到模型中去。通过完善二阶类图，比如细化
-LibraryManager 中
-returnBook、borrowBook
-的参数列表，我尽量确保了 UML
-模型能真实反映代码，而不是变成一份单纯的设计文档。
-二、 架构设计与模型追踪
-在第四单元的设计中，我的原则是尽量遵循单一职责和高内聚低耦合的原则。我将系统分为了这些层次：
-1. 核心架构划分
-
-实体对象（Book,
-Reader）：主要负责管理自身的数据状态。Book
-包含 ISBN 和具体的副本信息；Reader
-则把借书上限、信用分计算、逾期判断等规则封装在内部，这样可以极大减轻管理类的负担。
-业务场所对象（Bookshelf,
-TreasuredBookshelf, ReadingRoom,
-AppointmentOffice, BorrowAndReturnOffice,
-RatingOffice）：承担各个场所内的具体查询与书籍转移操作。例如
-TreasuredBookshelf 单独处理 B
-类和高分图书的管理；RatingOffice 接收用户的评分。
-统筹中枢（LibraryManager）：作为系统的调度中心，它有前面的各种场地实例和用户表。它的职责是统筹
-borrowBook、returnBook、pickBook
-等请求，并在闭馆阶段调用 arrange() 方法搬运书籍。
-
-2. 追踪关系分析
-为了通过评测，我花了不少时间在代码和模型的对齐上：
-- 类与属性的映射：UML
-模型里的每一个核心类都在代码中有完全对应的 Java 类。比如 UML 中
-LibraryManager 和
-Bookshelf、ReadingRoom 的组合或聚合关联，在
-LibraryManager.java 里都对应着成员变量的声明。
--
-状态流转与交互的映射：在画状态机和顺序图时，我重点描述了一本书在各个场馆之间的流转路线。在实际代码中，这些状态变化是由
-LibraryManager
-的方法来驱动的。假设要归还一本应该放在精品书架的书，LibraryManager
-会先调用借还处的接收逻辑，在闭馆时把它从借还处取出来，存进
-TreasuredBookshelf。顺序图里的每一次跨对象交互，都能在代码的方法调用中找到一致的函数。
-三、 大模型辅助正向建模
-在这一单元里，我尝试了用大模型来辅助生成 UML
-的相关数据。它在处理繁琐的形式化转换时效率很高，但如果不加限制，也很容易出现理解偏差或者过度设计的问题。
-1. 实际使用中的优缺点
-
-效率提升：要把多个 Java 方法的定义手动录到 StarUML
-里是非常枯燥且易错的。我把这部分代码发给大模型，它能在很短时间内把它们翻译成标准的
-UML 格式，这就搞定了不少体力活。
-理解偏差：如果直接把作业需求扔给大模型让它设计，它往往会自作聪明地加入一些复杂的设计模式，这就把问题复杂化了。另外，在生成顺序图时，它也经常无视“跨类调用的方法必须是
-public”这个重要的代码规范。
-
-2. 引导大模型的策略
-经历了这些问题后，我总结了几条给大模型写提示词的经验：
-1.
-结构化提供背景：先让模型提取出领域里的基本名词，确定好讨论的前提，别一开始就让它输出完整设计。
-2.
-设定严格的边界：在让它生成交互逻辑时，必须把课程的特殊要求作为前提给它定死。比如明确说明：“不要使用策略模式或命令模式，直接在
-LibraryManager
-里面写分发方法”，“不同类之间相互调用时，对应的方法必须是
-public”。这样能有效规范它的发挥。
-3.
-通过极端场景验证：我会构思一些复杂的场景去测试它的逻辑。比如问它：“如果一个读者成功预约了一本
-B 类图书，但在保留期内该读者因为另一本书逾期未还导致信用分降到 80
-分以下，那他还能不能正常取走这本 B
-类图书？”通过这种极端情况，可以促使大模型暴露出它的设计漏洞。
-四、 架构设计思维的演进
-回顾整个学期的作业，我觉得自己在架构设计上的思路经历了明显的转变：
-
-第一单元（表达式解析）
-通过学习递归下降，我搭建了 Lexer 和
-Parser，并设计了表达式的树形结构（由 Expr,
-Term, Factor 派生出 FuncFactor,
-ExpFactor, ChoiceFactor 以及
-Poly,
-Mono）。这是我第一次体会到利用多态和树结构来解耦问题的好处。
-第二单元（多线程电梯）
-这个单元加入了多线程机制，我实现了
-InputThread、DispatchThread 和
-ElevatorThread，并且在 hw7
-里处理了容易冲突的双轿厢电梯（ShadowElevator 和
-ElevatorShaft）。这个过程让我意识到，好的设计不仅仅是多建几个类，关键在于如何把策略和执行分离开。通过独立出
-DispatchStrategy 和
-MoveStrategy，电梯本身变成了只负责执行动作的载体，复杂的判断交给了调度器。同时我也摸索出了怎么给
-BaseQueue 这类共享资源合理加锁，以避免死锁和轮询。
-第三单元（JML 社交网络）
-这一单元主要围绕社交网络展开，我的关注点转移到了契约式编程上。JML
-强调每个方法都要有清晰的前置和后置条件。在遵循契约的基础上，我也学着在架构里添加了一些辅助类（如
-NetworkHelper 和
-IndexedList），通过相关图算法进行空间换时间的优化，以应对大量查询可能带来的
-TLE 问题。
-第四单元（UML 图书馆）
-在最后的正向建模阶段，课程要求我们在真正编写业务逻辑前，先用类图分析静态结构，用状态图理清生命周期，用顺序图规划动态交互。这让我逐渐摆脱了拿到需求就直接写代码的习惯，开始用一种更系统的工程思路去开发。
-
-五、 测试思维的演进
-随着系统复杂度的提高，我的测试方法也跟着进行了升级：
-
-U1 自动化对拍测试
-初期主要是依靠 Python 脚本调用 SymPy
-生成大量随机表达式，然后和自己程序的输出进行对比。这算是比较典型的黑盒测试，用来找一些语法解析上的疏漏。
-U2 场景化并发施压
-在多线程环境下，普通的随机测试很难暴露出死锁或者线程竞争的问题。我开始学着人为构造一些高压场景，比如在极短的时间窗口内，向同一楼层发送大量请求，或者针对双轿厢在换乘层的会车情况进行专门的压力测试。
-U3 基于规格的等价类划分
-有了 JML 之后，测试就有了直接的参考依据。我开始根据
-requires 和 exceptional_behavior
-的说明去做等价类划分，专门针对各种抛出异常的情况、容器容量上限以及边界值编写
-JUnit 测试。这让测试变得更有系统性。
-U4 状态追踪与长序列覆盖
-图书馆系统的很多 Bug
-不会在单次操作中暴露，而是需要经过一系列长流程后才会出现。所以我的测试重心变成基于状态机的路径覆盖测试。通过对照状态图，我设计了各种包含跨日期信用分扣除、不同书架间书籍移动的长用例，重点检查对象的状态在多次运转后是否还能保持一致。
-
-六、 课程收获总结
-这学期的 OO 课程很有挑战性，带给我的收获不仅是 Java
-语法的提升，更是开发思维的转变：
-
-对复杂度的拆解能力：从一开始写大而全的方法，到后来学会用抽象语法树解析文本、用分发器隔离并发逻辑、用
-JML 明确函数边界、用 UML
-规划系统结构，我逐渐掌握了该如何一步步把复杂需求拆解成可维护的代码。
-更全面的工程意识：我逐渐改掉了以前只为让程序跑通就行的习惯。现在在写代码前，我会下意识地去考虑“这个类的职责对不对”、“资源上锁的方式会不会出问题”以及“以后要是增加新功能，现在的代码改起来方不方便”。
-排错与抗压能力：无论是长时间排查电梯死锁问题、想办法优化图查询的性能，还是在画图时一遍遍修改
-UML 细节，这些经历都锻炼了我的耐心和严谨度。
-
-总而言之，经过这四个单元的练习，面向对象对我来说不再只是一个抽象的概念，而是变成了实际解决复杂工程问题的一套方法论。再见，2026
-OO！感谢这段痛并快乐着的旅程，它将成为我程序生涯中无可替代的宝贵财富！
-]]></content>
-      <categories>
-        <category>面向对象</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>OO</tag>
-        <tag>UML</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-OO U3学习与反思</title>
-    <url>/2026/06/02/BUAA-OO%20U3%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
-    <content><![CDATA[第三单元 OO 学习与反思
-一、JML 和规格驱动开发
-JML 契约式设计
-JML 本质上是在 Java 接口外面再套一层形式化约束。它通过
-requires、ensures、assignable 和
-signals
-等，明确了方法的前置条件、后置条件、可修改状态以及异常抛出条件。相比于自然语言，JML
-可以准确地约束方法的规格。在 OOP
-中，它作为实现者与调用者之间的契约，消除了语义上的歧义。
-规格驱动开发
-这一单元最明显的变化就是写代码前先看规格。规格开发的主要优势有：
-1. 实现自由度与结果约束：只要对外状态满足
-ensures，内部用
-HashMap、TreeSet，还是自己写容器，都可以。比如有的方法
-JML
-写得像全局遍历，但实现时完全没必要照着翻译成循环。只要返回值和状态变化对，内部可以做缓存，也可以增量维护。
-2. 测试驱动：JML 为测试提供了清晰的依据。通过直接对照
-ensures 和 signals
-子句，可以很容易地推导出测试的分支和边界情况，从而编写出高覆盖率的单元测试。
-二、JUnit 测试经验总结
-在本单元的测试中，我针对 JML
-的完整性进行验证，包括正常结果返回、状态变化以及异常情况，体现在以下三个方法的测试中：
-queryMutualFollowingSum 的测试里，我没有复用 src
-里动态维护 mutualFollowingSum
-的逻辑，而是单独写了一套双重遍历节点的朴素算法。这样测出来才有意义。数据覆盖了空图、单向关注、对称互关、不成环这些情况，主要用来确认边增删之后缓存计数没有跑偏。
-测 cleanSpamComments
-时，麻烦点在副作用。这个方法会改评论列表，所以调用前要先做快照。测试除了看删除数量和关键字最大出现次数，还要看剩下的评论顺序是否保持，playCount、likes
-这类无关属性有没有被动到。针对字符串匹配，我补了通配符边界词和重叠匹配，以确保严格符合题目要求。
-recommendNthUp 更偏排序规则。测试覆盖了
-rank 非法、候选集为空、分数相同按 ID
-排序、排除自己和已关注用户等情况。它是纯查询方法，所以我还测了连续调用后内部状态不变。
-三、三次作业的迭代
-第一次作业：社交图谱与视频推送
-第一次作业主要是基础的用户社交图谱和视频推送。为了保证查询效率，我在
-Network 里用 HashMap 管理 userMap
-和 videoMap。
-在用户关系维护方面，我直接在 User 类中使用两个
-HashMap（following 和
-followers）来记录关注和被关注关系，以此替代低效的全局查找。queryMutualFollowingSum
-我没有每次重新算，而是在 followUser 和
-unfollowUser 里动态维护
-mutualFollowingSum，查询时就是 O(1)。
-视频接收这里，receivedVideos 经常要头插，所以我写了一个
-IndexedList。另外，User 里维护长度为 4 的
-followerAgeCounts 数组，以此在 O(1)
-的时间内返回各个年龄段粉丝的占比。
-第二次作业：互动状态与缓存
-第二次作业引入了点赞、投币、视频热度等互动状态。难点不是某个单独方法，而是一次操作会牵连多个对象。比如投币要改用户余额、视频硬币数、UP
-主硬币数，还要在 User 的 contributions Map
-里更新贡献度。
-为了少做全量查询，我在 User 里维护了
-watchedVideos、likedVideos 等集合，也用
-contributions 存各个用户的贡献度。Video
-里添加评论时用 commentIdSet
-防重。cleanSpamComments 用双指针配合
-comments.subList().clear()
-清理，避免一边遍历一边频繁删除。清理过的关键字用
-cleanKeywords 记下来，防止重复计算。
-queryLongestDecSeq 是这一阶段比较容易 TLE 的点。我用了
-longestDirty 脏位和 longestDecSeqCache
-缓存。图结构没变就直接返回缓存；只要关注关系变化，就把脏位打上，从而保证了平均情况下的高查询效率。
-第三次作业：热度推荐与模块化
-第三次作业加了推荐相关方法，代码量已经快超 500
-行了（不过好像听说代码风格测试并不卡500行？），我在 Network
-里尽量只做调度，把具体状态维护放回实体类。
-queryMostPopularVideo 用了
-Map&lt;String, TreeSet&lt;Video&gt;&gt; typeHotRank。TreeSet
-按 heat 和 id
-排序。凡是会影响视频热度的操作，更新前先从对应 TreeSet
-里移除，改完热度再插回去。这样每种类型的视频都能保持有序，查询最热视频时不用临时排序。
-User 的 influence
-也没有每次遍历所有上传视频，而是在热度变化时通过回调增量更新
-influences 数组。recommendNthUp
-用了类似快速选择的策略，避免全量排序。写完这块以后最大的感觉就是：推荐逻辑不难，难的是别让它把前面维护好的状态一起拖慢。
-
-
-社交网络
-
-四、如何发现迭代中的方法和容器变化
-在历次作业中，准确找出需要修改的方法和容器是很重要的一环。我发现不能只看新增加的方法，已有的老方法在规格上也可能发生了变化。
-首先是对比接口暴露的状态模型。比如在第三次作业中，UserInterface
-的模型描述里新增了关于不同类型视频的数量统计要求。看到这个新增的模型属性，我就在
-User 类中新增了一个 typeCounts
-数组，在每次观看视频时同步更新它。
-其次是检查副作用 assignable
-的变化。有时候老方法的代码核心逻辑没变，但在新版本中允许修改的变量范围变大了。比如有的方法原本只修改自身属性，后来允许修改其他类的集合。如果漏看了这部分
-assignable
-的扩展，只按原来的逻辑写，就会导致数据没有同步更新。
-另外就是对比方法签名。如果返回类型或参数数量如果变了，原来调用的地方和涉及的数据存储格式基本都需要做相应的修改，这一点编译器通常会报错提示，但也需要我们去更新相关的代码链路。
-五、如何发现性能瓶颈
-JML
-只描述结果要求，不会考虑底层的计算开销。如果直接把规格翻译成循环，强测里基本迟早会出事。
-我会先看量词复杂度。如果 JML 里出现了多重嵌套的 \exists
-和 \forall，或者要求计算全局的
-\sum，把它直接写成嵌套循环一般就会达到 O(N²)
-以上的复杂度。遇到这类方法，我会在本地造一些比较大的数据来测试它的执行时间。
-然后看读写频率。对于像互相关注总数、粉丝年龄分布这种查询次数远大于修改次数的属性，每次查询都重新计算显然太慢了。我选择在关注、取关等操作发生时顺便更新这些值。就像代码里维护
-bestContributorId 一样，通过增量维护把复杂度降下来。
-图算法更适合缓存。像 queryLongestDecSeq
-这种方法每次计算开销很大，我采用了带脏位的缓存机制。不过使用缓存时必须保证状态的一致性，也就是在任何会改变图结构的方法里，都要记得把
-longestDirty 设为
-true，防止出现缓存和实际状态不符的问题。
-六、Bug 与原因分析
-得益于规格驱动开发的严谨性，在三次作业的中测、强测和互测环节中，我的代码都没有被测出
-Bug。期间还发生了一个小插曲：在 hw10
-的强测中，由于评测机波动，第六个数据点最初被误判为错误，好在后续重测后证实了那只是评测机自身的问题。这虽然让我虚惊一场，但也最终证明了代码的正确性。
-不过在本地开发迭代的过程中，我也踩过一些坑。这些经历让我意识到规格开发中有几个很容易出错的地方：
-1. 遗漏副作用：在 hw10
-迭代过程中，增加投币功能时，不仅要修改视频本身的
-coins，还需要同步增加该视频上传者的 coins
-以及记录 contribution。起初我没有仔细对照 JML 中新增的
-assignable
-语句，只修改了视频侧，结果状态不同步。多对象更新基本可以当成一个小事务处理，不能有一丝遗漏。
-2. 异常抛出顺序：JML
-规格中异常不仅有明确的判断先后顺序，构造异常时传入的 ID
-参数也有严格要求。最初我在抛出异常时未按规则排序，或者传入的 ID
-顺序错位，导致 JUnit 测试中捕获到的异常信息不匹配。
-七、大模型使用体会
-这一单元里，我更愿意把大语言模型当规格阅读助手和评测机生成器，而不是直接写最终代码的工具。我使用的
-Code Agent 主要是 Codex 。
-它的显著优势在于：可以快速把长篇的 JML
-翻译成自然语言、列出可能的边界条件、提醒某个方法需要检查哪些副作用，还可以帮助生成繁琐的
-JUnit 单元测试。使用这些 Agent
-来开展自动化测试、批量构造测试样例等还是很方便的，极大地提高了效率。对于版本变更比对，将新旧版本的接口文件发给它，它能迅速列出所有变更点，比肉眼比对高效得多。
-但大模型的局限性也很明显：它往往倾向于直译
-JML，给出“看起来正确但慢”的朴素实现，完全忽略强测中的性能压力。要想让大模型设计出好的架构或是恰当的设计模式，需要我们提供极高质量的提示词。因此我经常使用一些提示词优化器来优化我的输入，向大模型更精准地传达意图，从而引导其输出更优的方案。
-八、JML“击鼓传花”研讨课感悟
-在第二次研讨课上的 JML
-“击鼓传花”游戏中，我获得了许多关于团队协作的启发。
-在本次活动中，我所在的链路题目是计算两个正整数的最大公约数。初始的自然语言需求明确规定了接收正整数
-a 和 b，前置条件为大于 0，且在输入小于等于 0 时抛出
-IllegalArgumentException 异常。
-1. 发现的 JML Bug
-在从 JML 翻译回自然语言，或者从 NL 编写 JML
-的过程中，很容易出理解的偏差。例如在我们组其他同学的链路中，就出现了：
-- 边界条件遗漏或变形：有的同学在 JML
-转自然语言时遗漏了边界条件，把 &gt;= 0 错误地记作了
-&gt; 0。或者对于某些特殊边界，原本要求返回“空
-Map”，在传递中却被替换成了“返回 null”。
--
-逻辑符号被忽视：在转述过程中，某些逻辑非符号（!）极容易被忽视，导致某一处表述出现明显的语义反转和偏离。
--
-异常触发条件写错：自然语言表述的异常抛出条件由于不够严谨，导致后续在写
-signals 子句时发生偏离。
-2. 需求与边界在传递中的变化
-游戏过程中，需求和边界常常会发生不可逆的变化。不过，因为我出的 gcd
-题目数学逻辑比较纯粹，大家都不容易搞错，所以我们这条链路取得了 5
-分满分。这也让我体会到：只要初始的需求足够严谨，后面传错的概率就小很多。有些自然语言觉得理所当然的条件，必须得像数学公式一样一条条严格约束，不然很容易产生误解。
-3. 多人组队编程的建议与措施
-为了在未来的多人开发中统一对需求的理解，我认为应该采取以下措施：
-- 统一接口规范：JML
-的核心在于提供接口规范，而不是强制所有人写出一样的代码。我们只要求大家的实现符合一个统一的接口，至于方法内部实现只要没有性能瓶颈，无需强行统一。
--
-严格定义初始需求：在动手编码前，需求分析必须做到形式化般的严谨。即便是看似简单的自然语言，也要杜绝任何歧义，明确写出前提和异常分支。
--
-多重细致校验：在代码编写时，必须进行细致的逻辑复盘，严防类似遗漏
-! 等低级错误造成雪崩。
-]]></content>
-      <categories>
-        <category>面向对象</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>OO</tag>
-        <tag>JML</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-CO 推荐题目汇总</title>
-    <url>/2025/12/09/BUAA-CO%20%E6%8E%A8%E8%8D%90%E9%A2%98%E7%9B%AE%E6%B1%87%E6%80%BB/</url>
-    <content><![CDATA[可能有些人会感到，计组有时没题可做了，即使在往届博客上看到题目，也没有相关的评测环境，难以确定是否做对，HDLBits
-上的题画风又不太一致，但其实 cscore 上就有很多的题目可以访问。
-比如某题目的网址如下：
-http://cscore.buaa.edu.cn/#/problem?ProblemId=334&amp;PieId=1338
-PieId 应该是每届和每届都不同，2406 对应的是 1338。ProblemId
-是题目编号，没有规律可言，但同一个 ProblemId
-似乎每届都能访问到题目。我们便可以先查到本届的 PieId，再按顺序遍历
-ProblemId（当然也可以直接访问我提供的
-ProblemId），如果打开了题目就将其截图或其他形式保存下来，从而就有很多题目可以做并评测了。
-可惜的是，笔者直到 P5
-时才在往届博客中看到这个方法，因此很多之前的题目都没用了，而 P6
-及以后的题又爬不到，因此这些题只能流传下去了（）
-源码和题目获取
-]]></content>
-      <categories>
-        <category>计算机组成</category>
-      </categories>
-      <tags>
-        <tag>CO</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-OS Lab3上机</title>
-    <url>/2026/04/29/BUAA-OS%20Lab3%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 MOS 进程管理与异常处理。
-课上题目
-Exam
-点击查看题面
-这道题在 RR 基础上，增加了 SRTF 调度算法，整体难度不大。
-Extra
-点击查看题面
-这道题增加了一种新的异常，要求实现其处理方法，和往届题目类似。
-笔者的话
-Lab3 内容依旧很丰富：从各种 env_
-开头的进程处理函数，到异常的分发，还涉及大量 C
-与汇编的相互调用，非常考验基础功底。
-Lab3 的上机题相对固定，根据往年情况，Exam
-通常是增加新的调度算法，Extra
-通常是增加新的异常，这次也不例外。但我中途出了个奇怪的问题：似乎误改了某个文件，而这个文件还很长，最后连自己也不知道到底动了哪里，只好切到
-lab3 分支把它复原，耽误了不少时间。
-这段经历带来的启发是：vim 编辑器的使用门槛较高，尤其和 VSCode
-比复杂了不少，许多人都用得不太顺手。可以让你的 AI 帮忙写一份合适的
-.vimrc，用起来会舒服很多，比如 set mouse=a
-可以让鼠标直接移动光标，不必一直 j
-k。此外，想同时看多个代码文件时，有人用
-tmux，但据说存在一些奇怪的兼容问题；也有人开多个跳板机；还有人直接进
-GitLab 仓库看代码，八仙过海各显神通。至于代码编辑，有人不愿用
-vim，直接在记事本里写代码，个人体验下来还是不如 CLion 或
-VSCode，最起码多了语法高亮等功能。当然最理想的方式是 ssh 连接到
-VSCode，能力强的同学可以尝试在短时间内配好 ssh，反正我没成功过（）
-Extra 也吃了准备不充分的亏，考前没有仔细看往届博客。lmhgg
-博客
-已经把这部分常用的代码整理好了，大家可以直接手抄或者打印下来带进考场，一定不要忘记
-OS
-上机是开卷的。有了这串代码，再做一做往年题目，相信这道题难度就不算大了。还有一点：如果代码运行结果有问题，一定要调试，而不要用肉眼
-debug。教程中有详细的 gdb 调试步骤，有余力可以学习；也可以采用 printf
-大法（在这里应该叫 printk
-大法），将一些中间变量输出出来观察。如果更用心一点，可以直接在相关头文件中加入一些调试宏，我写的宏如下：
-在 include/printk.h 中（内核态使用
-printk）：
-#ifndef DEBUGK_ENABLE#define DEBUGK_ENABLE 1#endif#if DEBUGK_ENABLE#define debugk(fmt, ...)                                                                           \	printk(&quot;[DEBUG] %s:%d:%s: &quot; fmt &quot;\n&quot;, __FILE__, __LINE__, __func__, ##__VA_ARGS__)#define debugk_int(x)                                                                              \	printk(&quot;[DEBUG] %s = %d\n&quot;, #x, (int)(x))#define debugk_uint(x)                                                                             \	printk(&quot;[DEBUG] %s = %u\n&quot;, #x, (u_int)(x))#define debugk_hex(x)                                                                              \	printk(&quot;[DEBUG] %s = 0x%x\n&quot;, #x, (u_int)(x))#define debugk_char(x)                                                                             \	printk(&quot;[DEBUG] %s = &#x27;%c&#x27; / 0x%x\n&quot;, #x, (char)(x), (u_int)(unsigned char)(x))#define debugk_str(x)                                                                              \	printk(&quot;[DEBUG] %s = \&quot;%s\&quot;\n&quot;, #x, (char *)(x))#define debugk_ptr(x)                                                                              \	printk(&quot;[DEBUG] %s = 0x%x\n&quot;, #x, (u_int)(x))#else#define debugk(fmt, ...) ((void)0)#define debugk_int(x) ((void)0)#define debugk_uint(x) ((void)0)#define debugk_hex(x) ((void)0)#define debugk_char(x) ((void)0)#define debugk_str(x) ((void)0)#define debugk_ptr(x) ((void)0)#endif
-在 user/include/lib.h 中（用户态使用
-debugf，前面加一段 #undef
-防止和内核态的宏冲突）：
-#ifdef debugk#undef debugk#endif#ifdef debugk_int#undef debugk_int#endif#ifdef debugk_uint#undef debugk_uint#endif#ifdef debugk_hex#undef debugk_hex#endif#ifdef debugk_char#undef debugk_char#endif#ifdef debugk_str#undef debugk_str#endif#ifdef debugk_ptr#undef debugk_ptr#endif#ifndef DEBUGK_ENABLE#define DEBUGK_ENABLE 1#endif#if DEBUGK_ENABLE#define debugk(fmt, ...)                                                                           \	debugf(&quot;[DEBUG] %s:%d:%s: &quot; fmt &quot;\n&quot;, __FILE__, __LINE__, __func__, ##__VA_ARGS__)#define debugk_int(x)                                                                              \	debugf(&quot;[DEBUG] %s = %d\n&quot;, #x, (int)(x))#define debugk_uint(x)                                                                             \	debugf(&quot;[DEBUG] %s = %u\n&quot;, #x, (u_int)(x))#define debugk_hex(x)                                                                              \	debugf(&quot;[DEBUG] %s = 0x%x\n&quot;, #x, (u_int)(x))#define debugk_char(x)                                                                             \	debugf(&quot;[DEBUG] %s = &#x27;%c&#x27; / 0x%x\n&quot;, #x, (char)(x), (u_int)(unsigned char)(x))#define debugk_str(x)                                                                              \	debugf(&quot;[DEBUG] %s = \&quot;%s\&quot;\n&quot;, #x, (char *)(x))#define debugk_ptr(x)                                                                              \	debugf(&quot;[DEBUG] %s = 0x%x\n&quot;, #x, (u_int)(x))#else#define debugk(fmt, ...) ((void)0)#define debugk_int(x) ((void)0)#define debugk_uint(x) ((void)0)#define debugk_hex(x) ((void)0)#define debugk_char(x) ((void)0)#define debugk_str(x) ((void)0)#define debugk_ptr(x) ((void)0)#endif
-这样在任何地方直接 debugk("...")
-就能输出调试信息了，还提供了几个针对常见类型（int / uint / hex / char /
-str / ptr）的快捷宏，一行就能把变量名和值都打出来。
-]]></content>
-      <categories>
-        <category>操作系统</category>
-      </categories>
-      <tags>
-        <tag>OS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-OO U2学习与反思</title>
-    <url>/2026/04/26/BUAA-OO%20U2%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
-    <content><![CDATA[第二单元 OO 学习与反思
-一、同步块的设置和锁的选择
-锁的设置与演变
-
-第五次作业：一开始，为了稳妥，我把主要的同步块都放在了共享的
-BaseQueue 里，
-offer、take、isEmpty
-这些方法全加上了
-synchronized。这时候逻辑比较简单，锁住队列本身就能解决大部分并发读写的问题，线程等待也是靠
-wait() 和 notifyAll()
-在队列对象上完成。
-第六次作业：到了第六次作业，加了检修机制和自由分配电梯的逻辑。我在各个电梯井
-ElevatorThread
-里加了一些状态控制，由于状态会被电梯和调度器同时访问，我在通知电梯改变状态的时候，借用了电梯专属的
-processQueue 的锁来做 notifyAll。此时调度器
-DispatchThread 拿 scheduleQueue
-的锁，电梯拿自己的 processQueue
-锁，分工明确，基本没有问题。
-第七次作业：这次的重点是换乘层 F2 的防撞。我给
-ElevatorShaft 专门加了个显式的公平锁
-ReentrantLock f2Lock。当任意一轿厢需要进入 F2
-层时，必须在执行 moveOneFloor 前通过
-f2Lock.lock()
-获取锁，离开后释放锁。同时，我将处理语句精简为仅包含进入、停留和离开 F2
-层的动作，使锁的粒度最小，保证安全的同时最大化了电梯的效率。
-
-锁与同步块内处理语句的关系
-随着作业迭代，我逐渐体会到，锁的作用不仅仅是“互斥”，更是为了保证同步块内的一组处理语句原子性地维护某个对象的属性，我们不能把紧密关联的操作拆分到不同的同步块中。
-
-队列的存取操作：在执行 offer 和
-take
-时，“检查队列状态”、“修改队列元素”、“唤醒等待线程”必须包裹在同一个
-synchronized
-块中。如果将检查和取数分开，就可能出现两个线程同时判断队列非空，然后试图取出同一个请求的危险情况。
-状态修改与通知的绑定：在 hw6
-中，调度器往电梯派发新请求或下发指令时，“修改共享状态”和“调用
-notifyAll()”这两步处理语句必须在同一个同步块内完成。如果先修改状态，出锁后再去
-notifyAll，这期间电梯可能恰好去检查状态并因错过了通知而陷入无休止的等待。
-多条件检查的原子性：在 hw7 的 F2
-防撞逻辑中，“检查对向轿厢是否占用 F2”以及“登记当前轿厢即将进入
-F2”这两步处理语句，必须包裹在同一个 f2Lock
-的临界区内。如果检查和登记被拆分，两部轿厢可能在同一时刻都发现 F2
-空闲，并同时进入 F2 发生碰撞。
-
-二、调度器设计
-调度器交互设计
-我的代码采用了层次化的调度架构：InputThread -&gt;
-ScheduleQueue -&gt; DispatchThread -&gt;
-ProcessQueue -&gt;
-ElevatorThread，如下图所示。
-调度器 DispatchThread
-作为中枢，一旦有新乘客请求，就将其从 ScheduleQueue
-中取出，并通过策略类 ShadowDispatchStrategy
-为其分配最合适的电梯，最后将乘客放入对应电梯的 ProcessQueue
-中，并通过 notifyAll()
-唤醒处于等待状态的电梯。这种设计实现了调度与执行的解耦，调度器不需要干预电梯的运行状态，只需通过队列进行基于数据的交互。
-调度策略与性能指标
-
-运行策略：单部电梯采用了经典的 LOOK
-算法，在当前方向上有请求时继续运行，否则反转方向，能有效减少不必要的移动时间。
-分配策略：从第六次作业开始，我实现了“影子电梯”策略。在分配乘客时，系统会深拷贝每一部电梯的当前状态，在后台通过模拟该电梯运行完所有请求以及所需的代价。
-多指标权衡：我影子电梯的代价函数综合考虑了运行时间和耗电量。时间代价根据模拟运行到达目标层的时间计算，耗电量代价则根据模拟过程中的
-ARRIVE、OPEN/CLOSE
-次数计算，最终将指标加权求和，寻找代价最小的电梯进行分配。针对可能的维护和双轿厢改造与回收，调度器会给这些电梯一些惩罚，避免将新乘客分配给它们。
-
-三、bug分析与debug方法
-出现过的bug
-我只有 hw7 互测中被人发现了bug。错误的输出部分如下：
-[49.8510]RECYCLE-ACCEPT-7[49.8520]RECYCLE-BEGIN-7[49.8530]RECEIVE-100-7
-原因是副轿厢 7 已经进入了 RECYCLE_BEGIN 状态，却还
-RECEIVE
-了新乘客。经过我的排查，发现我的调度器在计算代价的时候，副轿厢 7
-的状态可能还是正常的（或者正好处于
-REC_ACCEPT）。调度器决定把乘客分给 7
-号，但是在它计算完、准备输出接受信息的微小时间间隙里，副轿厢 7
-直接把乘客清空、关门，并输出了 RECYCLE-BEGIN
-改变了状态。等调度器输出 RECEIVE 的时候，副轿厢 7
-已经变成不可接收请求的状态了。总的来说，是因为我电梯调度和输出
-RECEIVE
-并没有被包裹在同一个原子操作里，导致被其他线程修改了状态。
-多线程程序的debug方法
-经历了这三次作业，我总结出了一套多线程调试方法：
-
-理清共享对象边界：在排查问题前，先明确哪些对象会被多个线程同时读写。对于不共享的局部状态，交由电梯线程独占推进即可，不需要过度担心并发。
-重点排查线程唤醒逻辑：可以利用输出语句检查
-wait() 和 notifyAll()
-的配对情况。特别关注如输入关闭、状态转换等边界事件，看看是否在这些特殊时刻漏了唤醒，导致线程睡死。
-针对输出日志反推状态：多线程由于难以稳定地单步断点调试，我们往往去参考输出日志。我会检查
-RECEIVE、IN、OUT
-是否成对出现，电梯的各种输出顺序是否符合题意。对报错的特定行，我根据前面的输出反推当时各个线程所处的状态。
-搭建评测机：我依旧会搭建评测机来进行高强度的生成请求。一旦评测报告错误，立马固定测试用例，保留当时的输入输出，然后再进行针对性的排查。
-
-四、线程安全与层次化设计
-线程安全
-线程安全不是随意在方法上加 synchronized
-就能实现，滥用锁反而会导致性能下降和死锁。我感觉，理清数据流动的模型是保障线程安全的前提。U2
-中，只有队列被多个线程共享，因此只需将队列封装为线程安全的类。对于电梯内部的载重、当前楼层等状态，只由电梯线程自己修改，天然是线程安全的，不需要额外加锁。同时，一定要保持锁的获取顺序一致，并避免在同步块内调用耗时的方法。
-层次化设计
-层次化设计也有效降低了系统的耦合度。从数据流向上，我的架构可以划分为“输入层
--&gt; 分派层 -&gt;
-执行层”。从类的结构上，我将“执行动作（ElevatorThread）”、“运行策略（MoveStrategy）”和“分配策略（ShadowDispatchStrategy）”严格剥离。面对
-hw7
-的复杂需求，由于具备良好的层次结构，我只需在电梯井层面维护两部电梯，并引入题干中新增的几个状态，而无需重构底层移动和开关门等逻辑。
-五、大模型使用心得
-
-模型名称：Gemini
-任务分工：我负责架构设计和核心状态机的定义等，并编写主要的核心代码，只有不太熟悉的地方，如
-synchronized
-等多线程相关代码的写法，才会询问大模型。写完后，大模型负责帮我检查代码逻辑和
-debug，比如说影子电梯深拷贝代码等。
-复杂任务中的优势：在面临多线程电梯这样复杂的任务时，大模型的逻辑梳理能力非常突出。当我描述双轿厢改造流程时，它能迅速生成清晰的状态机框架；在排查死锁时，把相关输入输出描述给大模型，它思考后往往能一针见血地指出问题。
-面临的困难：大模型由于缺乏整体代码库的上下文，有时会“自作主张”地引入一些不需要的类，如果直接复制粘贴，极易引入隐蔽的
-bug。
-总体感受：大模型是一位极为高效的助手，但多线程代码的底线还是必须由我们把控。只有自己深刻理解了并发机制，才能审查
-AI 代码，将其转化为真正的生产力。
-
-六、第二单元的体验与建议
-真实感受
-第二单元的电梯作业无疑是 OO
-中思维跨度最大的一环，从串行转向并发是一个痛苦但也充满成就感的过程。hw6
-中，我设计影子电梯调优耗费了大量精力，第七次作业的双轿厢逻辑中我也遇到了很多的细节问题，比如说在
-F2
-换乘的写法等。但最终看着电梯高效地运送着乘客而不发生任何死锁，这种获得感也是难以言喻的。
-课程建议
-希望能稍微介绍一下相关电梯调度名词具体是什么意思，比如量子电梯、自由竞争等，网上相关的资料也很少。
-]]></content>
-      <categories>
-        <category>面向对象</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>OO</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>BUAA-OS Lab0上机</title>
     <url>/2026/03/18/BUAA-OS%20Lab0%E4%B8%8A%E6%9C%BA/</url>
     <content><![CDATA[本节考查内容为 OS 实验中常用工具链，一个重点是 Bash 编程。
@@ -3472,6 +3889,86 @@ C 语言指针的功底了。
       </tags>
   </entry>
   <entry>
+    <title>BUAA-OS Lab3上机</title>
+    <url>/2026/04/29/BUAA-OS%20Lab3%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 MOS 进程管理与异常处理。
+课上题目
+Exam
+点击查看题面
+这道题在 RR 基础上，增加了 SRTF 调度算法，整体难度不大。
+Extra
+点击查看题面
+这道题增加了一种新的异常，要求实现其处理方法，和往届题目类似。
+笔者的话
+Lab3 内容依旧很丰富：从各种 env_
+开头的进程处理函数，到异常的分发，还涉及大量 C
+与汇编的相互调用，非常考验基础功底。
+Lab3 的上机题相对固定，根据往年情况，Exam
+通常是增加新的调度算法，Extra
+通常是增加新的异常，这次也不例外。但我中途出了个奇怪的问题：似乎误改了某个文件，而这个文件还很长，最后连自己也不知道到底动了哪里，只好切到
+lab3 分支把它复原，耽误了不少时间。
+这段经历带来的启发是：vim 编辑器的使用门槛较高，尤其和 VSCode
+比复杂了不少，许多人都用得不太顺手。可以让你的 AI 帮忙写一份合适的
+.vimrc，用起来会舒服很多，比如 set mouse=a
+可以让鼠标直接移动光标，不必一直 j
+k。此外，想同时看多个代码文件时，有人用
+tmux，但据说存在一些奇怪的兼容问题；也有人开多个跳板机；还有人直接进
+GitLab 仓库看代码，八仙过海各显神通。至于代码编辑，有人不愿用
+vim，直接在记事本里写代码，个人体验下来还是不如 CLion 或
+VSCode，最起码多了语法高亮等功能。当然最理想的方式是 ssh 连接到
+VSCode，能力强的同学可以尝试在短时间内配好 ssh，反正我没成功过（）
+Extra 也吃了准备不充分的亏，考前没有仔细看往届博客。lmhgg
+博客
+已经把这部分常用的代码整理好了，大家可以直接手抄或者打印下来带进考场，一定不要忘记
+OS
+上机是开卷的。有了这串代码，再做一做往年题目，相信这道题难度就不算大了。还有一点：如果代码运行结果有问题，一定要调试，而不要用肉眼
+debug。教程中有详细的 gdb 调试步骤，有余力可以学习；也可以采用 printf
+大法（在这里应该叫 printk
+大法），将一些中间变量输出出来观察。如果更用心一点，可以直接在相关头文件中加入一些调试宏，我写的宏如下：
+在 include/printk.h 中（内核态使用
+printk）：
+#ifndef DEBUGK_ENABLE#define DEBUGK_ENABLE 1#endif#if DEBUGK_ENABLE#define debugk(fmt, ...)                                                                           \	printk(&quot;[DEBUG] %s:%d:%s: &quot; fmt &quot;\n&quot;, __FILE__, __LINE__, __func__, ##__VA_ARGS__)#define debugk_int(x)                                                                              \	printk(&quot;[DEBUG] %s = %d\n&quot;, #x, (int)(x))#define debugk_uint(x)                                                                             \	printk(&quot;[DEBUG] %s = %u\n&quot;, #x, (u_int)(x))#define debugk_hex(x)                                                                              \	printk(&quot;[DEBUG] %s = 0x%x\n&quot;, #x, (u_int)(x))#define debugk_char(x)                                                                             \	printk(&quot;[DEBUG] %s = &#x27;%c&#x27; / 0x%x\n&quot;, #x, (char)(x), (u_int)(unsigned char)(x))#define debugk_str(x)                                                                              \	printk(&quot;[DEBUG] %s = \&quot;%s\&quot;\n&quot;, #x, (char *)(x))#define debugk_ptr(x)                                                                              \	printk(&quot;[DEBUG] %s = 0x%x\n&quot;, #x, (u_int)(x))#else#define debugk(fmt, ...) ((void)0)#define debugk_int(x) ((void)0)#define debugk_uint(x) ((void)0)#define debugk_hex(x) ((void)0)#define debugk_char(x) ((void)0)#define debugk_str(x) ((void)0)#define debugk_ptr(x) ((void)0)#endif
+在 user/include/lib.h 中（用户态使用
+debugf，前面加一段 #undef
+防止和内核态的宏冲突）：
+#ifdef debugk#undef debugk#endif#ifdef debugk_int#undef debugk_int#endif#ifdef debugk_uint#undef debugk_uint#endif#ifdef debugk_hex#undef debugk_hex#endif#ifdef debugk_char#undef debugk_char#endif#ifdef debugk_str#undef debugk_str#endif#ifdef debugk_ptr#undef debugk_ptr#endif#ifndef DEBUGK_ENABLE#define DEBUGK_ENABLE 1#endif#if DEBUGK_ENABLE#define debugk(fmt, ...)                                                                           \	debugf(&quot;[DEBUG] %s:%d:%s: &quot; fmt &quot;\n&quot;, __FILE__, __LINE__, __func__, ##__VA_ARGS__)#define debugk_int(x)                                                                              \	debugf(&quot;[DEBUG] %s = %d\n&quot;, #x, (int)(x))#define debugk_uint(x)                                                                             \	debugf(&quot;[DEBUG] %s = %u\n&quot;, #x, (u_int)(x))#define debugk_hex(x)                                                                              \	debugf(&quot;[DEBUG] %s = 0x%x\n&quot;, #x, (u_int)(x))#define debugk_char(x)                                                                             \	debugf(&quot;[DEBUG] %s = &#x27;%c&#x27; / 0x%x\n&quot;, #x, (char)(x), (u_int)(unsigned char)(x))#define debugk_str(x)                                                                              \	debugf(&quot;[DEBUG] %s = \&quot;%s\&quot;\n&quot;, #x, (char *)(x))#define debugk_ptr(x)                                                                              \	debugf(&quot;[DEBUG] %s = 0x%x\n&quot;, #x, (u_int)(x))#else#define debugk(fmt, ...) ((void)0)#define debugk_int(x) ((void)0)#define debugk_uint(x) ((void)0)#define debugk_hex(x) ((void)0)#define debugk_char(x) ((void)0)#define debugk_str(x) ((void)0)#define debugk_ptr(x) ((void)0)#endif
+这样在任何地方直接 debugk("...")
+就能输出调试信息了，还提供了几个针对常见类型（int / uint / hex / char /
+str / ptr）的快捷宏，一行就能把变量名和值都打出来。
+]]></content>
+      <categories>
+        <category>操作系统</category>
+      </categories>
+      <tags>
+        <tag>OS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BUAA-OS Lab4上机</title>
+    <url>/2026/05/20/BUAA-OS%20Lab4%E4%B8%8A%E6%9C%BA/</url>
+    <content><![CDATA[本节考查内容为 MOS 系统调用、IPC、fork 等。
+课上题目
+Exam
+点击查看题面
+这道题需要实现一个新的系统调用
+sys_trace_ref2，整体难度不大，只要理解了系统调用的完整链路便容易解决。
+Extra
+点击查看题面
+这道题要求实现脏页追踪机制，初看题面感觉难度很大，但实际上仍是代码填空的形式。开始时不必强求完全理解题面，可以跟着提示直接编写代码，在这个过程中理解也会慢慢加深。
+笔者的话
+Lab4 的主要内容是理解系统调用的完整链路，此外 fork
+也是一大重难点。对于 Extra
+这类题目，相信很多人都能拿到一定分数，满分的人也不少。如果遇到输出和预期不符，一定要积极调试，而不是自己干着急，gdb
+和输出语句的用法可以参考我在 Lab3 博客中的介绍。
+]]></content>
+      <categories>
+        <category>操作系统</category>
+      </categories>
+      <tags>
+        <tag>OS</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>BUAA-OS Lab5上机</title>
     <url>/2026/05/27/BUAA-OS%20Lab5%E4%B8%8A%E6%9C%BA/</url>
     <content><![CDATA[本节考查内容为 MOS 磁盘管理与文件系统。
@@ -3525,500 +4022,82 @@ Extra，鉴于当时多数人对自映射理解都不深入，做出来的人极
       </tags>
   </entry>
   <entry>
-    <title>BUAA-OS Lab4上机</title>
-    <url>/2026/05/20/BUAA-OS%20Lab4%E4%B8%8A%E6%9C%BA/</url>
-    <content><![CDATA[本节考查内容为 MOS 系统调用、IPC、fork 等。
-课上题目
-Exam
-点击查看题面
-这道题需要实现一个新的系统调用
-sys_trace_ref2，整体难度不大，只要理解了系统调用的完整链路便容易解决。
-Extra
-点击查看题面
-这道题要求实现脏页追踪机制，初看题面感觉难度很大，但实际上仍是代码填空的形式。开始时不必强求完全理解题面，可以跟着提示直接编写代码，在这个过程中理解也会慢慢加深。
-笔者的话
-Lab4 的主要内容是理解系统调用的完整链路，此外 fork
-也是一大重难点。对于 Extra
-这类题目，相信很多人都能拿到一定分数，满分的人也不少。如果遇到输出和预期不符，一定要积极调试，而不是自己干着急，gdb
-和输出语句的用法可以参考我在 Lab3 博客中的介绍。
-]]></content>
-      <categories>
-        <category>操作系统</category>
-      </categories>
-      <tags>
-        <tag>OS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-OO U1学习与反思</title>
-    <url>/2026/03/31/BUAA-OO%20U1%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%8F%8D%E6%80%9D/</url>
-    <content><![CDATA[第一单元 OO 学习与反思
-一、 度量分析
-1. 类与复杂度分析
-基于最终的作业代码，我对核心类进行了度量分析：
-
-
-
-Class
-OCavg
-OCmax
-WMC
-
-
-
-
-ChoiceFactor
-1.5
-2
-3
-
-
-DeriveFactor
-2.5
-4
-5
-
-
-ExpFactor
-1
-1
-2
-
-
-Expr
-1.33
-2
-4
-
-
-FuncFactor
-2.67
-5
-8
-
-
-FuncFactor.RecCacheKey
-1.67
-3
-5
-
-
-FuncReg
-1
-1
-4
-
-
-FuncReg.FuncDef
-1
-1
-2
-
-
-FuncReg.RecDef
-1
-1
-15
-
-
-Lexer
-2.8
-9
-14
-
-
-MainClass
-3
-3
-3
-
-
-Mono
-4.04
-14
-105
-
-
-Number
-1
-1
-2
-
-
-Parser
-2.09
-7
-46
-
-
-Poly
-3.41
-10
-58
-
-
-Power
-2.5
-4
-5
-
-
-Processor
-2
-2
-2
-
-
-Sign
-3
-6
-9
-
-
-Term
-1.67
-3
-5
-
-
-
-根据表格可以看到，最复杂的三个类依次是
-Mono、Poly、Parser。在
-Mono
-类中，我定义了许多方法，不仅包括基本的代数运算（如求导等），还为了追求极致的最短输出长度而定义了化简方法，这在一定程度上违反了单一职责原则。Poly
-类则相对干练，主要负责加、减、乘、幂等多项式间的数学运算以及转化为字符串的
-toString。在 Parser
-中，我采用了递归下降的语法解析方式，针对每一种类型的因子和表达式都编写了解析方法，实现了较好的模块内聚。
-2. 方法复杂度分析
-结合上述类复杂度，我进一步使用工具对部分核心方法进行了度量：
-
-
-
-方法
-CogC
-ev(G)
-iv(G)
-v(G)
-
-
-
-
-Lexer.next()
-10
-2
-8
-9
-
-
-Parser.parseFactor()
-9
-7
-10
-10
-
-
-Poly.equals(Object)
-10
-8
-3
-9
-
-
-FuncFactor.solveRec(int, Poly)
-8
-2
-5
-5
-
-
-Parser.parseRecDef(Scanner)
-7
-3
-4
-5
-
-
-Mono.equals(Object)
-7
-7
-2
-8
-
-
-Poly.power(BigInteger)
-7
-3
-4
-6
-
-
-Poly.multiply(Poly)
-5
-2
-4
-5
-
-
-Mono.derive(String)
-4
-1
-5
-5
-
-
-Poly.toOptimalString(boolean)
-17
-7
-9
-12
-
-
-Mono.toOptimalString(boolean)
-21
-5
-16
-21
-
-
-
-从上表可以看出，Lexer.next() 和
-Parser.parseFactor()
-的分支极多，因为需要处理各种不同的符号和因子。同时
-Parser.parseRecDef(Scanner) 和
-FuncFactor.solveRec
-这类函数函数解析和代入时也具有中等规模的控制流复杂度。Mono
-和 Poly 的 toOptimalString
-承担了输出的任务，这些方法的控制流和圈复杂度非常高，后续如果继续迭代，应考虑将其抽离为独立的
-Printer 类。
-### 3. 类图与设计考虑
-
-classDiagram
-
-    class Factor
-    &lt;&lt;interface&gt;&gt; Factor
-
-    class Number
-    class Power
-    class ExpFactor
-    class FuncFactor
-    class ChoiceFactor
-    class DeriveFactor
-    class Expr
-
-    class Term
-    class Poly
-    class Mono
-    class Sign
-    class FuncReg
-
-    class MainClass
-    class Parser
-    class Lexer
-    class Processor
-
-    Factor &lt;|.. Number : 实现
-    Factor &lt;|.. Power : 实现
-    Factor &lt;|.. ExpFactor : 实现
-    Factor &lt;|.. FuncFactor : 实现
-    Factor &lt;|.. ChoiceFactor : 实现
-    Factor &lt;|.. DeriveFactor : 实现
-    Factor &lt;|.. Expr : 实现 (递归嵌套)
-
-    Expr *--  Term : 包含多个项
-    Term *--  Factor : 包含多个因子
-
-    Poly *--  Mono : 维护单项式 Map
-    Mono --&gt; Poly : 递归包含 expPoly
-    Mono --&gt; Sign : 使用 Sign 作为哈希键
-
-    MainClass --&gt; Parser : 调用
-    Parser --&gt; Lexer : 使用
-    Parser --&gt; Processor : 预处理
-    Parser ..&gt; Factor : 构建 AST 节点
-    FuncFactor --&gt; FuncReg : 查询函数定义
-
-    style Factor fill:#E6E6FA,stroke:#708090,stroke-width:2px
-    style Poly fill:#B0C4DE,stroke:#708090,stroke-width:1px
-    style Mono fill:#B0C4DE,stroke:#708090,stroke-width:1px
-
-顶层控制与解析模块
-
-MainClass：程序启动入口和全局调度者。
-Processor：预处理模块，主要负责清洗字符串中的连续正负号等。
-Lexer：词法分析器，将纯文本字符流转化为 Token 流。
-Parser：语法分析器，使用递归下降，将 Token
-流转化为抽象语法树（AST）。
-FuncReg：全局函数注册表，管理所有自定义函数及递推函数的定义。
-
-抽象语法树节点
-
-Factor ：因子接口，通过统一的 toPoly()
-方法实现了多态。
-Expr：表达式节点，由多个 Term
-的加减组合而成。
-Term：项节点，由多个 Factor
-的连乘组合而成。
-Number：常数因子节点，内部封装了大整数。
-Power：变量幂因子节点，形如 x^n 或 y^n，保存自变量符号及其指数。
-ExpFactor：指数函数因子节点，形如 (\exp(factor))^n，封装了内部表达式及外层乘方指数。
-FuncFactor：函数调用因子节点，负责查表
-FuncReg 并将具体实参代入。
-ChoiceFactor：选择式因子节点，专门保存并解析条件分支表达式
-[?:] 中的四个判断基元。
-DeriveFactor：求导算子因子节点，保存求偏导类型（dx,
-dy, grad）及其作用的表达式模块。
-
-核心引擎计算部分
-
-Poly：程序最核心的计算引擎，使用 HashMap
-维护单项式集合。它实现了多项式的各种代数运算与合并。
-Mono：最小代数运算单元，包含系数、自变量指数级别内部多层嵌套的
-exp 特征多项式。
-Sign：单项式特征类，将 Mono
-剔除系数后剩余的特征抽取为不可变属性，用作哈希键。
-
-
-二、 架构设计体验
-我在三次作业中的宏观架构演进一直保持着高度自洽，且具有良好的向后扩展能力。
-HW1：初识递归下降
-在 HW1，我紧贴指导书规范，建立了一套“词法分析 ⟶ 语法分析 ⟶ 抽象语法树
-⟶ 多项式计算”的架构。这一模型将表达式严格拆解为 Expr ⟶
-Term ⟶ Factor
-的文法节点体系。随后，我对所有层级的子节点统一落实了 toPoly
-这个方法。但在早期理解不深时，我的 Poly 更是粗犷地使用
-ArrayList 线性存储各项
-Mono，合并同类项时就稍显麻烦了，需要专门建立一个指数到系数的
-HashMap 来实现。
-HW2：引入指数函数、自定义函数与选择式因子
-HW2 引入了指数函数 exp()、自定义函数 f(x)
-以及选择式因子 [(A==B)?C:D]。现在单项式不仅有一个
-x 的指数，还包含了以 exp
-包裹的多项式。因此我主要做了以下重构：
-
-重构多项式底层：首先由于数据范围的变化，exponent
-类型需要改成大整数类，然后我将 Mono 扩展为
-Mono(BigInteger coefficient, BigInteger exponent, Poly expPoly)。此外，我还引入了内部类
-Sign ，即去掉系数后的指数和多项式部分， Poly
-类中的 ArrayList ，我也直接换成了从 Sign 到
-Mono 的 HashMap
-，这下就不需要写合并同类项方法了，而是自动实现合并。其实这里完全也可以用从
-Sign 到系数的 HashMap ，但这样的话我的 Mono
-类似乎就有点多余，因此我还是保留了看似复杂的前一种策略。
-函数代入环境字典：为了实现函数形参替换，我没有选择在字符串层次上进行字符串替换（这种应该很容易
-TLE），而是引入了环境字典
-Map&lt;String, Poly&gt; vars。在每个 AST 节点的
-toPoly 方法中传入该字典，从而实现函数调用的解析。
-
-而选择式因子对架构没有影响，按原有架构进行添加即可。
-HW3：求导、双变量与递推函数的加入
-经过 HW2 的小幅重构，面对 HW3 引入的双变量 x 和
-y、求导算子 dx/dy/grad 以及自定义递推函数
-f{n}(x)，我在架构上几乎没有改动。
-对于求导算子 DeriveFactor，我在底层的 Mono 和
-Poly 当中补充了专门的求导方法；针对 y
-的引入，仅需在 Mono 类中增加记录 y
-次幂的专门属性即可。这些新增部分在被 toPoly
-解析处理后，进行运算的依然是和 HW2
-类似的多项式，因此原本的加减乘除及输出逻辑基本不需要修改。
-新的迭代情景：引入三角函数
-如果引入三角函数因子sin(Factor) 与
-cos(Factor) ，并要求合并与化简：
-我目前的架构完全禁得住这项考验。我们只需声明 SinFactor 和
-CosFactor 实现 Factor 接口，并新增
-Parser 中的分支即可。真正的深入修改都在底层架构：我们要给
-Mono 与 Sign
-追加可以记录三角函数特征的属性。唯一的难点其实在于怎样运用诱导公式或两角和差公式等规律去对合并前的
-Poly 加以化简而已。
-
-三、 分析自己程序的 Bug
-在这三次作业的强测与互测中，我唯一被测出 Bug 的地方是在
-HW3，由于化简优化时复杂度控制不当而导致了 TLE。
-- 问题及特征：
-互测房里的同学针对我的代码逻辑，构造了一个使得代码 TLE
-的样例。我出问题的类是 Mono 中的
-toOptimalString() 方法。
-- 深层原因分析：
-原因是，我设定了多项式的项数在小范围时采用状态压缩 DP。该 Hack
-样例利用大量系数相邻的大整数，项数刚好达到我规定的上界，导致程序穷举中产生超时。
-- Bug 复杂度反思：
-回看前面的方法度量分析表，toOptimalString
-的圈复杂度和认知复杂度都比较高。这说明在编写时引入了过多复杂的逻辑分支。修改这个
-bug 的策略，我目前采用的是调小项数搜索范围的上界。
-
-四、 发现别人 Bug
-所采用的策略
-在互测环节中，我主要采用了以下策略：
-
-借助 AI 搭建评测机：我使用 Python
-搭建了评测机脚本。策略是通过大量随机生成的数据测试房间内的 8
-份作业代码，然后将结果使用 Sympy
-库对比来寻找一致性。这能有效找出一些基础的逻辑错误和格式问题，但因为数据是随机生成的，较难定向构造出使得程序
-TLE 的极端数据。
-结合源码阅读定向构造：针对评测机难以覆盖的盲区，我会尝试阅读别人的代码来设计测试用例：
-
-比如看到同学处理三目运算符 [(A==B)?X:Y]
-时将两种选择都进行了计算展开再剪裁，我就会在不选的那一方构造复杂的函数嵌套，使其
-TLE。
-看到有同学采用 String.replaceAll
-这种字符串替换来处理函数代入时，便可以尝试构造多层嵌套函数，使其因耗时太长而TLE。
-
-
-
-五、 分析自己进行的优化
-我在结果长度的化简优化上主要做了以下工作：
-1. 正项优先打印： 通过遍历 Poly 中的各个
-Mono，找到第一个常数系数为正的项并放到最前面输出，去掉了开头的正负号问题，这种优化十分稳定。
-2. 提取公因数： 对于 exp(factor)
-类型，我会遍历其内部各个系数的公约数，提取至外部以缩短总体长度。
-3. 状态压缩优化：
-对于需要拆开内部的项，当项数处于我设定的小范围时，使用状压 DP
-来寻找最优解；超过范围则原样输出。
-这些优化虽然缩减了字符串长度，但在保障了代码的常规简洁性的同时，却并未百分之百保证正确性。过于追求局部最短，使得某些化简方法的圈复杂度攀升，在个别极端数据下出现了
-TLE 的情况。后续的优化应该更加注意平衡正确性与性能之间的关系。
-
-六、 大模型相关使用
-在三次作业中，我只参考了 AI
-给出的架构思路、示例代码和修改建议，并未让其直接编写我的代码。当遇到输出错误、抛异常或是搭建评测机时的各种问题，将报错结合代码抛给
-AI 排查，效果往往非常好。总之，AI
-经过提示后可以精准发现代码逻辑方面的问题，并帮忙修补漏洞。但对于时间复杂度分析和构造那些能让代码运行超时的极端数据，它由于没有全局运行环境概念，仍显力不从心，这时候人工阅读源码构造更为可靠。
-
-七、 心得体会
-经过本单元的学习，我还是收获颇丰的。一开始听说我们要进行表达式深层编译解析时，便想起原先学后缀表达式时的痛苦。但是递归下降和抽象语法树的方法极大地解耦了难度。表达式先被切分为一个个
-Token，再由 Parser 解析对应部分，最终建立 AST。这时节点统一实现的
-toPoly()
-方法发挥功能，将一切降维成多项式，自下而上依次化简计算即可。相对之前理解的后缀表达式，代码行数虽然变多了，但可读性和扩展性却实现了质的飞跃。
-关于 AI 的使用，如今的 AI 驾驭 OO
-作业可以说游刃有余了。我会借此设计架构、学习算法以及进行 Debug
-和辅助构造测试，总体效果不错。但同时也深刻体会到，面向对象编程的相关思考与代码掌控等修养，依然是无法被
-AI 工具完全替代的。
-
-八、 未来方向建议
-整体而言，我们的 OO
-课在难度递进设计上已经非常合理了，第一单元的课程安排也很完备。唯独建议在性能优化方面，可以再多给一些相关的指导提示，或者在单元结束后公布一下
-std
-标程用的具体优化方法。我还是十分好奇采用什么方法能在时间限制下将表达式化至最短的。
-
-九、 思考题
+    <title>BUAA-信号处理与信息推断 期末考题回忆版</title>
+    <url>/2026/06/15/BUAA-%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E4%B8%8E%E4%BF%A1%E6%81%AF%E6%8E%A8%E6%96%AD%20%E6%9C%9F%E6%9C%AB%E8%80%83%E9%A2%98%E5%9B%9E%E5%BF%86%E7%89%88/</url>
+    <content><![CDATA[写在前面
+本文为 2026
+春季学期《信号处理与信息推断》课程期末考试的回忆整理版本，题干表述在原始记忆基础上做了润色，部分历史事件补充了可查证的背景资料，供后续同学参考。
 1.
-如何检查输入是否符合要求？
-建议进行双重检查，大致如下：
-首先在预处理入口处：使用正则表达式扫描字符串，排查非法符号、不合规操作符组合（如
-** 等）。第二层在 Parser
-递归下降流程中：如果遇到偏离文法规则的分支，可以直接抛出对应的自定义异常。
+写出贝叶斯定理的完整数学表达式，并分别叙述”后验概率”、“先验概率”与”似然概率”三者在贝叶斯推断框架中的含义，结合一个具体实例加以说明。
 2.
-如何精确计算一个合法输入的 cost？
-通过在各个抽象语法树节点类中声明 getCost()
-方法，可以实现自顶向下的递归计算。对于基础的加减乘除和常数，直接按指导书的运算法则进行累加或相乘；对于函数调用，需要将实参代入到函数定义的
-AST
-中生成新表达式，再递归计算；对于选择式因子，必须在计算时判断条件表达式是否恒等，从而动态累加正确分支的代价；最后，由于求导等算子涉及代价的指数增长，在内部实现时需使用
-BigInteger 来防溢出。
+分别叙述随机事件”独立”与”条件独立”的含义，并分别举例说明。
+3.
+某项疾病检测中，已知人群中该疾病的患病率、患病条件下检测结果为阳性的概率，以及未患病条件下检测结果为阳性的概率。请利用贝叶斯定理，求某受试者在检测结果为阳性的条件下，其真实患病的概率（原题中给出了具体数值）。
+4.
+一位来自德国的经济学家在近三届世界杯前均对最终冠军的归属做出了公开预测，并连续三次预测正确。因此有人认为，其对本届世界杯冠军的预测同样值得信赖。请问你是否认同这一看法？请从贝叶斯信息推断的角度阐述你的理由。
+5.
+网络上流传的各类”高分秘籍”通常宣称：由于高分学生普遍具备若干共同特征，因此普通学生只要模仿并践行这些特征，也能获得高分。请运用贝叶斯定理，指出上述推理逻辑中存在的问题（要求显式写出相关数学公式）。
+6. 在经典的”狼来了”寓言中，假设孩子诚实的先验概率为
+0.9，在孩子诚实的条件下单次骗人的概率为
+0.1，在孩子不诚实的条件下单次骗人的概率为
+0.7，且两次骗人事件在给定孩子诚实性的条件下相互独立。请计算在观测到孩子连续两次说谎之后，村民仍认为该孩子诚实的后验概率。
+7.
+你近日突发腹痛，就医后医生判断该症状可能由两种疾病之一引起。现已知其中一种疾病条件下出现腹痛的概率，为得出可信的鉴别诊断结论，你还需要以下哪一项额外信息？请写出所选选项并说明理由。
+A. 另一种疾病条件下出现腹痛的概率
+B. 该疾病条件下出现其他症状的概率
+C. 另一种疾病条件下出现其他症状的概率
+8.
+作为一名大二/大三阶段的本科生，你面前有以下四条主要发展路径：保研本校、考研外校、出国留学、直接就业。请从中选择其一作为个人目标，运用分层描述法对实现该目标的过程进行建模，并根据个人经验设定相关概率，估算最终目标达成的概率。
+9. 本题原型为美国加利福尼亚州最高法院于 1968 年 3 月
+11 日审结的经典判例 People v. Collins（68 Cal. 2d
+319）。案情概要如下：
+美国加利福尼亚州某市曾发生一起街头抢劫案。案发时，一名年长的女性受害人在人行道上遭到一名年轻女子从背后袭击并被夺走钱包，随后目击者见到该女子迅速逃入一辆停在附近的黄色汽车，车辆由一名男性驾驶员接应后驶离现场。综合案发现场及沿途多名目击者提供的证词，警方整理出如下嫌疑人特征：驾驶员为一名蓄有胡须并留有小胡子的黑人男性，女性同伙为一名梳有金色马尾辫的白人女性，二人为一对跨种族情侣，逃逸所用车辆为一辆黄色汽车。数日后，警方以一对与上述描述较为吻合的男女嫌疑人
+Malcolm Ricardo Collins 及其同伴为被告提起公诉。
+由于本案的物证与直接目击辨认均存在一定不确定性，控方在庭审中转而采取了一种当时颇为新颖的证明策略：传唤一名数学教师作为专家证人出庭，向陪审团讲解概率论中的乘法法则。该专家在陈述过程中未讨论各特征之间是否存在条件依赖关系，直接以”相互独立”作为默认前提。控方进而请陪审团就上述六项特征在总人群中出现的频率分别做出估计，并采用了如下的示例数值：
+
+
+
+特征
+控方所采用的估计频率
+
+
+
+
+男方蓄有胡须
+1/10
+
+
+男方留有小胡子
+1/4
+
+
+女方为金发
+1/3
+
+
+女方梳有马尾辫
+1/10
+
+
+所驾车辆为黄色
+1/10
+
+
+男女为跨种族情侣同乘一车
+1/1000
+
+
+
+控方将上述六项频率逐项直接相乘，得到”随机一对情侣同时具备全部六项特征”的联合概率约为
+1/12{,}000{,}000。控方据此向陪审团陈词：具备如此稀有特征组合的情侣在人群中出现的概率极低，这对被告不可能仅是巧合意义上的”恰好符合特征者”，因此几乎必然即为本案真凶。陪审团采纳了控方的上述推理，最终作出有罪判决。案件随后被被告上诉至加州最高法院。请运用贝叶斯信息推断的思维框架，指出上述控方概率推理过程中存在的问题。
+10.
+请结合本学期学习本课程的整体感受，谈谈你在本课程中的体会与收获，说明令你印象最为深刻的一个案例，并对授课教师提出建议。
 ]]></content>
       <categories>
-        <category>面向对象</category>
+        <category>信号处理与信息推断</category>
       </categories>
       <tags>
-        <tag>Java</tag>
-        <tag>OO</tag>
+        <tag>Bayes</tag>
       </tags>
   </entry>
   <entry>
@@ -6932,85 +7011,6 @@ P(H|E) = P(H)
 看守先验，警惕操纵：不要被极具共鸣的“伪实锤”裹挟，警惕媒体有偏采样的毒害，拒绝成为信息茧房里的偏执狂。
 
 愿你在未来的生活、学习与决策中，将“先验-观测-更新-后验”的心智循环周而复始地运行下去。承认世界之不确定，拥抱信息之更新，做一个个体认知不断进化、终身自我修正的贝叶斯主义者。
-]]></content>
-      <categories>
-        <category>信号处理与信息推断</category>
-      </categories>
-      <tags>
-        <tag>Bayes</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>BUAA-信号处理与信息推断 期末考题回忆版</title>
-    <url>/2026/06/15/BUAA-%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E4%B8%8E%E4%BF%A1%E6%81%AF%E6%8E%A8%E6%96%AD%20%E6%9C%9F%E6%9C%AB%E8%80%83%E9%A2%98%E5%9B%9E%E5%BF%86%E7%89%88/</url>
-    <content><![CDATA[写在前面
-本文为 2026
-春季学期《信号处理与信息推断》课程期末考试的回忆整理版本，题干表述在原始记忆基础上做了润色，部分历史事件补充了可查证的背景资料，供后续同学参考。
-1.
-写出贝叶斯定理的完整数学表达式，并分别叙述”后验概率”、“先验概率”与”似然概率”三者在贝叶斯推断框架中的含义，结合一个具体实例加以说明。
-2.
-分别叙述随机事件”独立”与”条件独立”的含义，并分别举例说明。
-3.
-某项疾病检测中，已知人群中该疾病的患病率、患病条件下检测结果为阳性的概率，以及未患病条件下检测结果为阳性的概率。请利用贝叶斯定理，求某受试者在检测结果为阳性的条件下，其真实患病的概率（原题中给出了具体数值）。
-4.
-一位来自德国的经济学家在近三届世界杯前均对最终冠军的归属做出了公开预测，并连续三次预测正确。因此有人认为，其对本届世界杯冠军的预测同样值得信赖。请问你是否认同这一看法？请从贝叶斯信息推断的角度阐述你的理由。
-5.
-网络上流传的各类”高分秘籍”通常宣称：由于高分学生普遍具备若干共同特征，因此普通学生只要模仿并践行这些特征，也能获得高分。请运用贝叶斯定理，指出上述推理逻辑中存在的问题（要求显式写出相关数学公式）。
-6. 在经典的”狼来了”寓言中，假设孩子诚实的先验概率为
-0.9，在孩子诚实的条件下单次骗人的概率为
-0.1，在孩子不诚实的条件下单次骗人的概率为
-0.7，且两次骗人事件在给定孩子诚实性的条件下相互独立。请计算在观测到孩子连续两次说谎之后，村民仍认为该孩子诚实的后验概率。
-7.
-你近日突发腹痛，就医后医生判断该症状可能由两种疾病之一引起。现已知其中一种疾病条件下出现腹痛的概率，为得出可信的鉴别诊断结论，你还需要以下哪一项额外信息？请写出所选选项并说明理由。
-A. 另一种疾病条件下出现腹痛的概率
-B. 该疾病条件下出现其他症状的概率
-C. 另一种疾病条件下出现其他症状的概率
-8.
-作为一名大二/大三阶段的本科生，你面前有以下四条主要发展路径：保研本校、考研外校、出国留学、直接就业。请从中选择其一作为个人目标，运用分层描述法对实现该目标的过程进行建模，并根据个人经验设定相关概率，估算最终目标达成的概率。
-9. 本题原型为美国加利福尼亚州最高法院于 1968 年 3 月
-11 日审结的经典判例 People v. Collins（68 Cal. 2d
-319）。案情概要如下：
-美国加利福尼亚州某市曾发生一起街头抢劫案。案发时，一名年长的女性受害人在人行道上遭到一名年轻女子从背后袭击并被夺走钱包，随后目击者见到该女子迅速逃入一辆停在附近的黄色汽车，车辆由一名男性驾驶员接应后驶离现场。综合案发现场及沿途多名目击者提供的证词，警方整理出如下嫌疑人特征：驾驶员为一名蓄有胡须并留有小胡子的黑人男性，女性同伙为一名梳有金色马尾辫的白人女性，二人为一对跨种族情侣，逃逸所用车辆为一辆黄色汽车。数日后，警方以一对与上述描述较为吻合的男女嫌疑人
-Malcolm Ricardo Collins 及其同伴为被告提起公诉。
-由于本案的物证与直接目击辨认均存在一定不确定性，控方在庭审中转而采取了一种当时颇为新颖的证明策略：传唤一名数学教师作为专家证人出庭，向陪审团讲解概率论中的乘法法则。该专家在陈述过程中未讨论各特征之间是否存在条件依赖关系，直接以”相互独立”作为默认前提。控方进而请陪审团就上述六项特征在总人群中出现的频率分别做出估计，并采用了如下的示例数值：
-
-
-
-特征
-控方所采用的估计频率
-
-
-
-
-男方蓄有胡须
-1/10
-
-
-男方留有小胡子
-1/4
-
-
-女方为金发
-1/3
-
-
-女方梳有马尾辫
-1/10
-
-
-所驾车辆为黄色
-1/10
-
-
-男女为跨种族情侣同乘一车
-1/1000
-
-
-
-控方将上述六项频率逐项直接相乘，得到”随机一对情侣同时具备全部六项特征”的联合概率约为
-1/12{,}000{,}000。控方据此向陪审团陈词：具备如此稀有特征组合的情侣在人群中出现的概率极低，这对被告不可能仅是巧合意义上的”恰好符合特征者”，因此几乎必然即为本案真凶。陪审团采纳了控方的上述推理，最终作出有罪判决。案件随后被被告上诉至加州最高法院。请运用贝叶斯信息推断的思维框架，指出上述控方概率推理过程中存在的问题。
-10.
-请结合本学期学习本课程的整体感受，谈谈你在本课程中的体会与收获，说明令你印象最为深刻的一个案例，并对授课教师提出建议。
 ]]></content>
       <categories>
         <category>信号处理与信息推断</category>
